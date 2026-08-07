@@ -367,6 +367,11 @@
             <h3>🔤 Kebable</h3>
             <p>שנה אות אחת בכל צעד והגע ממילת ההתחלה עד ל-"קבב"!</p>
         </div>
+		
+		<div class="game-card" onclick="startBuilderGame()">
+    <h3>👨‍🍳 בונה הקבבים</h3>
+    <p>הרכיבו את השיפודים בדיוק לפי ההזמנה במהירות!</p>
+</div>
     </div>
 
     <div id="screen-catch" class="screen">
@@ -407,7 +412,31 @@
         <div style="font-size: 0.8rem; color: #8b949e; margin-bottom: 5px;">היסטוריית מילים:</div>
         <div id="kebable-history" class="kebable-history-box"></div>
     </div>
-	
+	<div id="screen-builder" class="screen">
+    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; color: var(--accent-gold); font-size: 0.9rem;">
+        <div>זמן: <span id="builder-timer">20</span>s</div>
+        <div>ניקוד: <span id="builder-score">0</span></div>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 12px; text-align: center; margin-bottom: 10px;">
+        <div style="font-size: 0.8rem; color: #8b949e; margin-bottom: 5px;">ההזמנה של הלקוח:</div>
+        <div id="builder-target-order" style="font-size: 1.2rem; font-weight: bold; color: var(--accent-gold);"></div>
+    </div>
+
+    <div style="background: #010409; border: 1px solid var(--border-color); min-height: 60px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; padding: 5px;">
+        <div id="builder-current-skewer" style="font-size: 1.3rem;"></div>
+    </div>
+
+    <div id="builder-msg" style="text-align: center; color: #f85149; font-size: 0.85rem; min-height: 20px; margin-bottom: 10px;"></div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button class="btn" style="margin:0; padding:10px;" onclick="addIngredient('🥩 בשר')">🥩 בשר</button>
+        <button class="btn" style="margin:0; padding:10px;" onclick="addIngredient('🧅 בצל')">🧅 בצל</button>
+        <button class="btn" style="margin:0; padding:10px;" onclick="addIngredient('🍅 עגבנייה')">🍅 עגבנייה</button>
+        <button class="btn" style="margin:0; padding:10px;" onclick="addIngredient('🌶️ פלפל')">🌶️ פלפל</button>
+    </div>
+    <button class="btn" style="background: rgba(218,54,51,0.2); border-color: #f85149; color: #fff; margin-top: 10px;" onclick="resetCurrentSkewer()">נקה שיפוד 🔄</button>
+</div>
     <div id="screen-profile" class="screen">
         <h2 style="font-weight: 400; text-align: center; margin-bottom: 12px; font-size: 1.1rem;">פרופיל שחקן</h2>
         
@@ -789,7 +818,7 @@
 	/* --- משחק 3: KEBABLE --- */
     const kebableDictionary = [
         // קבב
-		"קבב"
+		"קבב",
 		
 		// המסלול מ-מסי לקבב
         "מסי", "משי", "ישי", "ישב", "קשב",
@@ -889,6 +918,100 @@
         document.getElementById('coupon-text').textContent = randomCoupon;
         switchTab('result');
     }
+	/* --- משחק 4: בונה הקבבים --- */
+const builderIngredients = ['🥩 בשר', '🧅 בצל', '🍅 עגבנייה', '🌶️ פלפל'];
+let builderTargetOrder = [];
+let builderCurrentSkewer = [];
+let builderScore = 0;
+let builderTimer = 20;
+let builderInterval = null;
+
+function startBuilderGame() {
+    builderScore = 0;
+    builderTimer = 20;
+    document.getElementById('builder-score').textContent = builderScore;
+    document.getElementById('builder-timer').textContent = builderTimer;
+
+    switchTab('builder');
+    generateNewOrder();
+
+    clearInterval(builderInterval);
+    builderInterval = setInterval(() => {
+        builderTimer--;
+        document.getElementById('builder-timer').textContent = builderTimer;
+        if (builderTimer <= 0) {
+            endBuilderGame();
+        }
+    }, 1000);
+}
+
+function generateNewOrder() {
+    builderCurrentSkewer = [];
+    builderTargetOrder = [];
+    document.getElementById('builder-msg').textContent = '';
+
+    // ייצור הזמנה אקראית של 4 מרכיבים
+    for (let i = 0; i < 4; i++) {
+        const randIndex = Math.floor(Math.random() * builderIngredients.length);
+        builderTargetOrder.push(builderIngredients[randIndex]);
+    }
+
+    renderBuilderDisplay();
+}
+
+function renderBuilderDisplay() {
+    document.getElementById('builder-target-order').textContent = builderTargetOrder.join(' ➔ ');
+    document.getElementById('builder-current-skewer').textContent = builderCurrentSkewer.length > 0 
+        ? builderCurrentSkewer.join(' ➔ ') 
+        : '(לחץ על המרכיבים כדי להרכיב)';
+}
+
+function addIngredient(ingredient) {
+    if (builderTimer <= 0) return;
+
+    const currentIndex = builderCurrentSkewer.length;
+
+    // בדיקה אם המרכיב הנכון נבחר
+    if (ingredient === builderTargetOrder[currentIndex]) {
+        builderCurrentSkewer.push(ingredient);
+        document.getElementById('builder-msg').textContent = '';
+        renderBuilderDisplay();
+
+        // בדיקה אם השיפוד הושלם
+        if (builderCurrentSkewer.length === builderTargetOrder.length) {
+            builderScore += 10;
+            document.getElementById('builder-score').textContent = builderScore;
+            document.getElementById('builder-msg').style.color = '#2ea043';
+            document.getElementById('builder-msg').textContent = '✓ שיפוד מושלם! +10 נקודות';
+            
+            setTimeout(generateNewOrder, 500);
+        }
+    } else {
+        // טעות במרכיב
+        document.getElementById('builder-msg').style.color = '#f85149';
+        document.getElementById('builder-msg').textContent = '❌ טעות במרכיב! השיפוד התאפס';
+        builderCurrentSkewer = [];
+        renderBuilderDisplay();
+    }
+}
+
+function resetCurrentSkewer() {
+    builderCurrentSkewer = [];
+    document.getElementById('builder-msg').textContent = '';
+    renderBuilderDisplay();
+}
+
+function endBuilderGame() {
+    clearInterval(builderInterval);
+
+    // עדכון שיא ב-Firebase במידת הצורך
+    checkHighScore(builderScore);
+
+    document.getElementById('result-desc').textContent = `הכנת שיפודים בשווי ${builderScore} נקודות!`;
+    const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
+    document.getElementById('coupon-text').textContent = randomCoupon;
+    switchTab('result');
+}
 </script>
 
 </body>
