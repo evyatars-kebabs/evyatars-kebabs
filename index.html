@@ -493,7 +493,13 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    /* --- משתנים גלובליים --- */
+/* --- משתנים גלובליים ומזהה שחקן ייחודי --- */
+    let playerId = localStorage.getItem('kebab_playerId');
+    if (!playerId) {
+        playerId = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 7);
+        localStorage.setItem('kebab_playerId', playerId);
+    }
+
     let playerName = localStorage.getItem('kebab_playerName') || 'אורח';
     let playerHighScore = parseInt(localStorage.getItem('kebab_highScore')) || 0;
 
@@ -523,18 +529,23 @@
         }
     }
 
-    /* --- שמירת שם שחקן --- */
+    /* --- שמירת שם שחקן (עדכון ב-Firebase תחת המזהה הקיים) --- */
     function savePlayerName() {
         const inputVal = document.getElementById('player-name-input').value.trim();
         playerName = inputVal !== '' ? inputVal : 'אורח';
         localStorage.setItem('kebab_playerName', playerName);
+
+        // עדכון השם ב-Firebase תחת ה-ID של המשתמש בלי למחוק את הניקוד
+        db.collection('leaderboard').doc(playerId).set({
+            name: playerName
+        }, { merge: true }).catch(err => console.error("שגיאה בעדכון שם:", err));
 
         const msg = document.getElementById('name-save-msg');
         msg.style.display = 'block';
         setTimeout(() => { msg.style.display = 'none'; }, 2000);
     }
 
-    /* --- עדכון שיא ושמירה בענן --- */
+    /* --- עדכון שיא ושמירה בענן לפי מזהה ייחודי --- */
     function checkHighScore(score) {
         if (score > playerHighScore) {
             playerHighScore = score;
@@ -542,17 +553,16 @@
             document.getElementById('player-high-score').textContent = playerHighScore;
         }
 
-        // שמירה בענן לפי שם השחקן - מעדכן רק אם התוצאה החדשה גבוהה יותר
-        const docId = playerName !== 'אורח' ? playerName : `אורח_${Date.now()}`;
-        const userRef = db.collection('leaderboard').doc(docId);
+        const userRef = db.collection('leaderboard').doc(playerId);
 
         userRef.get().then(doc => {
-            if (!doc.exists || score > (doc.data().score || 0)) {
+            const currentBest = doc.exists ? (doc.data().score || 0) : 0;
+            if (!doc.exists || score > currentBest) {
                 userRef.set({
                     name: playerName,
-                    score: score,
+                    score: Math.max(score, currentBest),
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                }, { merge: true });
             }
         }).catch(err => console.error("שגיאה בשמירה בענן:", err));
     }
@@ -564,7 +574,7 @@
 
         db.collection('leaderboard')
             .orderBy('score', 'desc')
-            .limit(50)
+            .limit(10)
             .get()
             .then(snapshot => {
                 container.innerHTML = '';
@@ -573,21 +583,14 @@
                     return;
                 }
 
-                const uniquePlayers = new Set();
                 let rank = 1;
-
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const pName = data.name || 'אורח';
-
-                    // מציג רק את התוצאה הראשונה (והכי גבוהה) של כל שחקן
-                    if (!uniquePlayers.has(pName) && rank <= 10) {
-                        uniquePlayers.add(pName);
-
+                    if (data.score !== undefined) {
                         const li = document.createElement('li');
                         li.className = 'leaderboard-item';
                         li.innerHTML = `
-                            <span><strong>#${rank}</strong> ${pName}</span>
+                            <span><strong>#${rank}</strong> ${data.name || 'אורח'}</span>
                             <span style="color: var(--accent-gold); font-weight: bold;">${data.score} נק'</span>
                         `;
                         container.appendChild(li);
