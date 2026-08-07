@@ -218,7 +218,8 @@
         }
 
         .kebab {
-            font-size: 2.8rem;
+            width: 65px;
+			height: auto;
             position: absolute;
             cursor: pointer;
             user-select: none;
@@ -610,10 +611,20 @@
         area.innerHTML = '';
         if (catchTimer <= 0) return;
 
-        const kebab = document.createElement('div');
+		const kebab = document.createElement('img');
         kebab.className = 'kebab';
-        kebab.textContent = '🥩'; // סמל בשר מעודכן
+        kebab.src = 'kebab.png';
 
+		// גיבוי: אם התמונה לא נטענת, נחליף אותה באימוג'י
+		
+        kebab.onerror = function() {
+            const fallback = document.createElement('div');
+            fallback.className = 'kebab';
+            fallback.textContent = '🥙';
+            fallback.style.fontSize = '2.8rem';
+            fallback.onclick = this.onclick;
+            this.replaceWith(fallback);
+        };
         const maxX = area.clientWidth - 50;
         const maxY = area.clientHeight - 50;
         kebab.style.left = Math.floor(Math.random() * Math.max(10, maxX)) + 'px';
@@ -826,12 +837,14 @@
         // מילים נוספות שמקושרות בצעד אחד לקבב
         "סבב", "שבב", "חבב", "דבב", "עבב", "רבב", "יבב", 
         "קבל", "קבע", "קצב", "קרב", "קטב", "קנב", "קוב",
+		"קבר",
 
         // מילים שמקושרות בשרשראות נוספות (להרחבת אפשרויות המשחק)
         "סבל", "סבר", "סבא", "שבל", "שבח", "שבי", "שכב", "שרב",
         "חבל", "חבר", "חבש", "דבש", "דבר", "דוב", "עבר", "עבד",
         "קצר", "קצף", "קצה", "קרא", "קרן", "קרס", "נבל", "יבל",
-        "חשב", "נשב", "ישן", "ישק", "ישע", "מאי", "מלי", "מתי"
+        "חשב", "נשב", "ישן", "ישק", "ישע", "מאי", "מלי", "מתי",
+		"משב", "אבא", "אמא", "אמש", "חמש", "אבל", "כבל"
     ];
 
     const KEBABLE_TARGET = "קבב";
@@ -960,9 +973,9 @@ function generateNewOrder() {
 }
 
 function renderBuilderDisplay() {
-    document.getElementById('builder-target-order').textContent = builderTargetOrder.join(' ➔ ');
+    document.getElementById('builder-target-order').textContent = builderTargetOrder.join(' ⬅️ ');
     document.getElementById('builder-current-skewer').textContent = builderCurrentSkewer.length > 0 
-        ? builderCurrentSkewer.join(' ➔ ') 
+        ? builderCurrentSkewer.join(' ⬅️ ') 
         : '(לחץ על המרכיבים כדי להרכיב)';
 }
 
@@ -1003,9 +1016,6 @@ function resetCurrentSkewer() {
 
 function endBuilderGame() {
     clearInterval(builderInterval);
-
-    // עדכון שיא ב-Firebase במידת הצורך
-    checkHighScore(builderScore);
 
     document.getElementById('result-desc').textContent = `הכנת שיפודים בשווי ${builderScore} נקודות!`;
     const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
