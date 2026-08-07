@@ -638,7 +638,7 @@
 
         db.collection('leaderboard')
             .orderBy('score', 'desc')
-            .limit(10)
+            .limit(50)
             .get()
             .then(snapshot => {
                 container.innerHTML = '';
@@ -1167,7 +1167,7 @@ function loadBuilderLeaderboard() {
 
     db.collection('leaderboard_builder')
         .orderBy('score', 'desc')
-        .limit(10)
+        .limit(50)
         .get()
         .then(snapshot => {
             container.innerHTML = '';
