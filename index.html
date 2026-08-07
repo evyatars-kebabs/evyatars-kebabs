@@ -877,28 +877,45 @@
         const optionsContainer = document.getElementById('trivia-options-container');
         optionsContainer.innerHTML = '';
 
-        q.options.forEach((opt, idx) => {
+        // ערבוב אקראי של התשובות עבור השאלה הנוכחית
+        const shuffledOptions = q.options.map((optText, originalIdx) => ({
+            text: optText,
+            isCorrect: originalIdx === q.correct
+        })).sort(() => Math.random() - 0.5);
+
+        // יצירת הכפתורים מתוך הרשימה המעורבבת
+        shuffledOptions.forEach((item) => {
             const btn = document.createElement('div');
             btn.className = 'trivia-option';
-            btn.textContent = opt;
-            btn.onclick = () => selectTriviaAnswer(idx, btn);
+            btn.textContent = item.text;
+            
+            // סימון התשובה הנכונה ברמת האלמנט
+            if (item.isCorrect) {
+                btn.dataset.correct = "true";
+            }
+
+            btn.onclick = () => selectTriviaAnswer(item.isCorrect, btn);
             optionsContainer.appendChild(btn);
         });
     }
 
-    function selectTriviaAnswer(selectedIndex, optionElement) {
+    function selectTriviaAnswer(isCorrect, optionElement) {
         if (!canAnswer) return;
         canAnswer = false;
 
-        const q = activeTriviaQuestions[currentTriviaIndex];
         const allOptions = document.querySelectorAll('.trivia-option');
 
-        if (selectedIndex === q.correct) {
+        if (isCorrect) {
             optionElement.classList.add('correct');
             triviaScore++;
         } else {
             optionElement.classList.add('wrong');
-            allOptions[q.correct].classList.add('correct');
+            // מציאת התשובה הנכונה מבין האפשרויות המוצגות והדגשתה בירוק
+            allOptions.forEach(opt => {
+                if (opt.dataset.correct === "true") {
+                    opt.classList.add('correct');
+                }
+            });
         }
 
         setTimeout(() => {
