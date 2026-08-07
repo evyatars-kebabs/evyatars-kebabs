@@ -331,6 +331,32 @@
             padding: 4px 8px;
             font-size: 0.85rem;
         }
+		/* עיצוב כפתורי המעבר בתוך טבלת השיאים */
+		.sub-tabs {
+			display: flex;
+			gap: 10px;
+			justify-content: center;
+			margin-bottom: 20px;
+		}
+
+		.sub-tab-btn {
+			background-color: var(--card-bg);
+			color: var(--text-color);
+			border: 1px solid var(--border-color);
+			padding: 10px 16px;
+			border-radius: 20px;
+			font-size: 0.95rem;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+
+		.sub-tab-btn.active {
+			background-color: var(--accent-gold);
+			color: #0d1117;
+			border-color: var(--accent-gold);
+			font-weight: bold;
+		}
     </style>
 </head>
 <body>
@@ -458,12 +484,22 @@
         </div>
     </div>
 
-    <div id="screen-leaderboard" class="screen">
-        <h2 style="font-weight: 400; text-align: center; margin-bottom: 12px; font-size: 1.1rem;">🏆 טבלת שיאים</h2>
-        <ul class="leaderboard-list" id="leaderboard-container">
-            <li style="text-align: center; color: #8b949e; padding: 15px;">טוען נתונים...</li>
-        </ul>
-    </div>
+	<div id="screen-leaderboard" class="screen">
+		<h2>🏆 טבלת שיאים</h2>
+
+		<div class="sub-tabs">
+			<button id="sub-btn-main" class="sub-tab-btn active" onclick="switchLeaderboardTab('main')">🍢 תפוס את הקבב</button>
+			<button id="sub-btn-builder" class="sub-tab-btn" onclick="switchLeaderboardTab('builder')">👨‍🍳 בונה הקבבים</button>
+		</div>
+
+		<div id="sub-screen-main" class="leaderboard-sub-screen">
+			<ul id="leaderboard-container" class="leaderboard-list"></ul>
+		</div>
+
+		<div id="sub-screen-builder" class="leaderboard-sub-screen" style="display: none;">
+			<ul id="builder-leaderboard-container" class="leaderboard-list"></ul>
+		</div>
+	</div>
 
     <div id="screen-result" class="screen" style="text-align: center;">
         <h2 style="color: var(--accent-gold); margin-bottom: 10px; font-size: 1.3rem;">סיום משחק!</h2>
@@ -516,21 +552,47 @@
         "תוספת צ'יפס מוגדל חינם!"
     ];
 
-    /* --- ניווט בין מסכים --- */
-    function switchTab(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
+	/* --- החלפה בין טבלאות השיאים בתוך המסך --- */
+	function switchLeaderboardTab(type) {
+		// עדכון הכפתורים
+		document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+		// הסתרת כל תתי המסכים של הטבלאות
+		document.getElementById('sub-screen-main').style.display = 'none';
+		document.getElementById('sub-screen-builder').style.display = 'none';
 
-        const targetScreen = document.getElementById('screen-' + screenId);
-        const targetBtn = document.getElementById('btn-' + screenId);
+		if (type === 'main') {
+			document.getElementById('sub-btn-main').classList.add('active');
+			document.getElementById('sub-screen-main').style.display = 'block';
+			loadLeaderboard();
+		} else if (type === 'builder') {
+			document.getElementById('sub-btn-builder').classList.add('active');
+			document.getElementById('sub-screen-builder').style.display = 'block';
+			loadBuilderLeaderboard();
+		}
+	}	
 
-        if (targetScreen) targetScreen.classList.add('active');
-        if (targetBtn) targetBtn.classList.add('active');
+	/* --- ניווט בין מסכים ראשיים --- */
+	function switchTab(screenId) {
+		document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+		document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
 
-        if (screenId === 'leaderboard') {
-            loadLeaderboard();
-        }
-    }
+		const targetScreen = document.getElementById('screen-' + screenId);
+		const targetBtn = document.getElementById('btn-' + screenId);
+
+		if (targetScreen) targetScreen.classList.add('active');
+		if (targetBtn) targetBtn.classList.add('active');
+
+		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
+		if (screenId === 'leaderboard') {
+			const isBuilderActive = document.getElementById('sub-btn-builder').classList.contains('active');
+			if (isBuilderActive) {
+				loadBuilderLeaderboard();
+			} else {
+				loadLeaderboard();
+			}
+		}
+	}
 
     /* --- שמירת שם שחקן --- */
     function savePlayerName() {
@@ -1022,10 +1084,10 @@ function addIngredient(ingredient) {
 
         // בדיקה אם השיפוד הושלם
         if (builderCurrentSkewer.length === builderTargetOrder.length) {
-            builderScore += 10;
+            builderScore += 1;
             document.getElementById('builder-score').textContent = builderScore;
             document.getElementById('builder-msg').style.color = '#2ea043';
-            document.getElementById('builder-msg').textContent = '✓ שיפוד מושלם! +10 נקודות';
+            document.getElementById('builder-msg').textContent = '✓ שיפוד מושלם! +1 נקודות';
             
             setTimeout(generateNewOrder, 500);
         }
@@ -1047,10 +1109,75 @@ function resetCurrentSkewer() {
 function endBuilderGame() {
     clearInterval(builderInterval);
 
+    // ⬇️ הוספת שמירת הניקוד בטבלה הנפרדת
+    checkBuilderHighScore(builderScore);
+
     document.getElementById('result-desc').textContent = `הכנת שיפודים בשווי ${builderScore} נקודות!`;
     const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
     document.getElementById('coupon-text').textContent = randomCoupon;
     switchTab('result');
+}
+/* --- שמירת שיא בונה הקבבים ב-Firebase נפרד --- */
+function checkBuilderHighScore(score) {
+    let builderHighScore = parseInt(localStorage.getItem('kebab_builderHighScore')) || 0;
+    
+    if (score > builderHighScore) {
+        builderHighScore = score;
+        localStorage.setItem('kebab_builderHighScore', builderHighScore);
+    }
+
+    // שמירה באוסף נפרד ב-Firebase: 'leaderboard_builder'
+    const userRef = db.collection('leaderboard_builder').doc(playerId);
+    
+    userRef.get().then(doc => {
+        const currentBest = doc.exists ? (doc.data().score || 0) : 0;
+        if (!doc.exists || score > currentBest) {
+            userRef.set({
+                name: playerName,
+                score: Math.max(score, currentBest),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        }
+    }).catch(err => console.error("שגיאה בשמירת שיא בונה הקבבים:", err));
+}
+
+/* --- טעינת טבלת שיאים של בונה הקבבים --- */
+function loadBuilderLeaderboard() {
+    const container = document.getElementById('builder-leaderboard-container');
+    if (!container) return;
+    
+    container.innerHTML = '<li style="text-align: center; color: #8b949e; padding: 15px;">טוען נתונים...</li>';
+
+    db.collection('leaderboard_builder')
+        .orderBy('score', 'desc')
+        .limit(10)
+        .get()
+        .then(snapshot => {
+            container.innerHTML = '';
+            if (snapshot.empty) {
+                container.innerHTML = '<li style="text-align: center; color: #8b949e; padding: 15px;">אין עדיין שיאים. היו הראשונים!</li>';
+                return;
+            }
+
+            let rank = 1;
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.score !== undefined) {
+                    const li = document.createElement('li');
+                    li.className = 'leaderboard-item';
+                    li.innerHTML = `
+                        <span><strong>#${rank}</strong> ${data.name || 'אורח'}</span>
+                        <span style="color: var(--accent-gold); font-weight: bold;">${data.score} נק'</span>
+                    `;
+                    container.appendChild(li);
+                    rank++;
+                }
+            });
+        })
+        .catch(err => {
+            console.error("שגיאה בטעינת טבלת בונה הקבבים:", err);
+            container.innerHTML = '<li style="text-align: center; color: #f85149; padding: 15px;">שגיאה בטעינת הנתונים</li>';
+        });
 }
 </script>
 <script>
