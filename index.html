@@ -338,20 +338,20 @@
         <h1>הקבביה של אביתר</h1>
         <p>הטעם האותנטי ששורף את העיר 🔥</p>
     </div>
-
-    <div class="top-bar">
-        <button class="icon-btn active" id="btn-home" onclick="switchTab('home')" title="בית">
-            <svg viewBox="0 0 24 24"><polygon points="12 3 2 12 5 12 5 21 19 21 19 12 22 12 12 3"/><rect x="9" y="14" width="6" height="7"/></svg>
-        </button>
-        <button class="icon-btn" id="btn-profile" onclick="switchTab('profile')" title="פרופיל">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>
-        </button>
-        <button class="icon-btn" id="btn-leaderboard" onclick="switchTab('leaderboard')" title="טבלת שיאים">
-            <svg viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="5" width="4" height="16"/><rect x="17" y="9" width="4" height="12"/></svg>
-        </button>
-    </div>
-
-    <div id="screen-home" class="screen active">
+	
+	<div class="top-bar">
+			<button class="icon-btn active" id="btn-profile" onclick="switchTab('profile')" title="פרופיל">
+				<svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>
+			</button>
+			<button class="icon-btn" id="btn-home" onclick="switchTab('home')" title="בית">
+				<svg viewBox="0 0 24 24"><polygon points="12 3 2 12 5 12 5 21 19 21 19 12 22 12 12 3"/><rect x="9" y="14" width="6" height="7"/></svg>
+			</button>
+			<button class="icon-btn" id="btn-leaderboard" onclick="switchTab('leaderboard')" title="טבלת שיאים">
+				<svg viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="5" width="4" height="16"/><rect x="17" y="9" width="4" height="12"/></svg>
+			</button>
+	</div>
+	
+    <div id="screen-home" class="screen">
         <h2 style="font-weight: 400; text-align: center; margin-bottom: 15px; font-size: 1rem; color: #8b949e;">בחר מסלול משחק</h2>
         
         <div class="game-card" onclick="startCatchGame()">
@@ -438,7 +438,7 @@
     </div>
     <button class="btn" style="background: rgba(218,54,51,0.2); border-color: #f85149; color: #fff; margin-top: 10px;" onclick="resetCurrentSkewer()">נקה שיפוד 🔄</button>
 </div>
-    <div id="screen-profile" class="screen">
+    <div id="screen-profile" class="screen active">
         <h2 style="font-weight: 400; text-align: center; margin-bottom: 12px; font-size: 1.1rem;">פרופיל שחקן</h2>
         
         <label style="font-size: 0.8rem; color: #8b949e; margin-bottom: 5px; display: block;">שם השחקן:</label>
