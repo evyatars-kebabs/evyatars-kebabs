@@ -6,8 +6,9 @@
     <title> הקבביה של אביתר - Geometric Mobile</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+	<link rel="manifest" href="manifest.json">
+    
+	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <style>
@@ -1023,6 +1024,14 @@ function endBuilderGame() {
     switchTab('result');
 }
 </script>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => {
+        console.log('Service Worker registration failed: ', err);
+      });
+    });
+  }
+</script>
 </body>
 </html>
