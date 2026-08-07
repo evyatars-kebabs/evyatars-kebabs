@@ -480,20 +480,23 @@
 </div>
 
 <script>
-    /* --- אתחול FIREBASE --- */
-    const firebaseConfig = {
-        apiKey: "AIzaSyDQUP26lG2qdseogng96R2kWOVIvuawoLg",
-        authDomain: "evyatars-kebabs.firebaseapp.com",
-        projectId: "evyatars-kebabs",
-        storageBucket: "evyatars-kebabs.firebasestorage.app",
-        messagingSenderId: "965270391043",
-        appId: "1:965270391043:web:6c1fd7c195a7f1c3030136"
-    };
+/* --- הגדרת Firebase --- */
+	const firebaseConfig = {
+		apiKey: "AIzaSyDQUP26lG2qdseogng96R2kWOVIvuawoLg",
+		authDomain: "evyatars-kebabs.firebaseapp.com",
+		projectId: "evyatars-kebabs",
+		storageBucket: "evyatars-kebabs.firebasestorage.app",
+		messagingSenderId: "965270391043",
+		appId: "1:965270391043:web:6c1fd7c195a7f1c3030136",
+		measurementId: "G-YQQE5G7T4G"
+	};
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
     const db = firebase.firestore();
 
-/* --- משתנים גלובליים ומזהה שחקן ייחודי --- */
+    /* --- משתנים גלובליים ומזהה שחקן ייחודי --- */
     let playerId = localStorage.getItem('kebab_playerId');
     if (!playerId) {
         playerId = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 7);
@@ -529,13 +532,12 @@
         }
     }
 
-    /* --- שמירת שם שחקן (עדכון ב-Firebase תחת המזהה הקיים) --- */
+    /* --- שמירת שם שחקן --- */
     function savePlayerName() {
         const inputVal = document.getElementById('player-name-input').value.trim();
         playerName = inputVal !== '' ? inputVal : 'אורח';
         localStorage.setItem('kebab_playerName', playerName);
 
-        // עדכון השם ב-Firebase תחת ה-ID של המשתמש בלי למחוק את הניקוד
         db.collection('leaderboard').doc(playerId).set({
             name: playerName
         }, { merge: true }).catch(err => console.error("שגיאה בעדכון שם:", err));
@@ -545,7 +547,7 @@
         setTimeout(() => { msg.style.display = 'none'; }, 2000);
     }
 
-    /* --- עדכון שיא ושמירה בענן לפי מזהה ייחודי --- */
+    /* --- עדכון שיא ושמירה בענן לפי playerId --- */
     function checkHighScore(score) {
         if (score > playerHighScore) {
             playerHighScore = score;
