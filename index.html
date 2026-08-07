@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> הקבביה של אביתר - הטעם האותנטי ששורף את העיר 🔥</title>
+    <title> הקבביה של אביתר - Geometric Mobile</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
 	<link rel="manifest" href="manifest.json">
@@ -542,10 +542,18 @@
             document.getElementById('player-high-score').textContent = playerHighScore;
         }
 
-        db.collection('leaderboard').add({
-            name: playerName,
-            score: score,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        // שמירה בענן לפי שם השחקן - מעדכן רק אם התוצאה החדשה גבוהה יותר
+        const docId = playerName !== 'אורח' ? playerName : `אורח_${Date.now()}`;
+        const userRef = db.collection('leaderboard').doc(docId);
+
+        userRef.get().then(doc => {
+            if (!doc.exists || score > (doc.data().score || 0)) {
+                userRef.set({
+                    name: playerName,
+                    score: score,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
         }).catch(err => console.error("שגיאה בשמירה בענן:", err));
     }
 
@@ -556,7 +564,7 @@
 
         db.collection('leaderboard')
             .orderBy('score', 'desc')
-            .limit(10)
+            .limit(50)
             .get()
             .then(snapshot => {
                 container.innerHTML = '';
@@ -564,18 +572,32 @@
                     container.innerHTML = '<li style="text-align: center; color: #8b949e; padding: 15px;">אין עדיין שיאים. היו הראשונים!</li>';
                     return;
                 }
+
+                const uniquePlayers = new Set();
                 let rank = 1;
+
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const li = document.createElement('li');
-                    li.className = 'leaderboard-item';
-                    li.innerHTML = `
-                        <span><strong>#${rank}</strong> ${data.name || 'אורח'}</span>
-                        <span style="color: var(--accent-gold); font-weight: bold;">${data.score} נק'</span>
-                    `;
-                    container.appendChild(li);
-                    rank++;
+                    const pName = data.name || 'אורח';
+
+                    // מציג רק את התוצאה הראשונה (והכי גבוהה) של כל שחקן
+                    if (!uniquePlayers.has(pName) && rank <= 10) {
+                        uniquePlayers.add(pName);
+
+                        const li = document.createElement('li');
+                        li.className = 'leaderboard-item';
+                        li.innerHTML = `
+                            <span><strong>#${rank}</strong> ${pName}</span>
+                            <span style="color: var(--accent-gold); font-weight: bold;">${data.score} נק'</span>
+                        `;
+                        container.appendChild(li);
+                        rank++;
+                    }
                 });
+
+                if (container.children.length === 0) {
+                    container.innerHTML = '<li style="text-align: center; color: #8b949e; padding: 15px;">אין עדיין שיאים. היו הראשונים!</li>';
+                }
             })
             .catch(err => {
                 console.error("שגיאה בטעינת השיאים:", err);
