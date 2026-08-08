@@ -1423,12 +1423,12 @@ function checkGoodsMatches() {
     });
 
     // 2. עדכון ניקוד והודעת הצלחה
-    goodsScore += matchedShelves.length * 30;
+    goodsScore += matchedShelves.length * 3;
     document.getElementById('goods-score').textContent = goodsScore;
 
     const msgEl = document.getElementById('goods-msg');
     msgEl.style.color = '#2ea043';
-    msgEl.textContent = '✨ שלישייה מושלמת! +30 נקודות';
+    msgEl.textContent = '✨ שלישייה מושלמת! +3 נקודות';
     setTimeout(() => { msgEl.textContent = ''; }, 1200);
 
     // 3. המתנה לסיום האנימציה (400ms) לפני מחיקת הנתונים ורענון הלוח
