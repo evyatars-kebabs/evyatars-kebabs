@@ -357,6 +357,71 @@
 			border-color: var(--accent-gold);
 			font-weight: bold;
 		}
+		
+		.goods-board {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr); /* 2 טורים של מדפים זה לצד זה */
+			gap: 8px;
+			max-height: 400px; /* הגבלת גובה כדי למנוע ירידה מתחת למסך */
+			overflow-y: auto;  /* גלילה פנימית במקרה הצורך */
+			padding-right: 4px;
+		}
+
+		.goods-shelf {
+			background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+			border: 1px solid var(--border-color);
+			border-bottom: 3px solid var(--accent-gold);
+			border-radius: 6px;
+			padding: 5px;
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 4px;
+		}
+
+		.goods-slot {
+			background: rgba(0, 0, 0, 0.4);
+			border: 1px dashed rgba(255, 255, 255, 0.2);
+			border-radius: 4px;
+			height: 42px; /* הגודל הותאם מעט כדי שייכנס טוב למסך */
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.3rem;
+			cursor: pointer;
+			user-select: none;
+			transition: background 0.2s, border-color 0.2s;
+		}
+		/* סימון תא נבחר למשחק סידור מדפים */
+        .goods-slot.selected {
+            border: 2px solid var(--accent-gold);
+            background: rgba(255, 215, 0, 0.25);
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+		
+		/* אנימציית היעלמות למדף */
+		@keyframes vanishEffect {
+			0% {
+				transform: scale(1);
+				opacity: 1;
+				filter: brightness(1);
+			}
+			50% {
+				transform: scale(1.15);
+				opacity: 0.9;
+				background: rgba(255, 215, 0, 0.35);
+				border-color: var(--accent-gold);
+				filter: brightness(1.5) drop-shadow(0 0 8px var(--accent-gold));
+			}
+			100% {
+				transform: scale(0);
+				opacity: 0;
+		}
+		}
+
+		/* הפעלת האנימציה על המשבצות בתוך מדף שהושלם */
+		.goods-shelf.match-vanish .goods-slot {
+			animation: vanishEffect 0.4s ease-in-out forwards;
+		}
     </style>
 </head>
 <body>
@@ -402,6 +467,11 @@
 			<h3>👨‍🍳 בונה הקבבים</h3>
 			<p>הרכיבו את השיפודים בדיוק לפי ההזמנה במהירות!</p>
 		</div>
+		
+		<div class="game-card" onclick="startGoodsSortGame()">
+			<h3>🥫 סידור המדפים</h3>
+			<p>סדרו 3 מוצרים זהים על אותו המדף כדי להעלים אותם!</p>
+		</div>
     </div>
 
     <div id="screen-catch" class="screen">
@@ -442,6 +512,7 @@
         <div style="font-size: 0.8rem; color: #8b949e; margin-bottom: 5px;">היסטוריית מילים:</div>
         <div id="kebable-history" class="kebable-history-box"></div>
     </div>
+	
 	<div id="screen-builder" class="screen">
     <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; color: var(--accent-gold); font-size: 0.9rem;">
         <div>זמן: <span id="builder-timer">20</span>s</div>
@@ -466,7 +537,23 @@
         <button class="btn" style="margin:0; padding:10px;" onclick="addIngredient('🌶️ פלפל')">🌶️ פלפל</button>
     </div>
     <button class="btn" style="background: rgba(218,54,51,0.2); border-color: #f85149; color: #fff; margin-top: 10px;" onclick="resetCurrentSkewer()">נקה שיפוד 🔄</button>
-</div>
+	</div>
+	
+	<div id="screen-goods" class="screen">
+    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 12px; color: var(--accent-gold); font-size: 0.9rem;">
+        <div>זמן: <span id="goods-timer">30</span>s</div>
+        <div>ניקוד: <span id="goods-score">0</span></div>
+    </div>
+
+    <div style="text-align: center; font-size: 0.85rem; color: #8b949e; margin-bottom: 10px;">
+        סדרו 3 מוצרים זהים על **אותו מדף** כדי להעלים אותם!
+    </div>
+
+    <div id="goods-board" class="goods-board"></div>
+
+    <div id="goods-msg" style="text-align: center; font-size: 0.85rem; min-height: 22px; margin-top: 8px;"></div>
+	</div>
+	
     <div id="screen-profile" class="screen active">
         <h2 style="font-weight: 400; text-align: center; margin-bottom: 12px; font-size: 1.1rem;">פרופיל שחקן</h2>
         
@@ -1202,6 +1289,178 @@ function loadBuilderLeaderboard() {
             console.error("שגיאה בטעינת טבלת בונה הקבבים:", err);
             container.innerHTML = '<li style="text-align: center; color: #f85149; padding: 15px;">שגיאה בטעינת הנתונים</li>';
         });
+}
+/* --- משחק: סידור מדפים (Goods Sort 3D style) --- */
+
+let goodsBoard = []; // 4 מדפים x 3 מקומות
+let selectedGoodsSlot = null; // לשמירת המוצר הנבחר { shelf: x, slot: y }
+let goodsScore = 0;
+let goodsTimer = 30;
+let goodsInterval = null;
+
+function startGoodsSortGame() {
+    goodsScore = 0;
+    goodsTimer = 30;
+    selectedGoodsSlot = null;
+    
+    document.getElementById('goods-score').textContent = goodsScore;
+    document.getElementById('goods-timer').textContent = goodsTimer;
+    document.getElementById('goods-msg').textContent = '';
+
+    initGoodsBoard();
+    switchTab('goods');
+
+    clearInterval(goodsInterval);
+    goodsInterval = setInterval(() => {
+        goodsTimer--;
+        document.getElementById('goods-timer').textContent = goodsTimer;
+        if (goodsTimer <= 0) {
+            endGoodsSortGame();
+        }
+    }, 1000);
+}
+
+// רשימת מוצרים מצומצמת (לדוגמה: 6 סוגי מוצרים)
+const goodsProducts = ['🥩', '🧅', '🍅', '🌶️', '🥫', '🧄'];
+// אתחול הלוח: 12 שלישיות (36 מוצרים סה"כ) עם כפילויות של אותם המוצרים
+function initGoodsBoard() {
+    let pool = [];
+    
+    // יצירת 12 שלישיות על ידי בחירה אקראית מתוך המאגר
+    for (let i = 0; i < 12; i++) {
+        const randProduct = goodsProducts[Math.floor(Math.random() * goodsProducts.length)];
+        pool.push(randProduct, randProduct, randProduct);
+    }
+
+    // ערבוב מלא של כל 36 המוצרים
+    pool.sort(() => Math.random() - 0.5);
+
+    // חלוקה ל-12 מדפים (3 מוצרים בכל מדף)
+    goodsBoard = [];
+    for (let i = 0; i < 12; i++) {
+        goodsBoard.push([pool[i * 3], pool[i * 3 + 1], pool[i * 3 + 2]]);
+    }
+
+    renderGoodsBoard();
+}
+function renderGoodsBoard() {
+    const boardEl = document.getElementById('goods-board');
+    boardEl.innerHTML = '';
+
+    goodsBoard.forEach((shelf, shelfIdx) => {
+        const shelfDiv = document.createElement('div');
+        shelfDiv.className = 'goods-shelf';
+
+        shelf.forEach((item, slotIdx) => {
+            const slotDiv = document.createElement('div');
+            slotDiv.className = 'goods-slot';
+            if (selectedGoodsSlot && selectedGoodsSlot.shelf === shelfIdx && selectedGoodsSlot.slot === slotIdx) {
+                slotDiv.classList.add('selected');
+            }
+
+            slotDiv.textContent = item || ''; // אם ריק, מציג חלל ריק
+            slotDiv.onclick = () => handleGoodsClick(shelfIdx, slotIdx);
+
+            shelfDiv.appendChild(slotDiv);
+        });
+
+        boardEl.appendChild(shelfDiv);
+    });
+}
+
+// טיפול בלחיצה: מאפשר החלפה ישירה בין כל שני מוצרים בלוח
+function handleGoodsClick(shelfIdx, slotIdx) {
+    const clickedItem = goodsBoard[shelfIdx][slotIdx];
+
+    // אם לחצו על משבצת ריקה (שכבר פונתה) כשאין מוצר נבחר - להתעלם
+    if (!clickedItem && !selectedGoodsSlot) return;
+
+    // בחירה ראשונה
+    if (!selectedGoodsSlot) {
+        if (clickedItem) {
+            selectedGoodsSlot = { shelf: shelfIdx, slot: slotIdx };
+        }
+    } 
+    // לחיצה חוזרת על אותו מוצר - ביטול בחירה
+    else if (selectedGoodsSlot.shelf === shelfIdx && selectedGoodsSlot.slot === slotIdx) {
+        selectedGoodsSlot = null;
+    } 
+    // החלפת מיקומים בין שני מוצרים
+    else {
+        const fromShelf = selectedGoodsSlot.shelf;
+        const fromSlot = selectedGoodsSlot.slot;
+
+        const temp = goodsBoard[shelfIdx][slotIdx];
+        goodsBoard[shelfIdx][slotIdx] = goodsBoard[fromShelf][fromSlot];
+        goodsBoard[fromShelf][fromSlot] = temp;
+
+        selectedGoodsSlot = null;
+        checkGoodsMatches();
+    }
+
+    renderGoodsBoard();
+}
+
+// בדיקת שלישיות, הפעלת אנימציית היעלמות, ומחיקת המדפים לאחר מכן
+function checkGoodsMatches() {
+    const matchedShelves = [];
+
+    // בדיקה אילו מדפים מכילים 3 מוצרים זהים (ושאינם ריקים)
+    goodsBoard.forEach((shelf, shelfIdx) => {
+        if (shelf[0] !== null && shelf[0] === shelf[1] && shelf[1] === shelf[2]) {
+            matchedShelves.push(shelfIdx);
+        }
+    });
+
+    if (matchedShelves.length === 0) return;
+
+    // 1. הפעלת אנימציית היעלמות מיידית על המדפים המותאמים ב-DOM
+    const shelfElements = document.querySelectorAll('.goods-shelf');
+    matchedShelves.forEach(shelfIdx => {
+        if (shelfElements[shelfIdx]) {
+            shelfElements[shelfIdx].classList.add('match-vanish');
+        }
+    });
+
+    // 2. עדכון ניקוד והודעת הצלחה
+    goodsScore += matchedShelves.length * 30;
+    document.getElementById('goods-score').textContent = goodsScore;
+
+    const msgEl = document.getElementById('goods-msg');
+    msgEl.style.color = '#2ea043';
+    msgEl.textContent = '✨ שלישייה מושלמת! +30 נקודות';
+    setTimeout(() => { msgEl.textContent = ''; }, 1200);
+
+    // 3. המתנה לסיום האנימציה (400ms) לפני מחיקת הנתונים ורענון הלוח
+    setTimeout(() => {
+        matchedShelves.forEach(shelfIdx => {
+            goodsBoard[shelfIdx] = [null, null, null];
+        });
+
+        renderGoodsBoard();
+
+        // בדיקה אם כל הלוח התרוקן לחלוטין
+        const isBoardEmpty = goodsBoard.every(shelf => shelf.every(item => item === null));
+
+        if (isBoardEmpty) {
+            msgEl.style.color = '#e3b341';
+            msgEl.textContent = '🎉 פיניתם את כל המדפים! טוען מוצרים חדשים...';
+            
+            setTimeout(() => {
+                initGoodsBoard();
+                msgEl.textContent = '';
+            }, 1000);
+        }
+    }, 400); // 400ms - תואם בדיוק לזמן האנימציה ב-CSS
+}
+
+function endGoodsSortGame() {
+    clearInterval(goodsInterval);
+
+    document.getElementById('result-desc').textContent = `סידרתם את המדפים וצברתם ${goodsScore} נקודות!`;
+    const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
+    document.getElementById('coupon-text').textContent = randomCoupon;
+    switchTab('result');
 }
 </script>
 <script>
