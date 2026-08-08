@@ -953,8 +953,15 @@
         "חבל", "חבר", "חבש", "דבש", "דבר", "דוב", "עבר", "עבד",
         "קצר", "קצף", "קצה", "קרא", "קרן", "קרס", "נבל", "יבל",
         "חשב", "נשב", "ישן", "ישק", "ישע", "מאי", "מלי", "מתי",
-		"משב", "אבא", "אמא", "אמש", "חמש", "אבל", "כבל"
+		"משב", "אבא", "אמא", "אמש", "חמש", "אבל", "כבל", "חום",
+		"חוב", "רצף", "אמה", "שלח", "משל", "קשת", "רשת", "מסב",
+		"חול", "חוג", "חוד", "חור", "מנה", "מנח", "מנף", "מנת",
+		"אמד", "אמו", "אמי", "אמן", "מנס", "אמץ", "אמר", "אמת",
+		"אבץ", "מתג", "מתן"
     ];
+
+		// מילות התחלה שאין בהן אף אחת מהאותיות 'ק' או 'ב'
+    const kebableStartWords = ["מסי", "אמא", "מתי", "חור", "רצף", "שלח", "מנה", "משל", "רשת", "ישן"];
 
     const KEBABLE_TARGET = "קבב";
     let kebableCurrent = "";
@@ -965,9 +972,9 @@
         kebableStepsCount = 0;
         kebableHistoryList = [];
 
-        // לבחור מילת התחלה אקראית שאינה "קבב"
-        const startPool = kebableDictionary.filter(w => w !== KEBABLE_TARGET);
-        kebableCurrent = startPool[Math.floor(Math.random() * startPool.length)];
+        // סינון לווידוא שאין במילת ההתחלה את האותיות 'ק' או 'ב'
+        const validStartWords = kebableStartWords.filter(w => !w.includes('ק') && !w.includes('ב'));
+        kebableCurrent = validStartWords[Math.floor(Math.random() * validStartWords.length)];
         
         kebableHistoryList.push(kebableCurrent);
 
