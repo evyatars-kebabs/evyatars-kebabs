@@ -426,54 +426,63 @@
 
 		/* מקום 1 - זהב */
 		#leaderboard-container li:nth-child(1),
-		#builder-leaderboard-container li:nth-child(1) {
+		#builder-leaderboard-container li:nth-child(1),
+		#kebable-leaderboard-container li:nth-child(1) {
 			background: linear-gradient(90deg, rgba(255, 215, 0, 0.25) 0%, rgba(255, 215, 0, 0.05) 100%) !important;
 			border-right: 5px solid #ffd700 !important;
 			box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.25) !important;
 		}
 		#leaderboard-container li:nth-child(1) span,
-		#builder-leaderboard-container li:nth-child(1) span {
+		#builder-leaderboard-container li:nth-child(1) span,
+		#kebable-leaderboard-container li:nth-child(1) span {
 			color: #ffd700 !important;
 			font-weight: bold !important;
 		}
 		#leaderboard-container li:nth-child(1) span:first-child::before,
-		#builder-leaderboard-container li:nth-child(1) span:first-child::before {
+		#builder-leaderboard-container li:nth-child(1) span:first-child::before,
+		#kebable-leaderboard-container li:nth-child(1) span:first-child::before {
 			content: "🥇 ";
 			font-size: 1.1rem;
 		}
 
 		/* מקום 2 - כסף */
 		#leaderboard-container li:nth-child(2),
-		#builder-leaderboard-container li:nth-child(2) {
+		#builder-leaderboard-container li:nth-child(2),
+		#kebable-leaderboard-container li:nth-child(2) {
 			background: linear-gradient(90deg, rgba(220, 220, 220, 0.2) 0%, rgba(220, 220, 220, 0.04) 100%) !important;
 			border-right: 5px solid #c0c0c0 !important;
 			box-shadow: inset 0 0 10px rgba(192, 192, 192, 0.2) !important;
 		}
 		#leaderboard-container li:nth-child(2) span,
-		#builder-leaderboard-container li:nth-child(2) span {
+		#builder-leaderboard-container li:nth-child(2) span,
+		#kebable-leaderboard-container li:nth-child(2) span {
 			color: #e0e0e0 !important;
 			font-weight: bold !important;
 		}
 		#leaderboard-container li:nth-child(2) span:first-child::before,
-		#builder-leaderboard-container li:nth-child(2) span:first-child::before {
+		#builder-leaderboard-container li:nth-child(2) span:first-child::before,
+		#kebable-leaderboard-container li:nth-child(2) span:first-child::before {
 			content: "🥈 ";
 			font-size: 1.1rem;
 		}
 
 		/* מקום 3 - ארד */
 		#leaderboard-container li:nth-child(3),
-		#builder-leaderboard-container li:nth-child(3) {
+		#builder-leaderboard-container li:nth-child(3),
+		#kebable-leaderboard-container li:nth-child(3) {
 			background: linear-gradient(90deg, rgba(205, 127, 50, 0.22) 0%, rgba(205, 127, 50, 0.04) 100%) !important;
 			border-right: 5px solid #cd7f32 !important;
 			box-shadow: inset 0 0 10px rgba(205, 127, 50, 0.2) !important;
 		}
 		#leaderboard-container li:nth-child(3) span,
-		#builder-leaderboard-container li:nth-child(3) span {
+		#builder-leaderboard-container li:nth-child(3) span,
+		#kebable-leaderboard-container li:nth-child(3) span {
 			color: #ff9d42 !important;
 			font-weight: bold !important;
 		}
 		#leaderboard-container li:nth-child(3) span:first-child::before,
-		#builder-leaderboard-container li:nth-child(3) span:first-child::before {
+		#builder-leaderboard-container li:nth-child(3) span:first-child::before,
+		#kebable-leaderboard-container li:nth-child(3) span:first-child::before {
 			content: "🥉 ";
 			font-size: 1.1rem;
 		}
@@ -632,6 +641,7 @@
 		<div class="sub-tabs">
 			<button id="sub-btn-main" class="sub-tab-btn active" onclick="switchLeaderboardTab('main')">🍢 תפוס את הקבב</button>
 			<button id="sub-btn-builder" class="sub-tab-btn" onclick="switchLeaderboardTab('builder')">👨‍🍳 בונה הקבבים</button>
+			<button id="sub-btn-kebable" class="sub-tab-btn" onclick="switchLeaderboardTab('kebable')">🔤 Kebable</button>
 		</div>
 
 		<div id="sub-screen-main" class="leaderboard-sub-screen">
@@ -640,6 +650,10 @@
 
 		<div id="sub-screen-builder" class="leaderboard-sub-screen" style="display: none;">
 			<ul id="builder-leaderboard-container" class="leaderboard-list"></ul>
+		</div>
+
+		<div id="sub-screen-kebable" class="leaderboard-sub-screen" style="display: none;">
+			<ul id="kebable-leaderboard-container" class="leaderboard-list"></ul>
 		</div>
 	</div>
 
@@ -698,10 +712,11 @@
 	function switchLeaderboardTab(type) {
 		// עדכון הכפתורים
 		document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
-    
+
 		// הסתרת כל תתי המסכים של הטבלאות
 		document.getElementById('sub-screen-main').style.display = 'none';
 		document.getElementById('sub-screen-builder').style.display = 'none';
+		document.getElementById('sub-screen-kebable').style.display = 'none';
 
 		if (type === 'main') {
 			document.getElementById('sub-btn-main').classList.add('active');
@@ -711,8 +726,12 @@
 			document.getElementById('sub-btn-builder').classList.add('active');
 			document.getElementById('sub-screen-builder').style.display = 'block';
 			loadBuilderLeaderboard();
+		} else if (type === 'kebable') {
+			document.getElementById('sub-btn-kebable').classList.add('active');
+			document.getElementById('sub-screen-kebable').style.display = 'block';
+			loadKebableLeaderboard();
 		}
-	}	
+	}
 
 	/* --- ניווט בין מסכים ראשיים --- */
 	function switchTab(screenId) {
@@ -727,9 +746,10 @@
 
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
 		if (screenId === 'leaderboard') {
-			const isBuilderActive = document.getElementById('sub-btn-builder').classList.contains('active');
-			if (isBuilderActive) {
+			if (document.getElementById('sub-btn-builder').classList.contains('active')) {
 				loadBuilderLeaderboard();
+			} else if (document.getElementById('sub-btn-kebable').classList.contains('active')) {
+				loadKebableLeaderboard();
 			} else {
 				loadLeaderboard();
 			}
@@ -1184,10 +1204,75 @@
         // ניקוד: ככל שפחות צעדים, הניקוד גבוה יותר (מקסימום 100)
         const score = Math.max(20, 110 - (kebableStepsCount * 10));
 
+        checkKebableHighScore(score);
+
         document.getElementById('result-desc').textContent = `כל הכבוד! הגעת למילה 'קבב' ב-${kebableStepsCount} צעדים וזכית ב-${score} נקודות!`;
         const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
         document.getElementById('coupon-text').textContent = randomCoupon;
         switchTab('result');
+    }
+
+    /* --- שמירת שיא Kebable ב-Firebase נפרד --- */
+    function checkKebableHighScore(score) {
+        let kebableHighScore = parseInt(localStorage.getItem('kebab_kebableHighScore')) || 0;
+
+        if (score > kebableHighScore) {
+            kebableHighScore = score;
+            localStorage.setItem('kebab_kebableHighScore', kebableHighScore);
+        }
+
+        // שמירה באוסף נפרד ב-Firebase: 'leaderboard_kebable'
+        const userRef = db.collection('leaderboard_kebable').doc(playerId);
+
+        userRef.get().then(doc => {
+            const currentBest = doc.exists ? (doc.data().score || 0) : 0;
+            if (!doc.exists || score > currentBest) {
+                userRef.set({
+                    name: playerName,
+                    score: Math.max(score, currentBest),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            }
+        }).catch(err => console.error("שגיאה בשמירת שיא Kebable:", err));
+    }
+
+    /* --- טעינת טבלת שיאים של Kebable --- */
+    function loadKebableLeaderboard() {
+        const container = document.getElementById('kebable-leaderboard-container');
+        if (!container) return;
+
+        container.innerHTML = '<li style="text-align: center; color: #8b949e; padding: 15px;">טוען נתונים...</li>';
+
+        db.collection('leaderboard_kebable')
+            .orderBy('score', 'desc')
+            .limit(50)
+            .get()
+            .then(snapshot => {
+                container.innerHTML = '';
+                if (snapshot.empty) {
+                    container.innerHTML = '<li style="text-align: center; color: #8b949e; padding: 15px;">אין עדיין שיאים. היו הראשונים!</li>';
+                    return;
+                }
+
+                let rank = 1;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.score !== undefined) {
+                        const li = document.createElement('li');
+                        li.className = 'leaderboard-item';
+                        li.innerHTML = `
+                            <span><strong>#${rank}</strong> ${data.name || 'אורח'}</span>
+                            <span style="color: var(--accent-gold); font-weight: bold;">${data.score} נק'</span>
+                        `;
+                        container.appendChild(li);
+                        rank++;
+                    }
+                });
+            })
+            .catch(err => {
+                console.error("שגיאה בטעינת טבלת Kebable:", err);
+                container.innerHTML = '<li style="text-align: center; color: #f85149; padding: 15px;">שגיאה בטעינת הנתונים</li>';
+            });
     }
 	/* --- משחק 4: בונה הקבבים --- */
 const builderIngredients = ['🥩 בשר', '🧅 בצל', '🍅 עגבנייה', '🌶️ פלפל'];
