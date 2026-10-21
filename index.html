@@ -690,14 +690,20 @@
     };
 
     let db = null;
+    let dbProblem = '';   // config | sdk | init - למה אין חיבור לענן
     try {
-        if (typeof firebase !== 'undefined' && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+        if (typeof firebase === 'undefined') {
+            dbProblem = 'sdk';
+            console.warn("Firebase SDK לא נטען (אינטרנט / חוסם פרסומות?) - טבלאות השיאים כבויות.");
+        } else if (Object.values(firebaseConfig).some(v => String(v).startsWith("YOUR_"))) {
+            dbProblem = 'config';
+            console.warn("firebaseConfig עדיין מכיל ערכי YOUR_... - יש להדביק את ההגדרות מ-Firebase Console.");
+        } else {
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-        } else {
-            console.warn("Firebase לא מוגדר - טבלאות השיאים כבויות.");
         }
     } catch (err) {
+        dbProblem = 'init';
         console.error("שגיאה באתחול Firebase:", err);
         db = null;
     }
@@ -808,7 +814,15 @@
             container.appendChild(li);
         };
 
-        if (!db) { showMsg('טבלת השיאים אינה זמינה כרגע', '#f85149', false); return; }
+        if (!db) {
+            const msgs = {
+                config: 'טבלת השיאים עדיין לא מחוברת: חסרה הגדרת Firebase בקובץ (firebaseConfig).',
+                sdk: 'לא הצלחנו לטעון את שירות הענן. בדקו חיבור לאינטרנט או חוסם פרסומות.',
+                init: 'שגיאה בחיבור לענן. פרטים בקונסולת הדפדפן.'
+            };
+            showMsg(msgs[dbProblem] || 'טבלת השיאים אינה זמינה כרגע', '#f85149', dbProblem === 'sdk');
+            return;
+        }
         showMsg('טוען נתונים...', '#8b949e', false);
 
         // מחכים לשמירות שעדיין בדרך (כדי שהשיא שהרגע נקבע יופיע), ובכל מקרה לא יותר מ-8 שניות
