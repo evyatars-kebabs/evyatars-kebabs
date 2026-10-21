@@ -346,9 +346,11 @@
 			background-color: var(--card-bg);
 			color: var(--text-color);
 			border: 1px solid var(--border-color);
-			padding: 8px 12px;
+			flex: 1 1 0;
+			white-space: nowrap;
+			padding: 8px 4px;
 			border-radius: 20px;
-			font-size: 0.85rem;
+			font-size: 0.78rem;
 			font-weight: 500;
 			cursor: pointer;
 			transition: all 0.2s ease;
@@ -754,40 +756,69 @@
         renderProfileStats();
     }
 
+    const pendingSaves = new Set();     // שמירות בענן שעדיין רצות
+    const lbRequestToken = {};          // מונע מתשובה ישנה לדרוס תשובה חדשה
+
     function saveBestScore(collectionName, score, localKey) {
         saveLocalBest(localKey, score);
-        if (!db || score <= 0) return;
+        if (!db || score <= 0) return Promise.resolve();
 
         const userRef = db.collection(collectionName).doc(playerId);
-        userRef.get().then(doc => {
-            const currentBest = doc.exists ? (doc.data().score || 0) : 0;
-            if (!doc.exists || score > currentBest) {
+        const p = userRef.get().then(doc => {
+            const data = doc.exists ? doc.data() : {};
+            const hasScore = typeof data.score === 'number';
+            const currentBest = hasScore ? data.score : 0;
+            if (!doc.exists || !hasScore || score > currentBest) {
                 return userRef.set({
                     name: playerName,
                     score: Math.max(score, currentBest),
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
             }
-        }).catch(err => console.error("שגיאה בשמירה בענן (" + collectionName + "):", err));
+        }).catch(err => {
+            console.error("שגיאה בשמירה בענן (" + collectionName + "):", err.code || '', err.message || err);
+        }).then(() => { pendingSaves.delete(p); });
+
+        pendingSaves.add(p);
+        return p;
     }
 
     function loadLeaderboardInto(containerId, collectionName) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        const showMsg = (text, color) => {
+        const token = (lbRequestToken[containerId] || 0) + 1;
+        lbRequestToken[containerId] = token;
+        const isStale = () => lbRequestToken[containerId] !== token;
+
+        const showMsg = (text, color, withRetry) => {
             container.innerHTML = '';
             const li = document.createElement('li');
             li.style.cssText = 'text-align: center; padding: 15px; color: ' + color + ';';
             li.textContent = text;
+            if (withRetry) {
+                li.appendChild(document.createElement('br'));
+                const btn = document.createElement('button');
+                btn.className = 'sub-tab-btn';
+                btn.style.marginTop = '10px';
+                btn.textContent = '🔄 נסו שוב';
+                btn.onclick = () => loadLeaderboardInto(containerId, collectionName);
+                li.appendChild(btn);
+            }
             container.appendChild(li);
         };
 
-        if (!db) { showMsg('טבלת השיאים אינה זמינה כרגע', '#f85149'); return; }
-        showMsg('טוען נתונים...', '#8b949e');
+        if (!db) { showMsg('טבלת השיאים אינה זמינה כרגע', '#f85149', false); return; }
+        showMsg('טוען נתונים...', '#8b949e', false);
 
-        db.collection(collectionName).orderBy('score', 'desc').limit(50).get()
+        // מחכים לשמירות שעדיין בדרך (כדי שהשיא שהרגע נקבע יופיע), ובכל מקרה לא יותר מ-8 שניות
+        const fetchData = Promise.allSettled(Array.from(pendingSaves)).then(() =>
+            db.collection(collectionName).orderBy('score', 'desc').limit(50).get());
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
+
+        Promise.race([fetchData, timeout])
             .then(snapshot => {
+                if (isStale()) return;
                 container.innerHTML = '';
                 let rank = 1;
                 snapshot.forEach(doc => {
@@ -802,7 +833,8 @@
                     strong.textContent = '#' + rank;
                     left.appendChild(strong);
                     // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
-                    left.appendChild(document.createTextNode(' ' + String(data.name || 'אורח').slice(0, 20)));
+                    const isMe = doc.id === playerId;
+                    left.appendChild(document.createTextNode(' ' + String(data.name || 'אורח').slice(0, 20) + (isMe ? ' (אתה)' : '')));
 
                     const right = document.createElement('span');
                     right.style.cssText = 'color: var(--accent-gold); font-weight: bold;';
@@ -810,16 +842,21 @@
 
                     li.appendChild(left);
                     li.appendChild(right);
+                    if (isMe) li.style.outline = '1px solid var(--accent-gold)';
                     container.appendChild(li);
                     rank++;
                 });
                 if (container.children.length === 0) {
-                    showMsg('אין עדיין שיאים. היו הראשונים!', '#8b949e');
+                    showMsg('אין עדיין שיאים. היו הראשונים!', '#8b949e', false);
                 }
             })
             .catch(err => {
-                console.error("שגיאה בטעינת הטבלה (" + collectionName + "):", err);
-                showMsg('שגיאה בטעינת הנתונים', '#f85149');
+                if (isStale()) return;
+                console.error("שגיאה בטעינת הטבלה (" + collectionName + "):", err.code || '', err.message || err);
+                const msg = err.code === 'permission-denied'
+                    ? 'אין הרשאה לקרוא את הטבלה (בדקו את כללי Firestore)'
+                    : 'לא הצלחנו לטעון את הטבלה. בדקו את החיבור לאינטרנט.';
+                showMsg(msg, '#f85149', true);
             });
     }
 
@@ -917,7 +954,7 @@
             ['leaderboard', 'leaderboard_builder', 'leaderboard_goods'].forEach(col => {
                 const ref = db.collection(col).doc(playerId);
                 ref.get().then(doc => {
-                    if (doc.exists) return ref.update({ name: playerName });
+                    if (doc.exists && typeof doc.data().score === 'number') return ref.update({ name: playerName });
                 }).catch(err => console.error("שגיאה בעדכון שם (" + col + "):", err));
             });
         }
