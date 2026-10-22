@@ -4176,18 +4176,23 @@ function skDeniBack(c, sk, st) {
     c.strokeStyle = out; c.lineWidth = 3; c.stroke();
     c.strokeStyle = skA(skShade(tone, -0.4), 0.5); c.lineWidth = 2.5;      // שרירי כתפיים
     for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 112, 120); c.quadraticCurveTo(s * 100, 170, s * 116, 220); c.stroke(); }
-    // גופייה שחורה
+    // גופייה שחורה - הכתפיות עולות מעל הכתפיים עד הצוואר (נחתכות לפי קו הכתף)
     const jersey = new Path2D();
-    jersey.moveTo(-60, 82);
-    jersey.lineTo(-34, 80);
-    jersey.quadraticCurveTo(0, 150, 34, 80);
-    jersey.lineTo(60, 82);
-    jersey.bezierCurveTo(70, 130, 84, 160, 106, 172);
-    jersey.lineTo(110, 340);
-    jersey.lineTo(-110, 340);
-    jersey.lineTo(-106, 172);
-    jersey.bezierCurveTo(-84, 160, -70, 130, -60, 82);
+    jersey.moveTo(-76, 20);
+    jersey.lineTo(-30, 20);
+    jersey.lineTo(-30, 62);
+    jersey.quadraticCurveTo(0, 150, 30, 62);
+    jersey.lineTo(30, 20);
+    jersey.lineTo(76, 20);
+    jersey.lineTo(70, 76);
+    jersey.bezierCurveTo(74, 126, 82, 160, 100, 176);
+    jersey.lineTo(98, 350);
+    jersey.lineTo(-98, 350);
+    jersey.lineTo(-100, 176);
+    jersey.bezierCurveTo(-82, 160, -74, 126, -70, 76);
     jersey.closePath();
+    c.save();
+    skTorsoPath(c); c.clip();
     c.fillStyle = '#121216'; c.fill(jersey);
     c.save(); c.clip(jersey);
     // פסים אלכסוניים בצד (אדום-לבן-שחור)
@@ -4197,13 +4202,17 @@ function skDeniBack(c, sk, st) {
     }
     c.restore();
     // שוליים אדומים-לבנים בצוואר ובבתי השרוול
-    for (const [w, col] of [[9, '#ffffff'], [5, '#e03a3e']]) {
+    for (const [w, col] of [[11, SK_OUT], [9, '#ffffff'], [5, '#e03a3e']]) {
         c.strokeStyle = col; c.lineWidth = w;
-        c.beginPath(); c.moveTo(-34, 80); c.quadraticCurveTo(0, 150, 34, 80); c.stroke();
-        c.beginPath(); c.moveTo(60, 82); c.bezierCurveTo(70, 130, 84, 160, 106, 172); c.stroke();
-        c.beginPath(); c.moveTo(-60, 82); c.bezierCurveTo(-70, 130, -84, 160, -106, 172); c.stroke();
+        c.beginPath(); c.moveTo(-30, 20); c.lineTo(-30, 62); c.quadraticCurveTo(0, 150, 30, 62); c.lineTo(30, 20); c.stroke();
+        c.beginPath(); c.moveTo(76, 20); c.lineTo(70, 76); c.bezierCurveTo(74, 126, 82, 160, 100, 176); c.stroke();
+        c.beginPath(); c.moveTo(-76, 20); c.lineTo(-70, 76); c.bezierCurveTo(-74, 126, -82, 160, -100, 176); c.stroke();
     }
-    c.strokeStyle = out; c.lineWidth = 3; c.stroke(jersey);
+    // צד הגוף - הזרועות נשארות חשופות
+    c.strokeStyle = SK_OUT; c.lineWidth = 3;
+    for (const sd of [-1, 1]) { c.beginPath(); c.moveTo(sd * 100, 176); c.lineTo(sd * 98, 350); c.stroke(); }
+    c.restore();
+    skTorsoPath(c); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
     // כיתוב ומספר
     c.save();
     c.textAlign = 'center'; c.textBaseline = 'middle';
