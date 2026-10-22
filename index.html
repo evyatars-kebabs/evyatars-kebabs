@@ -4226,22 +4226,27 @@ function skDeniBack(c, sk, st) {
     c.restore();
     // ראש ופנים
     skHead(c, sk);
-    // זקן קצר ומסודר לאורך הלסת
+    // לחיים מגולחות - צל זיפים עדין בלבד
     const bc = sk.beard.color;
-    const beard = new Path2D();
-    beard.moveTo(-86, -48);
-    beard.bezierCurveTo(-90, 24, -50, 60, 0, 60);
-    beard.bezierCurveTo(50, 60, 90, 24, 86, -48);
-    beard.bezierCurveTo(80, -10, 66, 22, 30, 32);
-    beard.quadraticCurveTo(0, 40, -30, 32);
-    beard.bezierCurveTo(-66, 22, -80, -10, -86, -48);
-    beard.closePath();
-    c.fillStyle = skA(bc, 0.92); c.fill(beard);
-    c.save(); c.clip(beard);
-    for (let i = 0; i < 60; i++) {                                        // מרקם שיער
-        const x = ((i * 37) % 176) - 88, y = -40 + ((i * 53) % 104);
-        c.fillStyle = i % 2 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.18)';
-        c.fillRect(x, y, 2, 5);
+    c.beginPath();
+    c.moveTo(-82, -30); c.quadraticCurveTo(-84, 50, 0, 60); c.quadraticCurveTo(84, 50, 82, -30);
+    c.quadraticCurveTo(56, 26, 0, 26); c.quadraticCurveTo(-56, 26, -82, -30); c.closePath();
+    c.fillStyle = skA(bc, 0.1); c.fill();
+    // זקנקן קצר ומסודר סביב הפה והסנטר
+    const goatee = new Path2D();
+    goatee.moveTo(-50, -6);
+    goatee.bezierCurveTo(-54, 30, -34, 58, 0, 60);
+    goatee.bezierCurveTo(34, 58, 54, 30, 50, -6);
+    goatee.lineTo(40, -2);
+    goatee.bezierCurveTo(40, 22, 24, 34, 0, 34);
+    goatee.bezierCurveTo(-24, 34, -40, 22, -40, -2);
+    goatee.closePath();
+    c.fillStyle = skA(bc, 0.88); c.fill(goatee);
+    c.save(); c.clip(goatee);
+    for (let i = 0; i < 40; i++) {                                        // מרקם שיער
+        const x = ((i * 29) % 104) - 52, y = -6 + ((i * 41) % 66);
+        c.fillStyle = i % 2 ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.2)';
+        c.fillRect(x, y, 2, 4);
     }
     c.restore();
     skEyes(c, sk, st);
@@ -4279,7 +4284,7 @@ function skDeniFront(c, sk, st) {
     c.restore();
     // שפם דק שמתחבר לזקן
     c.strokeStyle = skA(sk.beard.color, 0.92); c.lineWidth = 7; c.lineCap = 'round';
-    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 6, -19); c.quadraticCurveTo(s * 30, -24, s * 48, -4); c.stroke(); }
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 6, -20); c.quadraticCurveTo(s * 30, -24, s * 46, -6); c.stroke(); }
     // כדורסל
     c.save(); c.translate(118, 252); c.rotate(t * 0.8);
     const bg = c.createRadialGradient(-16, -18, 6, 0, 0, 52);
