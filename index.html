@@ -3798,6 +3798,44 @@ function skOrangeBack(c, sk, st) {
     skEyes(c, sk, st);
 }
 
+function skCapybaraBack(c, sk, st) {
+    const t = st.t, gold = '#e9b830', dk = '#9a6a0c', out = '#5a3a06';
+    const goldGrad = (x0, y0, r) => {
+        const g = c.createRadialGradient(x0 - r * 0.35, y0 - r * 0.4, r * 0.1, x0, y0, r * 1.1);
+        g.addColorStop(0, '#fff3b0'); g.addColorStop(0.35, '#ffd54f'); g.addColorStop(0.75, gold); g.addColorStop(1, dk);
+        return g;
+    };
+    skAuraBack(c, sk, t);
+    // גוף ורגליים קדמיות
+    skE(c, 0, 200, 134, 140, goldGrad(0, 200, 140), out, 3);
+    for (const s of [-1, 1]) {
+        skR(c, s * 62 - 20, 230, 40, 90, 16, goldGrad(s * 62, 260, 60), out, 3);
+        for (const d of [-10, 0, 10]) skE(c, s * 62 + d, 318, 7, 6, dk);
+    }
+    // אוזניים קטנות
+    for (const s of [-1, 1]) { skE(c, s * 66, -134, 20, 18, goldGrad(s * 66, -134, 20), out, 3); skE(c, s * 66, -132, 9, 8, dk); }
+    // ראש מלבני עם חוטם רחב
+    c.beginPath();
+    c.moveTo(-84, -130);
+    c.quadraticCurveTo(0, -164, 84, -130);
+    c.quadraticCurveTo(104, -40, 96, 30);
+    c.quadraticCurveTo(90, 72, 0, 74);
+    c.quadraticCurveTo(-90, 72, -96, 30);
+    c.quadraticCurveTo(-104, -40, -84, -130);
+    c.closePath();
+    c.fillStyle = goldGrad(0, -40, 120); c.fill();
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = skA('#8a5a08', 0.35); c.lineWidth = 2;               // פרווה
+    for (const [x, y] of [[-50, -110], [-20, -118], [20, -118], [50, -110], [-70, 10], [70, 10]]) { c.beginPath(); c.moveTo(x, y); c.lineTo(x + 6, y + 14); c.stroke(); }
+    // חוטם ונחיריים
+    skE(c, 0, -26, 56, 30, skA('#fff3b0', 0.35));
+    skE(c, -18, -34, 7, 5, out); skE(c, 18, -34, 7, 5, out);
+    // ברק זהב
+    skE(c, -52, -96, 18, 9, 'rgba(255,255,255,0.55)', null, 0, -0.5);
+    skStar(c, 70, -100, 7 + Math.sin(t * 4) * 2, '#ffffff', t);
+    skEyes(c, sk, st);
+}
+
 /* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
@@ -4008,7 +4046,9 @@ const SV_SKINS = [
     { id: 'yuvaldog', name: 'הכלב של יובל', rarity: 6, tone: '#f6f1e8', brow: '#4a2814', lips: '#3a1e14', eyes: { iris: '#5a3216' },
       outfit: { base: '#c9b3f2', collar: 'crew' }, aura: { color: '#d9c4ff', alpha: 0.3 }, drawBack: skDogBack },
     { id: 'tapuzi', name: 'תפוזי', rarity: 6, brow: '#8a3a00', lips: '#a8400a', eyes: { iris: '#3a2410' },
-      aura: { color: '#ffb347', alpha: 0.35 }, drawBack: skOrangeBack }
+      aura: { color: '#ffb347', alpha: 0.35 }, drawBack: skOrangeBack },
+    { id: 'goldcapy', name: 'הקפיברה של שוורץ', rarity: 6, brow: '#7a4e06', lips: '#8a5a08', eyes: { iris: '#2a1a06' }, blush: false,
+      aura: { color: '#ffd23d', alpha: 0.5, rings: true }, fx: { type: 'sparkles', count: 16 }, drawBack: skCapybaraBack }
 ];
 
 function skinById(id) { return SV_SKINS.find(s => s.id === id) || SV_SKINS[0]; }
@@ -4854,7 +4894,8 @@ const REDEEM_CODES = {
     'SHRAGONT888':       { skin: 'lizard' },
     'DOSUS505':          { skin: 'dosus' },
     'SPRINGYDADOG3':     { skin: 'yuvaldog' },
-    'TAPUZIYUVAL':       { skin: 'tapuzi' }
+    'TAPUZIYUVAL':       { skin: 'tapuzi' },
+    'GOLDCAPYSHVARTZ6':  { skin: 'goldcapy' }
 };
 function redeemCode(raw) {
     const code = String(raw || '').trim().toUpperCase();
