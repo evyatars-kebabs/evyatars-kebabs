@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>הקבביה של אביתר</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=Secular+One&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#120a06">
 	<link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/svg+xml" href="kebab.svg">
 	<link rel="apple-touch-icon" href="kebab.svg">
@@ -81,7 +82,7 @@
 
         .brand-logo p {
             font-size: 0.75rem;
-            color: #8b949e;
+            color: #b9a38e;
             margin-top: 2px;
             letter-spacing: 1px;
         }
@@ -108,7 +109,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
-            color: #8b949e;
+            color: #b9a38e;
         }
 
         .icon-btn svg {
@@ -165,7 +166,7 @@
 
         .game-card p {
             font-size: 0.85rem;
-            color: #c9d1d9;
+            color: #f0dcc8;
             line-height: 1.3;
         }
 
@@ -196,7 +197,7 @@
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border-color);
-            background-color: #010409;
+            background-color: #0b0604;
             color: #fff;
             font-size: 1rem;
             margin-bottom: 10px;
@@ -214,7 +215,7 @@
             width: 100%;
             flex-grow: 1;
             min-height: 250px;
-            background-color: #010409;
+            background-color: #0b0604;
             position: relative;
             overflow: hidden;
             border: 1px solid var(--border-color);
@@ -500,7 +501,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #010409;
+            background: #0b0604;
             border: 1px solid var(--border-color);
             margin-top: 6px;
             overflow: hidden;
@@ -520,6 +521,487 @@
             margin-right: 6px;
             vertical-align: middle;
         }
+
+        /* ===== מטבעות, חנות וטוסט ===== */
+        .coin-chip {
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 6px 10px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .coupon-box.empty {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed var(--border-color);
+        }
+        .coupon-box.empty #coupon-text { color: #b9a38e !important; }
+        #coupon-coins {
+            margin-top: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+        #toast {
+            position: absolute;
+            left: 50%;
+            bottom: 24px;
+            transform: translate(-50%, 20px);
+            background: #0b0604;
+            border: 1px solid var(--accent-gold);
+            color: #f0f6fc;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            z-index: 50;
+            white-space: nowrap;
+        }
+        #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+        .shop-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .shop-head h2 { font-weight: 400; font-size: 1.1rem; }
+        .shop-sub { font-size: 0.75rem; color: #b9a38e; margin-bottom: 12px; }
+        .shop-group-head {
+            display: flex; justify-content: space-between;
+            font-weight: 700; font-size: 0.85rem;
+            border-bottom: 1px solid; padding: 6px 2px; margin: 14px 0 8px;
+        }
+        .shop-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .shop-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--rc, var(--border-color));
+            padding: 6px;
+            text-align: center;
+        }
+        .shop-card.equipped { background: rgba(255, 215, 0, 0.07); border-color: var(--accent-gold); }
+        .shop-preview { width: 100%; height: auto; display: block; background: #0d1117; }
+        .shop-name { font-weight: 700; font-size: 0.9rem; margin: 6px 0; }
+        .shop-btn { margin: 0 !important; padding: 8px !important; font-size: 0.85rem !important; }
+        .shop-btn:disabled { opacity: 0.6; cursor: default; }
+        .shop-btn.cant { background: transparent !important; color: #b9a38e !important; border: 1px solid var(--border-color) !important; }
+
+        /* משחק: קבב נינג'ה */
+        #ninja-wrap {
+            position: relative;
+            flex: 1 1 0;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0b0604;
+            border: 1px solid var(--border-color);
+            margin-top: 6px;
+            overflow: hidden;
+            touch-action: none;
+        }
+        #ninja-canvas { display: block; touch-action: none; cursor: crosshair; }
+
+        /* ============================================================
+           THEME V2 - "גריל באש": פחם, גחלים ולהבות
+           ============================================================ */
+        :root {
+            --bg-color: #120a06;
+            --card-bg: #1c120d;
+            --accent-gold: #ffc233;
+            --accent-orange: #ff6a1a;
+            --accent-red: #e8362d;
+            --border-color: #43302a;
+            --text-color: #fff3e4;
+            --muted: #b9a38e;
+            --radius: 16px;
+        }
+
+        html, body {
+            background:
+                radial-gradient(ellipse 80% 50% at 50% 110%, rgba(255, 90, 20, 0.28), transparent 70%),
+                radial-gradient(ellipse 60% 40% at 15% -10%, rgba(255, 194, 51, 0.10), transparent 70%),
+                #0c0604;
+        }
+
+        .app-container {
+            background:
+                radial-gradient(ellipse 90% 40% at 50% 105%, rgba(255, 100, 30, 0.16), transparent 70%),
+                linear-gradient(180deg, #24150d 0%, #170d08 100%);
+            border: 0;
+            clip-path: none;
+            overflow: hidden;
+        }
+        @media (min-width: 520px) {
+            .app-container {
+                height: min(100dvh - 24px, 900px);
+                border-radius: 28px;
+                border: 1px solid #5a3a2a;
+                box-shadow: 0 0 0 6px rgba(255, 106, 26, 0.06), 0 0 60px rgba(255, 106, 26, 0.22), 0 30px 80px rgba(0, 0, 0, 0.7);
+            }
+        }
+        .app-container > *:not(.embers) { position: relative; z-index: 1; }
+        .app-container > #toast { position: absolute; }
+
+        /* גחלים מרחפות ברקע */
+        .embers { position: absolute !important; inset: 0; overflow: hidden; pointer-events: none; z-index: 0 !important; }
+        .embers i {
+            position: absolute;
+            bottom: -12px;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffd27a, #ff6a1a 70%, transparent);
+            opacity: 0;
+            animation: emberRise linear infinite;
+        }
+        @keyframes emberRise {
+            0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+            12%  { opacity: 0.9; }
+            100% { transform: translate(var(--dx, 20px), -105vh) scale(0.2); opacity: 0; }
+        }
+
+        /* לוגו */
+        .brand-logo { position: relative; border-bottom: 0; padding-bottom: 12px; margin-bottom: 12px; }
+        .brand-logo::after {
+            content: ''; position: absolute; left: 12%; right: 12%; bottom: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-orange), var(--accent-gold), var(--accent-orange), transparent);
+            opacity: 0.7;
+        }
+        .brand-logo h1 {
+            font-family: 'Secular One', 'Rubik', sans-serif;
+            font-weight: 400;
+            letter-spacing: 0;
+            text-transform: none;
+            font-size: 1.9rem;
+            background: linear-gradient(180deg, #fff6c2 0%, #ffc233 48%, #ff6a1a 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+            filter: drop-shadow(0 2px 0 #7a2a05) drop-shadow(0 0 14px rgba(255, 106, 26, 0.5));
+            animation: logoFlicker 3.2s ease-in-out infinite;
+        }
+        @keyframes logoFlicker {
+            0%, 100% { filter: drop-shadow(0 2px 0 #7a2a05) drop-shadow(0 0 12px rgba(255, 106, 26, 0.45)); }
+            50%      { filter: drop-shadow(0 2px 0 #7a2a05) drop-shadow(0 0 20px rgba(255, 150, 40, 0.75)); }
+        }
+        .brand-logo p { color: var(--muted); letter-spacing: 0.5px; }
+        .sound-btn {
+            position: absolute; top: 0; right: 0; width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.25); color: var(--text-color);
+            font-size: 1rem; cursor: pointer; z-index: 5; transition: transform .1s;
+        }
+        .sound-btn:active { transform: scale(0.88); }
+        .in-game .brand-logo { display: none; }
+
+        /* סרגל עליון */
+        .top-bar {
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 6px 8px;
+            gap: 4px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+        }
+        .icon-btn { border-radius: 50%; width: 44px; height: 44px; color: var(--muted); border: 0; transition: transform .12s cubic-bezier(.3, 1.6, .5, 1), background .2s, color .2s; }
+        .icon-btn svg { stroke-linecap: round; stroke-linejoin: round; }
+        .icon-btn:hover { background: rgba(255, 194, 51, 0.1); }
+        .icon-btn:active { transform: scale(0.84); }
+        .icon-btn.active {
+            background: linear-gradient(180deg, #ffd24a, #ff8a1a);
+            color: #2a1204;
+            border: 0;
+            box-shadow: 0 3px 0 #a8430c, 0 0 18px rgba(255, 140, 30, 0.5);
+            transform: translateY(-2px);
+        }
+        .coin-chip {
+            background: linear-gradient(180deg, #ffe27a, #ffb21f);
+            color: #2a1204;
+            border: 0;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-weight: 700;
+            box-shadow: 0 3px 0 #a8670a, inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            position: relative; overflow: hidden;
+            transition: transform .1s;
+        }
+        .coin-chip::after {
+            content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+            animation: shine 3.4s ease-in-out infinite;
+        }
+        @keyframes shine { 0%, 60% { left: -60%; } 100% { left: 130%; } }
+        .coin-chip:active { transform: scale(0.94); }
+        .coin-chip.bump { animation: bump .5s cubic-bezier(.3, 1.8, .5, 1); }
+        @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+        /* מעבר בין מסכים */
+        .screen.active { animation: screenIn .28s cubic-bezier(.2, .9, .3, 1); }
+        @keyframes screenIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        .screen::-webkit-scrollbar { width: 0; }
+        h2 { font-family: 'Secular One', 'Rubik', sans-serif; font-weight: 400; }
+
+        /* כפתורים: "לחיצים" עם עומק */
+        .btn {
+            background: linear-gradient(180deg, #ffd54f 0%, #ff9f1c 100%);
+            color: #2a1204;
+            border: 0;
+            border-radius: 14px;
+            padding: 14px 20px;
+            font-family: 'Secular One', 'Rubik', sans-serif;
+            font-weight: 400;
+            font-size: 1.05rem;
+            letter-spacing: 0;
+            text-transform: none;
+            box-shadow: 0 5px 0 #b3560a, 0 10px 18px rgba(255, 106, 26, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+            transition: transform .09s cubic-bezier(.3, 1.4, .5, 1), box-shadow .09s, filter .15s;
+            position: relative;
+            margin-bottom: 5px;
+        }
+        .btn:hover { filter: brightness(1.07); }
+        .btn:active {
+            background: linear-gradient(180deg, #ffd54f 0%, #ff9f1c 100%);
+            color: #2a1204;
+            transform: translateY(4px) scale(0.985);
+            box-shadow: 0 1px 0 #b3560a, 0 3px 8px rgba(255, 106, 26, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+        .btn:disabled { filter: saturate(0.5) brightness(0.85); }
+        .btn.danger {
+            background: linear-gradient(180deg, #ff6a5c, #d6291f);
+            color: #fff;
+            box-shadow: 0 5px 0 #7d120b, 0 10px 18px rgba(214, 41, 31, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+        }
+        .btn.danger:active { background: linear-gradient(180deg, #ff6a5c, #d6291f); color: #fff; box-shadow: 0 1px 0 #7d120b; }
+        .btn.ingredient {
+            margin: 0; padding: 12px 10px; font-size: 1.05rem;
+            background: linear-gradient(180deg, #4a3326, #35231a);
+            color: var(--text-color);
+            box-shadow: 0 5px 0 #1a0f09, 0 8px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        }
+        .btn.ingredient:active { background: linear-gradient(180deg, #4a3326, #35231a); color: var(--text-color); box-shadow: 0 1px 0 #1a0f09; }
+
+        /* כרטיסי משחקים */
+        #screen-home h2 { color: var(--muted) !important; font-family: 'Rubik', sans-serif !important; font-size: 0.9rem !important; letter-spacing: 1px; }
+        .game-card {
+            --c: var(--accent-orange);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: linear-gradient(135deg, #2b1a11 0%, #1f130d 100%);
+            border: 1px solid #4d3427;
+            border-right: 1px solid #4d3427;
+            border-radius: 20px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 5px 0 #0c0603, 0 10px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+            transition: transform .1s cubic-bezier(.3, 1.4, .5, 1), box-shadow .1s, border-color .2s;
+            animation: cardIn .45s cubic-bezier(.2, .9, .3, 1) both;
+            animation-delay: calc(var(--i, 0) * 55ms);
+            position: relative; overflow: hidden;
+        }
+        .game-card::before {
+            content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 5px;
+            background: linear-gradient(180deg, var(--c), color-mix(in srgb, var(--c) 40%, #000));
+        }
+        .game-card:hover { border-color: var(--c); }
+        .game-card:active {
+            background: linear-gradient(135deg, #2b1a11 0%, #1f130d 100%);
+            transform: translateY(4px) scale(0.985);
+            box-shadow: 0 1px 0 #0c0603, 0 4px 10px rgba(0, 0, 0, 0.35);
+        }
+        .game-card:nth-child(2) { --i: 1; --c: #ff4d6d; }
+        .game-card:nth-child(3) { --i: 2; --c: #ffb300; }
+        .game-card:nth-child(4) { --i: 3; --c: #ff7a1a; }
+        .game-card:nth-child(5) { --i: 4; --c: #4ac26b; }
+        .game-card:nth-child(6) { --i: 5; --c: #3b9cff; }
+        .game-card:nth-child(7) { --i: 6; --c: #b66bff; }
+        .game-card:nth-child(8) { --i: 7; --c: #35c9ff; }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: none; } }
+        .gc-icon {
+            flex: 0 0 auto; width: 58px; height: 58px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.9rem;
+            background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--c) 55%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 55%, #000));
+            box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 40%, #000), inset 0 2px 0 rgba(255, 255, 255, 0.4);
+        }
+        .gc-body { flex: 1 1 auto; min-width: 0; }
+        .game-card h3 { font-family: 'Secular One', 'Rubik', sans-serif; font-weight: 400; font-size: 1.12rem; color: var(--text-color); margin-bottom: 3px; }
+        .game-card p { color: var(--muted); font-size: 0.8rem; line-height: 1.35; }
+        .gc-go {
+            flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, 0.07); color: var(--c); font-size: 0.8rem;
+            transition: transform .2s;
+        }
+        .game-card:hover .gc-go { transform: translateX(-4px); }
+        .new-badge {
+            background: linear-gradient(180deg, #ff6a5c, #d6291f); color: #fff;
+            border-radius: 999px; padding: 2px 8px; font-size: 0.62rem; font-family: 'Rubik', sans-serif;
+            animation: badgePulse 1.6s ease-in-out infinite;
+        }
+        @keyframes badgePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+
+        /* HUD במשחקים */
+        .hud { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; flex-shrink: 0; }
+        .hud-pill {
+            display: flex; align-items: baseline; gap: 6px;
+            background: rgba(0, 0, 0, 0.38); border: 1px solid var(--border-color); border-radius: 999px;
+            padding: 5px 14px; font-weight: 700; color: var(--accent-gold); font-size: 1.02rem; min-width: 84px; justify-content: center;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+        }
+        .hud-pill small { font-size: 0.68rem; color: var(--muted); font-weight: 400; }
+        .hud-pill strong { color: #fff; }
+        .hud-pill.danger { color: #ff5a4d; border-color: #ff5a4d; animation: dangerPulse .5s ease-in-out infinite alternate; }
+        @keyframes dangerPulse { from { transform: scale(1); box-shadow: 0 0 0 rgba(255, 90, 77, 0); } to { transform: scale(1.08); box-shadow: 0 0 14px rgba(255, 90, 77, 0.6); } }
+        .hud-combo { color: #ff9a3d; font-weight: 700; font-size: 0.95rem; min-height: 1.2em; text-shadow: 0 0 10px rgba(255, 140, 40, 0.6); animation: comboPop .25s ease-out; }
+        @keyframes comboPop { from { transform: scale(1.4); } to { transform: scale(1); } }
+
+        /* אזורי משחק */
+        #game-area, #shvartz-wrap, #ninja-wrap {
+            background: #1c0f09;
+            border: 2px solid #4a3123;
+            border-radius: 18px;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.6), 0 8px 20px rgba(0, 0, 0, 0.35);
+        }
+        #shvartz-canvas, #ninja-canvas { border-radius: 16px; }
+
+        /* שדות */
+        input[type="text"] {
+            background: #0f0805; border: 2px solid var(--border-color); border-radius: 14px; padding: 13px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        input[type="text"]:focus { border-color: var(--accent-gold); box-shadow: 0 0 0 4px rgba(255, 194, 51, 0.15); }
+
+        /* חידון */
+        .trivia-option {
+            border-radius: 14px; border: 2px solid var(--border-color); background: rgba(255, 255, 255, 0.04);
+            box-shadow: 0 4px 0 #0c0603; padding: 13px 14px;
+            transition: transform .09s cubic-bezier(.3, 1.4, .5, 1), box-shadow .09s, background .2s, border-color .2s;
+        }
+        .trivia-option:active { transform: translateY(3px); box-shadow: 0 1px 0 #0c0603; }
+        .trivia-option.correct { background: linear-gradient(180deg, #2ea043, #1f7a32) !important; border-color: #4ad66d !important; box-shadow: 0 4px 0 #0f4a1d !important; animation: okPulse .4s; }
+        .trivia-option.wrong { background: linear-gradient(180deg, #e5483f, #b3261e) !important; border-color: #ff7a70 !important; box-shadow: 0 4px 0 #6b0f0a !important; animation: wrongShake .4s; }
+        @keyframes okPulse { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
+        @keyframes wrongShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+
+        /* Kebable ובונה הקבבים */
+        .kebable-target-container, .kebable-history-box, .builder-box {
+            border-radius: 16px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.25);
+        }
+        .kebable-main-word { font-family: 'Secular One', 'Rubik', sans-serif; font-weight: 400; text-shadow: 0 0 18px rgba(255, 194, 51, 0.45); }
+        .kebable-chip { border-radius: 999px; background: rgba(255, 194, 51, 0.12); padding: 4px 11px; }
+        .builder-box { padding: 12px; text-align: center; margin-bottom: 10px; }
+        .builder-skewer { min-height: 60px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; padding: 5px; background: #0b0604; }
+
+        /* סידור מדפים */
+        .goods-shelf { border-radius: 12px; border: 1px solid var(--border-color); border-bottom: 4px solid #a8670a; background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01)); }
+        .goods-slot { border-radius: 9px; transition: transform .12s cubic-bezier(.3, 1.8, .5, 1), background .15s, border-color .15s; }
+        .goods-slot:active { transform: scale(0.88); }
+        .goods-slot.selected { transform: scale(1.14); }
+
+        /* טבלת שיאים */
+        .sub-tab-btn {
+            background: rgba(0, 0, 0, 0.3); color: var(--muted); border: 1px solid var(--border-color); border-radius: 999px;
+            transition: transform .1s cubic-bezier(.3, 1.6, .5, 1), background .2s, color .2s; padding: 9px 4px;
+        }
+        .sub-tab-btn:active { transform: scale(0.9); }
+        .sub-tab-btn.active { background: linear-gradient(180deg, #ffd24a, #ff8a1a); color: #2a1204; border-color: transparent; box-shadow: 0 3px 0 #a8430c; }
+        .leaderboard-item {
+            border-radius: 14px; border: 1px solid var(--border-color); border-right: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.035); padding: 11px 14px; align-items: center;
+            content-visibility: auto; contain-intrinsic-size: 0 46px;
+        }
+        .leaderboard-item strong { display: inline-block; min-width: 42px; text-align: center; background: rgba(0, 0, 0, 0.3); border-radius: 999px; padding: 1px 7px; margin-left: 6px; font-size: 0.8rem; color: var(--muted); }
+        .leaderboard-item.me { outline: 2px solid var(--accent-gold); box-shadow: 0 0 14px rgba(255, 194, 51, 0.3); }
+        .leaderboard-item.r1 { background: linear-gradient(90deg, rgba(255, 215, 0, 0.28), rgba(255, 215, 0, 0.05)); border-color: #ffd700; box-shadow: 0 0 16px rgba(255, 215, 0, 0.2), inset 0 0 10px rgba(255, 215, 0, 0.15); }
+        .leaderboard-item.r2 { background: linear-gradient(90deg, rgba(220, 220, 230, 0.22), rgba(220, 220, 230, 0.04)); border-color: #c8c8d4; }
+        .leaderboard-item.r3 { background: linear-gradient(90deg, rgba(205, 127, 50, 0.26), rgba(205, 127, 50, 0.05)); border-color: #cd7f32; }
+        .leaderboard-item.r1 span, .leaderboard-item.r2 span, .leaderboard-item.r3 span { font-weight: 700; }
+        .leaderboard-item.r1 span { color: #ffd700; } .leaderboard-item.r2 span { color: #e8e8f0; } .leaderboard-item.r3 span { color: #ffa35c; }
+        .leaderboard-item.r1 strong, .leaderboard-item.r2 strong, .leaderboard-item.r3 strong { background: rgba(0, 0, 0, 0.4); color: inherit; }
+        .lb-me {
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(90deg, rgba(255, 194, 51, 0.18), rgba(255, 106, 26, 0.12));
+            border: 1px solid var(--accent-gold); border-radius: 14px; padding: 9px 14px; margin-bottom: 10px;
+            font-size: 0.88rem; font-weight: 700; color: var(--accent-gold);
+        }
+        .lb-me small { color: var(--muted); font-weight: 400; }
+
+        /* פרופיל */
+        .profile-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 5px; display: block; }
+        #player-stats .leaderboard-item { margin-bottom: 7px; }
+
+        /* תוצאה */
+        #screen-result { justify-content: center; }
+        #screen-result h2 { font-size: 1.9rem !important; color: var(--accent-gold) !important; text-shadow: 0 0 20px rgba(255, 140, 30, 0.6); animation: titleDrop .6s cubic-bezier(.2, 1.6, .4, 1); }
+        @keyframes titleDrop { from { transform: translateY(-30px) scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+        .coupon-box {
+            position: relative;
+            background: linear-gradient(135deg, rgba(255, 194, 51, 0.16), rgba(255, 106, 26, 0.1));
+            border: 2px dashed var(--accent-gold); border-radius: 20px; padding: 18px 14px; margin: 16px 0;
+            animation: ticketIn .6s cubic-bezier(.2, 1.4, .4, 1) .15s both;
+            box-shadow: 0 0 24px rgba(255, 194, 51, 0.18);
+        }
+        @keyframes ticketIn { from { transform: scale(0.6) rotate(-4deg); opacity: 0; } to { transform: none; opacity: 1; } }
+        .coupon-box.empty { background: rgba(255, 255, 255, 0.03); border-color: var(--border-color); box-shadow: none; }
+        #coupon-text { color: var(--text-color) !important; font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1.15rem !important; font-weight: 400 !important; }
+        #coupon-coins { font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1.5rem; color: var(--accent-gold); text-shadow: 0 0 14px rgba(255, 194, 51, 0.6); animation: coinPop .5s cubic-bezier(.2, 1.8, .4, 1) .5s both; }
+        #coupon-total { margin-top: 4px; font-size: 0.85rem; color: var(--muted); }
+        @keyframes coinPop { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* חנות */
+        .shop-head h2 { font-size: 1.35rem; color: var(--text-color); }
+        .shop-sub { color: var(--muted); }
+        .shop-head-actions { display: flex; align-items: center; gap: 8px; }
+        .code-btn {
+            background: rgba(0, 0, 0, 0.3); color: var(--muted); border: 1px solid var(--border-color); border-radius: 999px;
+            font-size: 0.75rem; padding: 6px 11px; cursor: pointer; font-family: 'Rubik', sans-serif; font-weight: 500;
+            transition: transform .1s cubic-bezier(.3, 1.6, .5, 1), color .2s, border-color .2s;
+        }
+        .code-btn:hover { color: var(--accent-gold); border-color: var(--accent-gold); }
+        .code-btn:active { transform: scale(0.9); }
+        .shop-group-head { border-bottom-width: 2px; font-family: 'Secular One', 'Rubik', sans-serif; font-weight: 400; font-size: 0.95rem; }
+        .shop-card {
+            border-radius: 18px; border: 1px solid var(--border-color); border-top: 4px solid var(--rc, var(--border-color));
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+            box-shadow: 0 4px 0 #0c0603; position: relative; overflow: hidden;
+            transition: transform .12s cubic-bezier(.3, 1.4, .5, 1);
+        }
+        .shop-card:active { transform: scale(0.98); }
+        .shop-card.equipped { background: linear-gradient(180deg, rgba(255, 194, 51, 0.14), rgba(255, 194, 51, 0.04)); border-color: var(--accent-gold); box-shadow: 0 4px 0 #0c0603, 0 0 18px rgba(255, 194, 51, 0.25); }
+        .shop-card.r3 { box-shadow: 0 4px 0 #0c0603, 0 0 14px color-mix(in srgb, var(--rc) 35%, transparent); }
+        .shop-card.r4, .shop-card.r5 { box-shadow: 0 4px 0 #0c0603, 0 0 22px color-mix(in srgb, var(--rc) 55%, transparent); }
+        .shop-card.r4::after, .shop-card.r5::after {
+            content: ''; position: absolute; top: 0; left: -80%; width: 50%; height: 100%; pointer-events: none;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+            animation: shine 3.6s ease-in-out infinite;
+        }
+        .shop-preview { border-radius: 12px; }
+        .shop-name { font-family: 'Secular One', 'Rubik', sans-serif; font-weight: 400; font-size: 1rem; }
+        .shop-btn { border-radius: 12px !important; font-size: 0.9rem !important; padding: 9px !important; box-shadow: 0 4px 0 #b3560a, inset 0 1px 0 rgba(255, 255, 255, 0.5) !important; margin-bottom: 4px !important; }
+        .shop-btn:active { transform: translateY(3px) !important; box-shadow: 0 1px 0 #b3560a !important; }
+        .shop-btn:disabled { background: rgba(255, 255, 255, 0.08) !important; color: var(--accent-gold) !important; box-shadow: 0 4px 0 #0c0603 !important; filter: none; }
+        .shop-btn.cant { background: linear-gradient(180deg, #4a3326, #35231a) !important; color: var(--muted) !important; border: 0 !important; box-shadow: 0 4px 0 #1a0f09 !important; }
+
+        /* חלון קודים */
+        #code-modal {
+            position: absolute; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center;
+            background: rgba(8, 4, 2, 0.78); backdrop-filter: blur(4px); padding: 20px;
+        }
+        #code-modal.open { display: flex; animation: screenIn .2s ease-out; }
+        .code-card {
+            width: 100%; max-width: 340px; background: linear-gradient(180deg, #2b1a11, #1b100b);
+            border: 1px solid #5a3a2a; border-radius: 24px; padding: 22px 18px; text-align: center;
+            box-shadow: 0 0 40px rgba(255, 106, 26, 0.25), 0 20px 50px rgba(0, 0, 0, 0.6);
+            animation: ticketIn .35s cubic-bezier(.2, 1.4, .4, 1);
+        }
+        .code-card h3 { font-family: 'Secular One', 'Rubik', sans-serif; font-weight: 400; font-size: 1.3rem; color: var(--accent-gold); margin-bottom: 6px; }
+        .code-card p { color: var(--muted); font-size: 0.82rem; margin-bottom: 12px; }
+        #code-input { text-align: center; letter-spacing: 3px; text-transform: uppercase; direction: ltr; }
+        #code-msg { min-height: 20px; font-size: 0.85rem; margin: 2px 0 6px; }
+        .code-close { background: transparent; border: 0; color: var(--muted); font-size: 0.85rem; cursor: pointer; padding: 8px; margin-top: 6px; }
+
+        #toast { border-radius: 999px; background: #1a0f09; border: 2px solid var(--accent-gold); padding: 10px 18px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 194, 51, 0.25); font-weight: 500; }
+
+        /* אפקטי לחיצה */
+        .burst-dot { position: fixed; z-index: 9999; width: 7px; height: 7px; border-radius: 50%; pointer-events: none; }
+        .confetti-bit { position: fixed; z-index: 9999; top: -14px; width: 9px; height: 14px; pointer-events: none; border-radius: 2px; }
     </style>
 </head>
 <body>
@@ -541,67 +1023,83 @@
 			<button class="icon-btn" id="btn-leaderboard" onclick="switchTab('leaderboard')" title="טבלת שיאים">
 				<svg viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="5" width="4" height="16"/><rect x="17" y="9" width="4" height="12"/></svg>
 			</button>
+			<button class="icon-btn" id="btn-shop" onclick="switchTab('shop')" title="חנות הסקינים">
+				<svg viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+			</button>
+			<div class="coin-chip" onclick="switchTab('shop')" title="קבב קוינס">🪙 <span class="coin-balance">0</span></div>
 	</div>
 	
     <div id="screen-home" class="screen">
-        <h2 style="font-weight: 400; text-align: center; margin-bottom: 15px; font-size: 1rem; color: #8b949e;">בחר מסלול משחק</h2>
+        <h2 style="font-weight: 400; text-align: center; margin-bottom: 15px; font-size: 1rem; color: #b9a38e;">בחר מסלול משחק</h2>
         
+        <div class="game-card" onclick="startNinjaGame()">
+            <div class="gc-icon">🥷</div>
+            <div class="gc-body"><h3>קבב נינג'ה <span class="new-badge">חדש</span></h3><p>חתכו את הקבבים באוויר, אבל תיזהרו מהפצצות!</p></div>
+            <div class="gc-go">◀</div>
+        </div>
+
         <div class="game-card" onclick="startShvartzGame()">
-            <h3>🥙 האכל את השוורץ <span class="new-badge">חדש</span></h3>
-            <p>החליקו אצבע למעלה וזרקו אוכל היישר לפה של שוורץ!</p>
+            <div class="gc-icon">🥙</div>
+            <div class="gc-body"><h3>האכל את השוורץ</h3><p>החליקו אצבע למעלה וזרקו אוכל היישר לפה של שוורץ!</p></div>
+            <div class="gc-go">◀</div>
         </div>
 
         <div class="game-card" onclick="startCatchGame()">
-            <h3>🍢 תפוס את הקבב</h3>
-            <p>עליכם לתפוס כמה שיותר קבבים ב-15 שניות בלבד</p>
+            <div class="gc-icon">🍢</div>
+            <div class="gc-body"><h3>תפוס את הקבב</h3><p>עליכם לתפוס כמה שיותר קבבים ב-15 שניות בלבד</p></div>
+            <div class="gc-go">◀</div>
         </div>
 		
 		<div class="game-card" onclick="startBuilderGame()">
-			<h3>👨‍🍳 בונה הקבבים</h3>
-			<p>הרכיבו את השיפודים בדיוק לפי ההזמנה במהירות!</p>
-		</div>
+            <div class="gc-icon">👨‍🍳</div>
+            <div class="gc-body"><h3>בונה הקבבים</h3><p>הרכיבו את השיפודים בדיוק לפי ההזמנה במהירות!</p></div>
+            <div class="gc-go">◀</div>
+        </div>
 		
 		<div class="game-card" onclick="startGoodsSortGame()">
-			<h3>🥫 סידור המדפים</h3>
-			<p>סדרו 3 מוצרים זהים על אותו המדף כדי להעלים אותם!</p>
-		</div>
+            <div class="gc-icon">🥫</div>
+            <div class="gc-body"><h3>סידור המדפים</h3><p>סדרו 3 מוצרים זהים על אותו המדף כדי להעלים אותם!</p></div>
+            <div class="gc-go">◀</div>
+        </div>
 		
         <div class="game-card" onclick="startTriviaGame()">
-            <h3>🧠 חידון האוכל הגדול</h3>
-            <p>5 שאלות טריוויה לריענון המוח (והבטן)</p>
+            <div class="gc-icon">🧠</div>
+            <div class="gc-body"><h3>חידון האוכל הגדול</h3><p>5 שאלות טריוויה לריענון המוח (והבטן)</p></div>
+            <div class="gc-go">◀</div>
         </div>
 		
 		<div class="game-card" onclick="startKebableGame()">
-            <h3>🔤 Kebable</h3>
-            <p>שנה אות אחת בכל צעד והגע ממילת ההתחלה עד ל-"קבב"!</p>
+            <div class="gc-icon">🔤</div>
+            <div class="gc-body"><h3>Kebable</h3><p>שנה אות אחת בכל צעד והגע ממילת ההתחלה עד ל-"קבב"!</p></div>
+            <div class="gc-go">◀</div>
         </div>
     </div>
 
     <div id="screen-catch" class="screen">
-        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; color: var(--accent-gold); font-size: 0.9rem;">
-            <div>זמן: <span id="catch-timer">15</span>s</div>
-            <div>ניקוד: <span id="catch-score">0</span></div>
+        <div class="hud">
+            <div class="hud-pill"><small>זמן</small><span id="catch-timer">15</span></div>
+            <div class="hud-pill"><small>ניקוד</small><span id="catch-score">0</span></div>
         </div>
         <div id="game-area"></div>
     </div>
 
     <div id="screen-trivia" class="screen">
-        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 12px; color: var(--accent-gold); font-size: 0.9rem;">
-            <div>שאלה: <span id="trivia-progress">1/5</span></div>
-            <div>ניקוד: <span id="trivia-score">0</span></div>
+        <div class="hud">
+            <div class="hud-pill"><small>שאלה</small><span id="trivia-progress">1/5</span></div>
+            <div class="hud-pill"><small>ניקוד</small><span id="trivia-score">0</span></div>
         </div>
         <h3 id="trivia-question-text" style="margin-bottom: 15px; font-size: 1rem; min-height: 50px; line-height: 1.3; font-weight: 400;"></h3>
         <div id="trivia-options-container"></div>
     </div>
 	
 	<div id="screen-kebable" class="screen">
-        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 12px; color: var(--accent-gold); font-size: 0.9rem;">
-            <div>צעדים: <span id="kebable-steps">0</span></div>
-            <div>יעד: <strong style="color: #fff;">קבב</strong></div>
+        <div class="hud">
+            <div class="hud-pill"><small>צעדים</small><span id="kebable-steps">0</span></div>
+            <div class="hud-pill"><small>יעד</small><strong>קבב</strong></div>
         </div>
 
         <div class="kebable-target-container">
-            <div style="font-size: 0.85rem; color: #8b949e;">המילה הנוכחית:</div>
+            <div style="font-size: 0.85rem; color: #b9a38e;">המילה הנוכחית:</div>
             <div id="kebable-current-word" class="kebable-main-word">---</div>
         </div>
 
@@ -612,43 +1110,43 @@
 
         <div id="kebable-msg" style="color: #f85149; font-size: 0.85rem; text-align: center; min-height: 20px; margin-bottom: 10px;"></div>
 
-        <div style="font-size: 0.8rem; color: #8b949e; margin-bottom: 5px;">היסטוריית מילים:</div>
+        <div style="font-size: 0.8rem; color: #b9a38e; margin-bottom: 5px;">היסטוריית מילים:</div>
         <div id="kebable-history" class="kebable-history-box"></div>
     </div>
 	
 	<div id="screen-builder" class="screen">
-    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; color: var(--accent-gold); font-size: 0.9rem;">
-        <div>זמן: <span id="builder-timer">20</span>s</div>
-        <div>ניקוד: <span id="builder-score">0</span></div>
-    </div>
+    <div class="hud">
+            <div class="hud-pill"><small>זמן</small><span id="builder-timer">20</span></div>
+            <div class="hud-pill"><small>ניקוד</small><span id="builder-score">0</span></div>
+        </div>
 
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 12px; text-align: center; margin-bottom: 10px;">
-        <div style="font-size: 0.8rem; color: #8b949e; margin-bottom: 5px;">ההזמנה של הלקוח:</div>
+    <div class="builder-box">
+        <div style="font-size: 0.8rem; color: var(--muted); margin-bottom: 5px;">ההזמנה של הלקוח:</div>
         <div id="builder-target-order" style="font-size: 1.2rem; font-weight: bold; color: var(--accent-gold);"></div>
     </div>
 
-    <div style="background: #010409; border: 1px solid var(--border-color); min-height: 60px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; padding: 5px;">
+    <div class="builder-skewer">
         <div id="builder-current-skewer" style="font-size: 1.3rem;"></div>
     </div>
 
     <div id="builder-msg" style="text-align: center; color: #f85149; font-size: 0.85rem; min-height: 20px; margin-bottom: 10px;"></div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <button class="btn" style="margin:0; padding:10px;" onclick="addIngredient('🥩 בשר')">🥩 בשר</button>
-        <button class="btn" style="margin:0; padding:10px;" onclick="addIngredient('🧅 בצל')">🧅 בצל</button>
-        <button class="btn" style="margin:0; padding:10px;" onclick="addIngredient('🍅 עגבנייה')">🍅 עגבנייה</button>
-        <button class="btn" style="margin:0; padding:10px;" onclick="addIngredient('🌶️ פלפל')">🌶️ פלפל</button>
+        <button class="btn ingredient" onclick="addIngredient('🥩 בשר')">🥩 בשר</button>
+        <button class="btn ingredient" onclick="addIngredient('🧅 בצל')">🧅 בצל</button>
+        <button class="btn ingredient" onclick="addIngredient('🍅 עגבנייה')">🍅 עגבנייה</button>
+        <button class="btn ingredient" onclick="addIngredient('🌶️ פלפל')">🌶️ פלפל</button>
     </div>
-    <button class="btn" style="background: rgba(218,54,51,0.2); border-color: #f85149; color: #fff; margin-top: 10px;" onclick="resetCurrentSkewer()">נקה שיפוד 🔄</button>
+    <button class="btn danger" style="margin-top: 12px;" onclick="resetCurrentSkewer()">נקה שיפוד 🔄</button>
 	</div>
 	
 	<div id="screen-goods" class="screen">
-    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 12px; color: var(--accent-gold); font-size: 0.9rem;">
-        <div>זמן: <span id="goods-timer">30</span>s</div>
-        <div>ניקוד: <span id="goods-score">0</span></div>
-    </div>
+    <div class="hud">
+            <div class="hud-pill"><small>זמן</small><span id="goods-timer">30</span></div>
+            <div class="hud-pill"><small>ניקוד</small><span id="goods-score">0</span></div>
+        </div>
 
-    <div style="text-align: center; font-size: 0.85rem; color: #8b949e; margin-bottom: 10px;">
+    <div style="text-align: center; font-size: 0.85rem; color: #b9a38e; margin-bottom: 10px;">
         סדרו 3 מוצרים זהים על <strong>אותו מדף</strong> כדי להעלים אותם!
     </div>
 
@@ -658,18 +1156,39 @@
 	</div>
 	
     <div id="screen-shvartz" class="screen">
-        <div style="display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--accent-gold); font-size: 0.9rem;">
-            <div>זמן: <span id="sv-timer">30</span>s</div>
-            <div id="sv-combo" style="color: #ff7b3d; min-height: 1.2em;"></div>
-            <div>ניקוד: <span id="sv-score">0</span></div>
+        <div class="hud">
+            <div class="hud-pill"><small>זמן</small><span id="sv-timer">30</span></div>
+            <div id="sv-combo" class="hud-combo"></div>
+            <div class="hud-pill"><small>ניקוד</small><span id="sv-score">0</span></div>
         </div>
         <div id="shvartz-wrap"><canvas id="shvartz-canvas"></canvas></div>
+    </div>
+
+    <div id="screen-ninja" class="screen">
+        <div class="hud">
+            <div class="hud-pill"><small>זמן</small><span id="nj-timer">45</span></div>
+            <div id="nj-combo" class="hud-combo"></div>
+            <div class="hud-pill"><small>ניקוד</small><span id="nj-score">0</span></div>
+        </div>
+        <div id="ninja-wrap"><canvas id="ninja-canvas"></canvas></div>
+    </div>
+
+    <div id="screen-shop" class="screen">
+        <div class="shop-head">
+            <h2>חנות הסקינים</h2>
+            <div class="shop-head-actions">
+                <button class="code-btn" onclick="openCodeModal()">🎟 קוד</button>
+                <div class="coin-chip" style="cursor: default;">🪙 <span class="coin-balance">0</span></div>
+            </div>
+        </div>
+        <div class="shop-sub">הסקין שתבחרו יאכל במשחק "האכל את השוורץ". מטבעות מרוויחים מקופונים בסוף משחקים.</div>
+        <div id="shop-grid"></div>
     </div>
 
     <div id="screen-profile" class="screen active">
         <h2 style="font-weight: 400; text-align: center; margin-bottom: 12px; font-size: 1.1rem;">פרופיל שחקן</h2>
         
-        <label style="font-size: 0.8rem; color: #8b949e; margin-bottom: 5px; display: block;">שם השחקן:</label>
+        <label class="profile-label">שם השחקן:</label>
         <input type="text" id="player-name-input" maxlength="20" placeholder="הכנס את שמך כאן...">
         <button class="btn" onclick="savePlayerName()">שמור שם</button>
         
@@ -678,7 +1197,7 @@
         </div>
 
         <div style="margin-top: 20px;">
-            <div style="font-size: 0.8rem; color: #8b949e; margin-bottom: 8px;">השיאים האישיים שלך</div>
+            <div style="font-size: 0.8rem; color: #b9a38e; margin-bottom: 8px;">השיאים האישיים שלך</div>
             <div id="player-stats"></div>
         </div>
     </div>
@@ -691,6 +1210,7 @@
 			<button id="sub-btn-builder" class="sub-tab-btn" onclick="switchLeaderboardTab('builder')">👨‍🍳 בונה</button>
 			<button id="sub-btn-goods" class="sub-tab-btn" onclick="switchLeaderboardTab('goods')">🥫 מדפים</button>
 			<button id="sub-btn-shvartz" class="sub-tab-btn" onclick="switchLeaderboardTab('shvartz')">🥙 שוורץ</button>
+			<button id="sub-btn-ninja" class="sub-tab-btn" onclick="switchLeaderboardTab('ninja')">🥷 נינג'ה</button>
 		</div>
 
 		<div id="sub-screen-main" class="leaderboard-sub-screen">
@@ -699,6 +1219,10 @@
 
 		<div id="sub-screen-builder" class="leaderboard-sub-screen" style="display: none;">
 			<ul id="builder-leaderboard-container" class="leaderboard-list"></ul>
+		</div>
+
+		<div id="sub-screen-ninja" class="leaderboard-sub-screen" style="display: none;">
+			<ul id="ninja-leaderboard-container" class="leaderboard-list"></ul>
 		</div>
 
 		<div id="sub-screen-shvartz" class="leaderboard-sub-screen" style="display: none;">
@@ -712,31 +1236,44 @@
 
     <div id="screen-result" class="screen" style="text-align: center;">
         <h2 style="color: var(--accent-gold); margin-bottom: 10px; font-size: 1.3rem;">סיום משחק!</h2>
-        <p id="result-desc" style="margin-bottom: 12px; color: #c9d1d9; font-size: 0.9rem;"></p>
+        <p id="result-desc" style="margin-bottom: 12px; color: #f0dcc8; font-size: 0.9rem;"></p>
         
-        <div class="coupon-box">
-            <div style="font-size: 0.8rem; color: #8b949e;">🎁 הפרס שלך:</div>
+        <div id="coupon-box" class="coupon-box">
+            <div style="font-size: 0.8rem; color: #b9a38e;">🎁 הפרס שלך:</div>
             <div id="coupon-text" style="font-size: 1rem; font-weight: bold; margin-top: 5px; color: #2ea043;"></div>
+            <div id="coupon-coins"></div>
+            <div id="coupon-total"></div>
         </div>
 
         <button class="btn" onclick="switchTab('home')">חזרה לתפריט</button>
     </div>
 
+    <div id="code-modal">
+        <div class="code-card">
+            <h3>🎟 יש לך קוד?</h3>
+            <p>הכניסו קוד כדי לקבל הפתעה</p>
+            <input type="text" id="code-input" maxlength="24" placeholder="הקלידו קוד..." autocomplete="off" autocapitalize="characters">
+            <div id="code-msg"></div>
+            <button class="btn" onclick="submitCode()">הפעל קוד</button>
+            <button class="code-close" onclick="closeCodeModal()">סגירה</button>
+        </div>
+    </div>
+
+    <div id="toast"></div>
 </div>
 
 <script>
 /* --- הגדרת Firebase --- */
     // ⚠️ החליפו בערכים מ-Firebase Console (Project settings -> Your apps -> Web app).
     // כל עוד הערכים לא הוחלפו המשחקים עובדים כרגיל, רק בלי טבלאות שיאים.
-const firebaseConfig = {
-  apiKey: "AIzaSyDQUP26lG2qdseogng96R2kWOVIvuawoLg",
-  authDomain: "evyatars-kebabs.firebaseapp.com",
-  projectId: "evyatars-kebabs",
-  storageBucket: "evyatars-kebabs.firebasestorage.app",
-  messagingSenderId: "965270391043",
-  appId: "1:965270391043:web:6c1fd7c195a7f1c3030136",
-  measurementId: "G-YQQE5G7T4G"
-};
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
     let db = null;
     let dbProblem = '';   // config | sdk | init - למה אין חיבור לענן
@@ -759,8 +1296,15 @@ const firebaseConfig = {
 
     /* --- גישה בטוחה ל-localStorage (חלק מהדפדפנים זורקים שגיאה כשהאחסון חסום) --- */
     const store = {
-        get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
-        set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+        mem: {},                              // גיבוי בזיכרון כשהאחסון חסום - כך המטבעות עובדים לפחות לאורך הביקור
+        get(k) {
+            try { const v = window.localStorage.getItem(k); if (v !== null) return v; } catch (e) { /* ignore */ }
+            return Object.prototype.hasOwnProperty.call(this.mem, k) ? this.mem[k] : null;
+        },
+        set(k, v) {
+            this.mem[k] = String(v);
+            try { window.localStorage.setItem(k, v); } catch (e) { /* ignore */ }
+        }
     };
 
     function shuffleArray(arr) {
@@ -775,6 +1319,7 @@ const firebaseConfig = {
     /* --- משתנים גלובליים לטיימרים (מנוקים ב-stopAllGames) --- */
     let builderNextTimeout = null;
     let triviaTimeout = null;
+    let kebableEndTimeout = null;
     let goodsTimeouts = [];
 
     /* --- שיאים אישיים (מקומי) + שמירה בענן --- */
@@ -782,6 +1327,7 @@ const firebaseConfig = {
         ['🍢 תפוס את הקבב', 'kebab_highScore'],
         ['👨‍🍳 בונה הקבבים', 'kebab_builderHighScore'],
         ['🔤 Kebable', 'kebab_kebableHighScore'],
+        ['🥷 קבב נינג\'ה', 'kebab_ninjaHighScore'],
         ['🥙 האכל את השוורץ', 'kebab_shvartzHighScore'],
         ['🥫 סידור המדפים', 'kebab_goodsHighScore'],
         ['🧠 חידון האוכל', 'kebab_triviaHighScore']
@@ -833,11 +1379,20 @@ const firebaseConfig = {
             }
         }).catch(err => {
             console.error("שגיאה בשמירה בענן (" + collectionName + "):", err.code || '', err.message || err);
-        }).then(() => { pendingSaves.delete(p); });
+        }).then(() => { delete lbCache[collectionName]; pendingSaves.delete(p); });
 
         pendingSaves.add(p);
         return p;
     }
+
+    const LB_LIMIT = 500;                 // כמה שחקנים מוצגים בכל טבלה
+    const LB_CACHE_MS = 60000;            // שומרים תשובה דקה כדי לא לקרוא 500 מסמכים בכל מעבר בין לשוניות
+    const lbCache = {};
+    const LB_LOCAL_KEY = {
+        leaderboard: 'kebab_highScore', leaderboard_builder: 'kebab_builderHighScore',
+        leaderboard_goods: 'kebab_goodsHighScore', leaderboard_shvartz: 'kebab_shvartzHighScore',
+        leaderboard_ninja: 'kebab_ninjaHighScore'
+    };
 
     function loadLeaderboardInto(containerId, collectionName) {
         const container = document.getElementById(containerId);
@@ -856,12 +1411,52 @@ const firebaseConfig = {
                 li.appendChild(document.createElement('br'));
                 const btn = document.createElement('button');
                 btn.className = 'sub-tab-btn';
-                btn.style.marginTop = '10px';
+                btn.style.cssText = 'margin-top: 10px; padding: 8px 18px; flex: none;';
                 btn.textContent = '🔄 נסו שוב';
-                btn.onclick = () => loadLeaderboardInto(containerId, collectionName);
+                btn.onclick = () => { delete lbCache[collectionName]; loadLeaderboardInto(containerId, collectionName); };
                 li.appendChild(btn);
             }
             container.appendChild(li);
+        };
+
+        const render = rows => {
+            container.innerHTML = '';
+            const frag = document.createDocumentFragment();
+
+            const myIdx = rows.findIndex(r => r.id === playerId);
+            const myBest = parseInt(store.get(LB_LOCAL_KEY[collectionName])) || 0;
+            if (myIdx >= 0 || myBest > 0) {
+                const me = document.createElement('li');
+                me.className = 'lb-me';
+                const a = document.createElement('span');
+                const b = document.createElement('small');
+                if (myIdx >= 0) { a.textContent = 'המקום שלך: #' + (myIdx + 1); b.textContent = 'מתוך ' + rows.length + ' שחקנים'; }
+                else { a.textContent = 'עדיין לא ב-' + LB_LIMIT + ' המובילים'; b.textContent = 'השיא שלך: ' + myBest; }
+                me.appendChild(a); me.appendChild(b);
+                frag.appendChild(me);
+            }
+
+            rows.forEach((row, i) => {
+                const li = document.createElement('li');
+                li.className = 'leaderboard-item' + (i < 3 ? ' r' + (i + 1) : '') + (row.id === playerId ? ' me' : '');
+
+                const left = document.createElement('span');
+                const strong = document.createElement('strong');
+                strong.textContent = i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1);
+                left.appendChild(strong);
+                // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
+                left.appendChild(document.createTextNode(' ' + row.name + (row.id === playerId ? ' (אתה)' : '')));
+
+                const right = document.createElement('span');
+                right.style.cssText = 'color: var(--accent-gold); font-weight: bold;';
+                right.textContent = row.score + " נק'";
+
+                li.appendChild(left);
+                li.appendChild(right);
+                frag.appendChild(li);
+            });
+            container.appendChild(frag);
+            if (rows.length === 0) showMsg('אין עדיין שיאים. היו הראשונים!', '#b9a38e', false);
         };
 
         if (!db) {
@@ -873,46 +1468,30 @@ const firebaseConfig = {
             showMsg(msgs[dbProblem] || 'טבלת השיאים אינה זמינה כרגע', '#f85149', dbProblem === 'sdk');
             return;
         }
-        showMsg('טוען נתונים...', '#8b949e', false);
+
+        const cached = lbCache[collectionName];
+        if (cached && Date.now() - cached.t < LB_CACHE_MS && pendingSaves.size === 0) {
+            render(cached.rows);
+            return;
+        }
+        showMsg('טוען נתונים...', '#b9a38e', false);
 
         // מחכים לשמירות שעדיין בדרך (כדי שהשיא שהרגע נקבע יופיע), ובכל מקרה לא יותר מ-8 שניות
         const fetchData = Promise.allSettled(Array.from(pendingSaves)).then(() =>
-            db.collection(collectionName).orderBy('score', 'desc').limit(50).get());
+            db.collection(collectionName).orderBy('score', 'desc').limit(LB_LIMIT).get());
         const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
 
         Promise.race([fetchData, timeout])
             .then(snapshot => {
                 if (isStale()) return;
-                container.innerHTML = '';
-                let rank = 1;
+                const rows = [];
                 snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (typeof data.score !== 'number') return;
-
-                    const li = document.createElement('li');
-                    li.className = 'leaderboard-item';
-
-                    const left = document.createElement('span');
-                    const strong = document.createElement('strong');
-                    strong.textContent = '#' + rank;
-                    left.appendChild(strong);
-                    // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
-                    const isMe = doc.id === playerId;
-                    left.appendChild(document.createTextNode(' ' + String(data.name || 'אורח').slice(0, 20) + (isMe ? ' (אתה)' : '')));
-
-                    const right = document.createElement('span');
-                    right.style.cssText = 'color: var(--accent-gold); font-weight: bold;';
-                    right.textContent = data.score + " נק'";
-
-                    li.appendChild(left);
-                    li.appendChild(right);
-                    if (isMe) li.style.outline = '1px solid var(--accent-gold)';
-                    container.appendChild(li);
-                    rank++;
+                    const d = doc.data();
+                    if (typeof d.score !== 'number') return;
+                    rows.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score });
                 });
-                if (container.children.length === 0) {
-                    showMsg('אין עדיין שיאים. היו הראשונים!', '#8b949e', false);
-                }
+                lbCache[collectionName] = { t: Date.now(), rows };
+                render(rows);
             })
             .catch(err => {
                 if (isStale()) return;
@@ -934,7 +1513,9 @@ const firebaseConfig = {
         goodsTimeouts.forEach(clearTimeout);
         goodsTimeouts = [];
         clearTimeout(triviaTimeout);
+        clearTimeout(kebableEndTimeout);
         if (typeof svStop === 'function') svStop();
+        if (typeof njStop === 'function') njStop();
         const area = document.getElementById('game-area');
         if (area) area.innerHTML = '';
     }
@@ -951,19 +1532,14 @@ const firebaseConfig = {
     document.getElementById('player-name-input').value = playerName;
     renderProfileStats();
 
-    const coupons = [
-        "10% הנחה על כל השיפודים!",
-        "קינוח מלבי מתנה בהזמנה מעל 100 ש״ח!",
-        "פחיות שתייה במתנה בארוחת סינגל!",
-        "תוספת צ'יפס מוגדל חינם!"
-    ];
 
 	/* --- החלפה בין טבלאות השיאים בתוך המסך --- */
 	const LB_TABS = {
 		main:    () => loadLeaderboard(),
 		builder: () => loadBuilderLeaderboard(),
 		goods:   () => loadGoodsLeaderboard(),
-		shvartz: () => loadShvartzLeaderboard()
+		shvartz: () => loadShvartzLeaderboard(),
+		ninja:   () => loadNinjaLeaderboard()
 	};
 
 	function switchLeaderboardTab(type) {
@@ -986,8 +1562,11 @@ const firebaseConfig = {
 
 		if (targetScreen) targetScreen.classList.add('active');
 		if (targetBtn) targetBtn.classList.add('active');
+		document.body.classList.toggle('in-game', ['catch', 'trivia', 'kebable', 'builder', 'goods', 'shvartz', 'ninja'].includes(screenId));
 
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
+		if (screenId === 'shop') renderShop();
+
 		if (screenId === 'leaderboard') {
 			const active = document.querySelector('.sub-tab-btn.active');
 			const type = active ? active.id.replace('sub-btn-', '') : 'main';
@@ -1004,13 +1583,15 @@ const firebaseConfig = {
 
         // עדכון השם בכל טבלאות השיאים שבהן השחקן כבר קיים
         if (db) {
-            ['leaderboard', 'leaderboard_builder', 'leaderboard_goods', 'leaderboard_shvartz'].forEach(col => {
+            ['leaderboard', 'leaderboard_builder', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja'].forEach(col => {
                 const ref = db.collection(col).doc(playerId);
                 ref.get().then(doc => {
                     if (doc.exists && typeof doc.data().score === 'number') return ref.update({ name: playerName });
                 }).catch(err => console.error("שגיאה בעדכון שם (" + col + "):", err));
             });
         }
+
+        Object.keys(lbCache).forEach(k => { delete lbCache[k]; });
 
         const msg = document.getElementById('name-save-msg');
         msg.style.display = 'block';
@@ -1097,6 +1678,7 @@ const firebaseConfig = {
 
         kebab.onclick = () => {
             catchScore += 1;
+            sfx.pop();
             document.getElementById('catch-score').textContent = catchScore;
             clearTimeout(kebabTimeout);
             spawnKebab();
@@ -1113,8 +1695,7 @@ const firebaseConfig = {
 
         checkHighScore(catchScore);
         document.getElementById('result-desc').textContent = `תפסת קבבים בשווי ${catchScore} נקודות!`;
-        const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
-        document.getElementById('coupon-text').textContent = randomCoupon;
+        showResultReward('catch', catchScore);
         switchTab('result');
     }
 
@@ -1274,9 +1855,11 @@ const firebaseConfig = {
 
         if (isCorrect) {
             optionElement.classList.add('correct');
+            sfx.good();
             triviaScore++;
         } else {
             optionElement.classList.add('wrong');
+            sfx.err();
             // מציאת התשובה הנכונה מבין האפשרויות המוצגות והדגשתה בירוק
             allOptions.forEach(opt => {
                 if (opt.dataset.correct === "true") {
@@ -1299,8 +1882,7 @@ const firebaseConfig = {
         const totalPoints = triviaScore * 20;
         saveLocalBest('kebab_triviaHighScore', totalPoints);
         document.getElementById('result-desc').textContent = `ענית נכון על ${triviaScore} מתוך ${activeTriviaQuestions.length} שאלות! (${totalPoints} נקודות)`;
-        const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
-        document.getElementById('coupon-text').textContent = randomCoupon;
+        showResultReward('trivia', totalPoints);
         switchTab('result');
     }
 	/* --- משחק 3: KEBABLE --- */
@@ -1356,6 +1938,7 @@ const firebaseConfig = {
     }
 
     function submitKebableGuess() {
+        if (kebableCurrent === KEBABLE_TARGET) return;     // המשחק כבר נגמר
         const inputEl = document.getElementById('kebable-input');
         const msgEl = document.getElementById('kebable-msg');
         const guess = inputEl.value.trim();
@@ -1363,16 +1946,19 @@ const firebaseConfig = {
         msgEl.textContent = '';
 
         if (guess.length !== 3) {
+            sfx.err();
             msgEl.textContent = 'המילה חייבת להיות בת 3 אותיות בדיוק!';
             return;
         }
 
         if (!kebableDictionary.includes(guess)) {
+            sfx.err();
             msgEl.textContent = 'מילה לא מוכרת במילון המשחק!';
             return;
         }
 
         if (!isOneLetterDiff(kebableCurrent, guess)) {
+            sfx.err();
             msgEl.textContent = 'מותר לשנות אות אחת בלבד מהמילה הנוכחית!';
             return;
         }
@@ -1380,6 +1966,7 @@ const firebaseConfig = {
         // ניחוש תקין
         kebableCurrent = guess;
         kebableStepsCount++;
+        sfx.good();
         kebableHistoryList.push(guess);
 
         document.getElementById('kebable-current-word').textContent = kebableCurrent;
@@ -1389,7 +1976,7 @@ const firebaseConfig = {
 
         // בדיקת ניצחון
         if (kebableCurrent === KEBABLE_TARGET) {
-            setTimeout(endKebableGame, 400);
+            kebableEndTimeout = setTimeout(endKebableGame, 400);
         }
     }
 
@@ -1413,8 +2000,7 @@ const firebaseConfig = {
         checkKebableHighScore(score);
 
         document.getElementById('result-desc').textContent = `כל הכבוד! הגעת למילה 'קבב' ב-${kebableStepsCount} צעדים וזכית ב-${score} נקודות!`;
-        const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
-        document.getElementById('coupon-text').textContent = randomCoupon;
+        showResultReward('kebable', score);
         switchTab('result');
     }
 
@@ -1494,6 +2080,7 @@ function addIngredient(ingredient) {
         // בדיקה אם השיפוד הושלם
         if (builderCurrentSkewer.length === builderTargetOrder.length) {
             builderScore += 1;
+            sfx.good();
             document.getElementById('builder-score').textContent = builderScore;
             document.getElementById('builder-msg').style.color = '#2ea043';
             document.getElementById('builder-msg').textContent = '✓ שיפוד מושלם! +1 נקודה';
@@ -1505,6 +2092,7 @@ function addIngredient(ingredient) {
         // טעות במרכיב
         document.getElementById('builder-msg').style.color = '#f85149';
         document.getElementById('builder-msg').textContent = '❌ טעות במרכיב! השיפוד התאפס';
+        sfx.err();
         builderCurrentSkewer = [];
         renderBuilderDisplay();
     }
@@ -1525,8 +2113,7 @@ function endBuilderGame() {
     checkBuilderHighScore(builderScore);
 
     document.getElementById('result-desc').textContent = `הכנת שיפודים בשווי ${builderScore} נקודות!`;
-    const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
-    document.getElementById('coupon-text').textContent = randomCoupon;
+        showResultReward('builder', builderScore);
     switchTab('result');
 }
 /* --- שיא בונה הקבבים + טבלה --- */
@@ -1666,6 +2253,7 @@ function checkGoodsMatches() {
 
     goodsLocked = true;
     goodsVanishing = new Set(matched);
+    sfx.match(matched.length);
 
     goodsScore += matched.length * 3;
     document.getElementById('goods-score').textContent = goodsScore;
@@ -1703,8 +2291,7 @@ function endGoodsSortGame() {
     saveBestScore('leaderboard_goods', goodsScore, 'kebab_goodsHighScore');
 
     document.getElementById('result-desc').textContent = `סידרתם את המדפים וצברתם ${goodsScore} נקודות!`;
-    const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
-    document.getElementById('coupon-text').textContent = randomCoupon;
+        showResultReward('goods', goodsScore);
     switchTab('result');
 }
 
@@ -1721,7 +2308,7 @@ const SV_W = 360, SV_H = 540;          // מערכת קואורדינטות לו
 const SV_G = 1700;                     // כוח משיכה (פיקסלים לוגיים / שנייה^2)
 const SV_BALL_R = 24;
 const SV_START = { x: SV_W / 2, y: 478 };
-const SV_BASE_Y = 175;                 // גובה הפה
+const SV_BASE_Y = 200;                 // גובה הפה
 const SV_GAME_SECONDS = 30;
 const SV_FOODS = ['🥙', '🍢', '🍔', '🍟', '🌭', '🍕', '🥒', '🍅', '🧆'];
 
@@ -1747,7 +2334,7 @@ function svNewState() {
         mouth: { x: SV_W / 2, y: SV_BASE_Y, hw: SV_TIERS[0].hw, amp: 0, bob: 0, phase: 0, chew: 0 },
         tier: SV_TIERS[0],
         fx: [], aim: null, hasShot: false, t: 0, last: 0,
-        shownTime: -1, shownScore: -1, shownCombo: '#'
+        shownTime: -1, shownScore: -1, shownCombo: '#', skin: null
     };
 }
 
@@ -1759,6 +2346,7 @@ function svStop() {
 function startShvartzGame() {
     switchTab('shvartz');            // עוצר כל משחק אחר
     sv = svNewState();
+    sv.skin = skinById(getEquippedSkinId());
     svResize();
     svSpawnBall();
     svUpdateHud();
@@ -1816,6 +2404,7 @@ function svLaunch(dx, dy) {
     b.state = 'flying';
     b.prevY = b.y;
     sv.hasShot = true;
+    sfx.whoosh();
     return true;
 }
 
@@ -1937,6 +2526,7 @@ function svScoreShot() {
     b.eatT = 0;
     b.x0 = b.x; b.y0 = b.y;
     m.chew = 1;
+    sfx.score(clean);
 
     sv.fx.push({ x: m.x, y: m.y - 70, text: '+' + pts, color: '#ffd700', size: 30, t: 0, life: 0.9 });
     if (clean) sv.fx.push({ x: m.x, y: m.y - 100, text: 'נקי!', color: '#7ee787', size: 20, t: 0, life: 0.9 });
@@ -1948,6 +2538,7 @@ function svMiss() {
     const b = sv.ball;
     if (!b) return;
     if (sv.streak > 0) {
+        sfx.miss();
         sv.fx.push({ x: Math.max(40, Math.min(SV_W - 40, b.x)), y: SV_H - 90, text: 'פספוס', color: '#f85149', size: 18, t: 0, life: 0.8 });
     }
     sv.streak = 0;
@@ -1962,8 +2553,7 @@ function svEnd() {
     saveBestScore('leaderboard_shvartz', sv.score, 'kebab_shvartzHighScore');
     document.getElementById('result-desc').textContent =
         `שוורץ אכל ${sv.made} פעמים ואתם צברתם ${sv.score} נקודות!`;
-    const randomCoupon = coupons[Math.floor(Math.random() * coupons.length)];
-    document.getElementById('coupon-text').textContent = randomCoupon;
+        showResultReward('shvartz', sv.score);
     switchTab('result');
 }
 
@@ -1997,8 +2587,8 @@ function svDraw() {
 
     // רקע
     const bg = c.createLinearGradient(0, 0, 0, SV_H);
-    bg.addColorStop(0, '#0d1117');
-    bg.addColorStop(1, '#1b2230');
+    bg.addColorStop(0, '#170c07');
+    bg.addColorStop(1, '#33190c');
     c.fillStyle = bg;
     c.fillRect(0, 0, SV_W, SV_H);
 
@@ -2008,19 +2598,24 @@ function svDraw() {
     c.fillStyle = glow;
     c.fillRect(0, 0, SV_W, SV_H);
 
-    // דלפק
-    c.fillStyle = '#21262d';
-    c.fillRect(0, SV_H - 52, SV_W, 52);
-    c.fillStyle = '#30363d';
-    c.fillRect(0, SV_H - 52, SV_W, 3);
-
-    svDrawBody(c);
-    svDrawMouthBack(c);
-
-    // כדור (אחרי החלק האחורי של הפה ולפני השפה התחתונה - כך הוא נראה "נכנס" פנימה)
-    if (b) svDrawBall(c, b);
-
-    svDrawLowerLip(c);
+    const skin = sv.skin || SV_SKINS[0];
+    if (skin.kind === 'cone') {
+        svDrawCounter(c);
+        svDrawBody(c);
+        svDrawMouthBack(c);
+        // כדור (אחרי החלק האחורי של הפה ולפני השפה התחתונה - כך הוא נראה "נכנס" פנימה)
+        if (b) svDrawBall(c, b);
+        svDrawLowerLip(c);
+    } else {
+        const st = svCharState();
+        skDrawHumanBack(c, skin, st);
+        skMouthBack(c, skin, st);
+        skDrawHumanFront(c, skin, st);
+        svDrawCounter(c);                       // הדלפק מסתיר את תחתית הגוף
+        if (b) svDrawBall(c, b);
+        skMouthFront(c, skin, st);
+        skDrawHumanFx(c, skin, st);
+    }
 
     // מסלול האצבע
     if (sv.aim) {
@@ -2059,6 +2654,28 @@ function svDraw() {
         c.fillText(f.text, f.x, f.y - p * 38);
     }
     c.globalAlpha = 1;
+}
+
+function svDrawCounter(c) {
+    const wood = c.createLinearGradient(0, SV_H - 52, 0, SV_H);
+    wood.addColorStop(0, '#6b4426');
+    wood.addColorStop(1, '#3a2416');
+    c.fillStyle = wood;
+    c.fillRect(0, SV_H - 52, SV_W, 52);
+    c.fillStyle = '#8a5a34';
+    c.fillRect(0, SV_H - 52, SV_W, 4);
+    c.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+    c.lineWidth = 2;
+    for (let x = 30; x < SV_W; x += 70) { c.beginPath(); c.moveTo(x, SV_H - 48); c.lineTo(x, SV_H); c.stroke(); }
+}
+
+function svCharState() {
+    const m = sv.mouth, b = sv.ball;
+    return {
+        x: m.x, y: m.y, hw: m.hw, ry: svMouthRy(), chew: m.chew, t: sv.t,
+        tx: b ? b.x : m.x, ty: b ? b.y : SV_H,
+        surprised: !!(b && b.state === 'flying'), mx: m.x, my: m.y
+    };
 }
 
 function svDrawBall(c, b) {
@@ -2106,7 +2723,7 @@ function svDrawBody(c) {
     const top = m.y - 95, bottom = m.y + 135;
 
     // מוט השיפוד עד לדלפק
-    c.fillStyle = '#8b949e';
+    c.fillStyle = '#b9a38e';
     c.fillRect(m.x - 4, bottom, 8, SV_H - 52 - bottom);
     c.fillRect(m.x - 3, top - 52, 6, 40);
     c.fillStyle = '#c9d1d9';
@@ -2283,6 +2900,2074 @@ function svDrawLowerLip(c) {
     cv.addEventListener('pointercancel', finish);
 })();
 
+
+/* ============================================================
+   מנוע ציור לדמויות אנושיות (סקינים של שוורץ)
+   מערכת קואורדינטות: הראשית היא מרכז הפה, הראש ממורכז ב-(0,-34)
+   ============================================================ */
+
+const SK_HEAD = { cx: 0, cy: -34, rx: 88, ry: 94 };
+
+function skHex(h) {
+    h = h.replace('#', '');
+    if (h.length === 3) h = h.split('').map(x => x + x).join('');
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+// t>0 מבהיר, t<0 מכהה
+function skShade(hex, t) {
+    const [r, g, b] = skHex(hex);
+    const f = v => Math.round(t >= 0 ? v + (255 - v) * t : v * (1 + t));
+    return 'rgb(' + f(r) + ',' + f(g) + ',' + f(b) + ')';
+}
+function skA(hex, a) {
+    const [r, g, b] = skHex(hex);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+}
+function skE(c, x, y, rx, ry, fill, stroke, lw, rot) {
+    c.beginPath();
+    c.ellipse(x, y, rx, ry, rot || 0, 0, Math.PI * 2);
+    if (fill) { c.fillStyle = fill; c.fill(); }
+    if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw || 2; c.stroke(); }
+}
+function skP(c, pts, fill, stroke, lw, open) {
+    c.beginPath();
+    c.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]);
+    if (!open) c.closePath();
+    if (fill) { c.fillStyle = fill; c.fill(); }
+    if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw || 2; c.lineJoin = 'round'; c.stroke(); }
+}
+function skR(c, x, y, w, h, r, fill, stroke, lw) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+    if (fill) { c.fillStyle = fill; c.fill(); }
+    if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw || 2; c.stroke(); }
+}
+function skStar(c, x, y, r, fill, rot) {
+    c.beginPath();
+    for (let i = 0; i < 10; i++) {
+        const a = (i * Math.PI) / 5 - Math.PI / 2 + (rot || 0);
+        const rr = i % 2 === 0 ? r : r * 0.45;
+        c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+    }
+    c.closePath();
+    c.fillStyle = fill;
+    c.fill();
+}
+function skGlow(c, x, y, r, color, a) {
+    const g = c.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, skA(color, a));
+    g.addColorStop(1, skA(color, 0));
+    c.fillStyle = g;
+    c.fillRect(x - r, y - r, r * 2, r * 2);
+}
+const SK_OUT = 'rgba(25, 12, 6, 0.85)';
+
+/* ---------------- אפקטים אחוריים ---------------- */
+function skAuraBack(c, sk, t) {
+    const a = sk.aura;
+    if (!a) return;
+    skGlow(c, 0, -40, 190, a.color, a.alpha || 0.35);
+    if (a.runes) {                                  // טבעת רונות מסתובבת
+        c.save();
+        c.translate(0, -30);
+        c.rotate(t * 0.5);
+        c.strokeStyle = skA(a.color, 0.7);
+        c.lineWidth = 3;
+        c.beginPath(); c.arc(0, 0, 150, 0, Math.PI * 2); c.stroke();
+        c.lineWidth = 1.5;
+        c.beginPath(); c.arc(0, 0, 132, 0, Math.PI * 2); c.stroke();
+        for (let i = 0; i < 16; i++) {
+            c.save(); c.rotate(i * Math.PI / 8);
+            c.fillStyle = skA(a.color, 0.85);
+            if (i % 2) c.fillRect(-2, -150, 4, 14); else skP(c, [[-5, -132], [5, -132], [0, -152]], skA(a.color, 0.85));
+            c.restore();
+        }
+        c.restore();
+    }
+    if (a.rings) {                                  // טבעות קוסמיות
+        c.save();
+        c.translate(0, -34);
+        for (let i = 0; i < 2; i++) {
+            c.save();
+            c.rotate(t * (i ? -0.6 : 0.45) + i);
+            c.scale(1, 0.3);
+            c.strokeStyle = skA(i ? '#8fd3ff' : a.color, 0.75);
+            c.lineWidth = 3;
+            c.beginPath(); c.arc(0, 0, 150 - i * 18, 0, Math.PI * 2); c.stroke();
+            c.restore();
+        }
+        c.restore();
+    }
+}
+
+function skWings(c, sk, t) {
+    const w = sk.wings;
+    if (!w) return;
+    const flap = Math.sin(t * 2.4) * 0.07;
+    for (const side of [-1, 1]) {
+        c.save();
+        c.translate(side * 70, 40);
+        c.scale(side, 1);
+        if (w.type === 'feather') {
+            for (let i = 0; i < 7; i++) {
+                c.save();
+                c.rotate(-0.25 - i * 0.2 - flap * (i + 1) * 0.4);
+                skE(c, 78 + i * 4, 0, 78 - i * 4, 15 - i * 0.7, i % 2 ? '#ffffff' : '#f1f4ff', 'rgba(150,170,210,0.8)', 1.5);
+                c.restore();
+            }
+        } else {                                      // כנפי דרקון
+            c.rotate(flap * 0.6);
+            const col = w.color || '#2d6a3a';
+            skP(c, [[0, 0], [60, -120], [120, -170], [150, -90], [190, -120], [180, -20], [215, -30], [150, 40], [80, 60], [0, 30]], col, '#0e2a14', 3);
+            c.strokeStyle = skShade(col, 0.35);
+            c.lineWidth = 3;
+            for (const p of [[120, -170], [150, -90], [180, -20], [150, 40]]) {
+                c.beginPath(); c.moveTo(0, 0); c.lineTo(p[0], p[1]); c.stroke();
+            }
+        }
+        c.restore();
+    }
+}
+
+function skCapeBack(c, sk, t) {
+    const cp = sk.cape;
+    if (!cp) return;
+    const sway = Math.sin(t * 2) * 8;
+    const g = c.createLinearGradient(0, 40, 0, 330);
+    g.addColorStop(0, cp.color);
+    g.addColorStop(1, skShade(cp.color, -0.45));
+    c.beginPath();
+    c.moveTo(-80, 50);
+    c.quadraticCurveTo(-190 - sway, 170, -170 + sway, 340);
+    c.lineTo(170 + sway, 340);
+    c.quadraticCurveTo(190 + sway, 170, 80, 50);
+    c.closePath();
+    c.fillStyle = g;
+    c.fill();
+    c.strokeStyle = skA('#000000', 0.55);
+    c.lineWidth = 3;
+    c.stroke();
+    if (cp.stars) {                                 // שמיים זרועי כוכבים
+        c.save(); c.clip();
+        for (let i = 0; i < 26; i++) {
+            const sx = ((i * 83) % 300) - 150, sy = 70 + ((i * 47) % 240);
+            const tw = 0.5 + 0.5 * Math.sin(t * 3 + i);
+            skStar(c, sx, sy, 2 + (i % 3) + tw * 2, 'rgba(255,255,255,' + (0.5 + tw * 0.5) + ')');
+        }
+        c.restore();
+    }
+}
+
+/* ---------------- שיער ---------------- */
+function skHairBack(c, sk, t) {
+    const h = sk.hair;
+    if (!h) return;
+    const col = h.color || '#222222', dk = skShade(col, -0.35);
+    if (h.style === 'long' || h.style === 'bob' || h.style === 'wavy') {
+        const len = h.style === 'bob' ? 40 : (h.style === 'wavy' ? 120 : 110);
+        c.beginPath();
+        c.moveTo(-96, -90);
+        c.bezierCurveTo(-130, -40, -118, len, -100, len + 24);
+        c.lineTo(100, len + 24);
+        c.bezierCurveTo(118, len, 130, -40, 96, -90);
+        c.closePath();
+        c.fillStyle = dk; c.fill();
+        c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+    } else if (h.style === 'ponytail') {
+        c.save();
+        c.translate(86, -86);
+        c.rotate(-0.25 + Math.sin(t * 2) * 0.05);
+        skE(c, 24, 38, 20, 52, col, SK_OUT, 3, -0.15);
+        c.restore();
+    } else if (h.style === 'afro') {
+        skE(c, 0, -76, 124, 112, col, SK_OUT, 3);
+        for (let i = 0; i < 14; i++) {
+            const a = (i / 14) * Math.PI * 2;
+            skE(c, Math.cos(a) * 118, -76 + Math.sin(a) * 106, 14, 14, col);
+        }
+    } else if (h.style === 'galaxy') {
+        const g = c.createRadialGradient(0, -80, 20, 0, -60, 150);
+        g.addColorStop(0, '#7a4bff'); g.addColorStop(0.5, '#3b2a9c'); g.addColorStop(1, '#120a3d');
+        c.beginPath();
+        c.moveTo(-100, -80);
+        c.bezierCurveTo(-170, -10, -140, 130, -90, 160);
+        c.lineTo(90, 160);
+        c.bezierCurveTo(140, 130, 170, -10, 100, -80);
+        c.closePath();
+        c.fillStyle = g; c.fill();
+        c.save(); c.clip();
+        for (let i = 0; i < 34; i++) {
+            const sx = ((i * 71) % 260) - 130, sy = -80 + ((i * 53) % 230);
+            const tw = 0.5 + 0.5 * Math.sin(t * 2.5 + i * 1.7);
+            skE(c, sx, sy, 1.2 + tw * 1.6, 1.2 + tw * 1.6, 'rgba(255,255,255,' + (0.45 + tw * 0.55) + ')');
+        }
+        c.restore();
+        c.strokeStyle = 'rgba(190,170,255,0.8)'; c.lineWidth = 2.5; c.stroke();
+    }
+}
+
+function skFlameHair(c, t) {
+    const cols = ['#ff3b0f', '#ff8a1a', '#ffd33d'];
+    for (let layer = 0; layer < 3; layer++) {
+        const n = 7 - layer;
+        for (let i = 0; i < n; i++) {
+            const x = -78 + (i / (n - 1)) * 156;
+            const base = -88 + Math.abs(x) * 0.28;
+            const hgt = (70 - layer * 16) + Math.sin(t * 7 + i * 1.9 + layer) * 14;
+            const sway = Math.sin(t * 5 + i) * 7;
+            c.beginPath();
+            c.moveTo(x - 18, base + 14);
+            c.quadraticCurveTo(x - 6 + sway, base - hgt * 0.5, x + sway * 1.6, base - hgt);
+            c.quadraticCurveTo(x + 8 + sway, base - hgt * 0.4, x + 18, base + 14);
+            c.closePath();
+            c.fillStyle = cols[layer];
+            c.fill();
+        }
+    }
+}
+
+function skHairFront(c, sk, t) {
+    const h = sk.hair;
+    if (!h || h.style === 'bald' || h.style === 'afro' && false) return;
+    const col = h.color || '#222222', dk = skShade(col, -0.35), hl = skShade(col, 0.2);
+    const cap = () => {
+        c.beginPath();
+        c.moveTo(-91, -46);
+        c.bezierCurveTo(-100, -120, -62, -142, 0, -142);
+        c.bezierCurveTo(62, -142, 100, -120, 91, -46);
+        c.lineTo(80, -72);
+        c.quadraticCurveTo(44, -100, 0, -90);
+        c.quadraticCurveTo(-44, -100, -80, -72);
+        c.closePath();
+    };
+    switch (h.style) {
+        case 'short': case 'ponytail': case 'long': case 'bob': case 'wavy':
+            cap(); c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+            c.strokeStyle = hl; c.lineWidth = 3; c.beginPath(); c.moveTo(-40, -126); c.quadraticCurveTo(-10, -138, 24, -130); c.stroke();
+            if (h.style !== 'short' && h.style !== 'ponytail') {      // תלתלים בצדדים
+                skE(c, -92, -30, 12, 44, col, SK_OUT, 2.5);
+                skE(c, 92, -30, 12, 44, col, SK_OUT, 2.5);
+            }
+            break;
+        case 'buzz':
+            cap(); c.fillStyle = skA(col, 0.78); c.fill();
+            break;
+        case 'sidebald':
+            skE(c, -88, -46, 12, 30, col, SK_OUT, 2); skE(c, 88, -46, 12, 30, col, SK_OUT, 2);
+            skE(c, -80, -72, 14, 16, col); skE(c, 80, -72, 14, 16, col);
+            break;
+        case 'bun':
+            skE(c, 0, -156, 28, 26, col, SK_OUT, 3);
+            cap(); c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+            break;
+        case 'curly':
+            for (let i = 0; i < 13; i++) {
+                const a = Math.PI + (i / 12) * Math.PI;
+                skE(c, Math.cos(a) * 82, -62 + Math.sin(a) * 82, 24, 24, col, SK_OUT, 2.5);
+            }
+            skE(c, -50, -118, 26, 26, col, SK_OUT, 2.5); skE(c, 0, -134, 28, 28, col, SK_OUT, 2.5); skE(c, 50, -118, 26, 26, col, SK_OUT, 2.5);
+            skE(c, -20, -112, 40, 22, col); skE(c, 24, -112, 40, 22, col);
+            break;
+        case 'afro':
+            c.beginPath();
+            c.moveTo(-84, -64); c.quadraticCurveTo(0, -112, 84, -64); c.lineTo(88, -74);
+            c.quadraticCurveTo(0, -150, -88, -74); c.closePath();
+            c.fillStyle = col; c.fill();
+            break;
+        case 'wild':
+            for (let i = 0; i < 11; i++) {
+                const a = Math.PI * 1.08 + (i / 10) * Math.PI * 0.84;
+                const bx = Math.cos(a) * 80, by = -48 + Math.sin(a) * 88;
+                const len = 38 + (i % 3) * 18;
+                skP(c, [[bx - 14, by + 8], [Math.cos(a) * (80 + len), -48 + Math.sin(a) * (88 + len)], [bx + 14, by + 8]], col, SK_OUT, 2);
+            }
+            cap(); c.fillStyle = col; c.fill();
+            break;
+        case 'mohawk': {
+            const mc = h.color, mc2 = h.color2 || mc;
+            for (let i = 0; i < 7; i++) {
+                const x = -30 + i * 10;
+                const hh = 70 + (i === 3 ? 22 : (i % 2 ? 0 : 10));
+                skP(c, [[x - 8, -120], [x + 1, -120 - hh], [x + 10, -120]], i % 2 ? mc : mc2, SK_OUT, 2);
+            }
+            skE(c, 0, -118, 30, 12, skShade(mc, -0.25));
+            break;
+        }
+        case 'slick':
+            cap(); c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+            c.strokeStyle = hl; c.lineWidth = 3;
+            for (let i = 0; i < 4; i++) { c.beginPath(); c.moveTo(-60 + i * 30, -128); c.quadraticCurveTo(-30 + i * 30, -118, -20 + i * 30, -96); c.stroke(); }
+            break;
+        case 'flame':
+            skFlameHair(c, t);
+            break;
+        case 'galaxy':
+            cap(); c.fillStyle = '#2b1d82'; c.fill();
+            c.strokeStyle = 'rgba(200,180,255,0.9)'; c.lineWidth = 2.5; c.stroke();
+            for (let i = 0; i < 10; i++) {
+                const tw = 0.5 + 0.5 * Math.sin(t * 3 + i * 2.1);
+                skE(c, -60 + (i * 41) % 120, -128 + (i * 17) % 34, 1.4 + tw * 1.4, 1.4 + tw * 1.4, 'rgba(255,255,255,' + (0.5 + tw * 0.5) + ')');
+            }
+            break;
+    }
+}
+
+/* ---------------- גוף ולבוש ---------------- */
+function skTorsoPath(c) {
+    c.beginPath();
+    c.moveTo(-32, 44);
+    c.bezierCurveTo(-34, 70, -66, 74, -96, 88);
+    c.bezierCurveTo(-120, 100, -124, 150, -124, 200);
+    c.lineTo(-124, 340);
+    c.lineTo(124, 340);
+    c.lineTo(124, 200);
+    c.bezierCurveTo(124, 150, 120, 100, 96, 88);
+    c.bezierCurveTo(66, 74, 34, 70, 32, 44);
+    c.closePath();
+}
+
+function skOutfit(c, sk, t) {
+    const o = sk.outfit || { base: '#3b6fd4' };
+    // צוואר
+    skR(c, -26, 30, 52, 48, 10, skShade(sk.tone, -0.12), null);
+    skTorsoPath(c);
+    c.fillStyle = o.base;
+    c.fill();
+    c.save();
+    skTorsoPath(c);
+    c.clip();
+    const tr = o.trim || skShade(o.base, -0.3);
+
+    switch (o.pattern) {
+        case 'stripes':
+            c.fillStyle = tr;
+            for (let y = 76; y < 340; y += 28) c.fillRect(-130, y, 260, 12);
+            break;
+        case 'plaid':
+            c.fillStyle = skA(tr, 0.55);
+            for (let x = -130; x < 130; x += 30) c.fillRect(x, 60, 10, 290);
+            for (let y = 70; y < 340; y += 30) c.fillRect(-130, y, 260, 10);
+            break;
+        case 'plates':
+            for (let i = 0; i < 6; i++) {
+                const y = 96 + i * 40;
+                c.strokeStyle = tr; c.lineWidth = 3;
+                c.beginPath(); c.moveTo(-130, y); c.quadraticCurveTo(0, y + 12, 130, y); c.stroke();
+                c.fillStyle = skShade(o.base, 0.25);
+                for (const x of [-96, -48, 0, 48, 96]) skE(c, x, y + 14, 2.6, 2.6, '#f4e7b0');
+            }
+            break;
+        case 'scales':
+            for (let row = 0; row < 9; row++) {
+                for (let col = -5; col <= 5; col++) {
+                    const x = col * 26 + (row % 2 ? 13 : 0), y = 84 + row * 22;
+                    c.beginPath(); c.arc(x, y, 14, 0, Math.PI);
+                    c.fillStyle = skShade(o.base, (row + col) % 2 ? 0.12 : -0.08);
+                    c.fill();
+                    c.strokeStyle = skA('#06200c', 0.7); c.lineWidth = 1.5; c.stroke();
+                }
+            }
+            break;
+        case 'stars':
+            for (let i = 0; i < 18; i++) {
+                const tw = 0.5 + 0.5 * Math.sin(t * 3 + i * 1.3);
+                skStar(c, -105 + (i * 53) % 210, 90 + (i * 37) % 220, 3 + tw * 2, 'rgba(255,255,255,' + (0.45 + tw * 0.5) + ')');
+            }
+            break;
+        case 'ermine':
+            c.fillStyle = '#17120f';
+            for (let i = 0; i < 12; i++) { const x = -100 + (i * 59) % 200, y = 110 + (i * 41) % 200; skP(c, [[x, y - 6], [x + 3, y + 5], [x - 3, y + 5]], '#17120f'); }
+            break;
+        case 'neon':
+            c.strokeStyle = o.glow || '#35e0ff'; c.lineWidth = 3;
+            c.shadowColor = o.glow || '#35e0ff'; c.shadowBlur = 8;
+            c.beginPath(); c.moveTo(-70, 90); c.lineTo(-70, 190); c.lineTo(-30, 230); c.lineTo(-30, 340); c.stroke();
+            c.beginPath(); c.moveTo(70, 90); c.lineTo(70, 190); c.lineTo(30, 230); c.lineTo(30, 340); c.stroke();
+            c.shadowBlur = 0;
+            break;
+        case 'vest':
+            c.fillStyle = o.under || '#6b7280'; c.fillRect(-130, 60, 260, 290);
+            skP(c, [[-100, 80], [-40, 80], [-34, 340], [-124, 340]], o.base);
+            skP(c, [[100, 80], [40, 80], [34, 340], [124, 340]], o.base);
+            c.fillStyle = '#e8eef5';
+            c.fillRect(-100, 160, 70, 12); c.fillRect(30, 160, 70, 12);
+            c.fillRect(-110, 230, 78, 12); c.fillRect(32, 230, 78, 12);
+            break;
+    }
+
+    // סינר / סרבל / חגורות
+    if (o.apron) {                                    // מעיל שף כפול
+        skP(c, [[-90, 80], [0, 100], [90, 80], [100, 340], [-100, 340]], '#fbfbfd', 'rgba(0,0,0,0.25)', 2);
+        c.strokeStyle = 'rgba(0,0,0,0.25)'; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(0, 100); c.lineTo(0, 340); c.stroke();
+        for (const x of [-26, 26]) for (let y = 130; y < 330; y += 46) skE(c, x, y, 6, 6, '#c9ccd4', 'rgba(0,0,0,0.4)', 1.5);
+    }
+    if (o.overall) {                                  // סרבל
+        c.fillStyle = o.overall;
+        c.fillRect(-124, 190, 248, 160);
+        c.fillRect(-72, 70, 24, 130); c.fillRect(48, 70, 24, 130);
+        skR(c, -40, 205, 80, 54, 6, skShade(o.overall, -0.2), 'rgba(0,0,0,0.3)', 2);
+        skE(c, -60, 196, 6, 6, '#e9c46a'); skE(c, 60, 196, 6, 6, '#e9c46a');
+    }
+    if (o.jacket) {                                   // ז'קט עור עם דשים
+        skP(c, [[-124, 340], [-124, 120], [-60, 84], [-14, 110], [-30, 340]], o.jacket, 'rgba(0,0,0,0.6)', 3);
+        skP(c, [[124, 340], [124, 120], [60, 84], [14, 110], [30, 340]], o.jacket, 'rgba(0,0,0,0.6)', 3);
+        c.strokeStyle = '#c9ccd4'; c.lineWidth = 3;
+        c.beginPath(); c.moveTo(-14, 110); c.lineTo(-30, 340); c.stroke();
+        for (const [x, y] of [[-100, 130], [-78, 112], [100, 130], [78, 112], [-100, 180], [100, 180], [-100, 230], [100, 230]]) skE(c, x, y, 3.5, 3.5, '#e7e9ee');
+    }
+    if (o.coat) {                                     // מעיל ארוך עם דשים
+        skP(c, [[-124, 340], [-124, 100], [-62, 84], [-8, 150], [-14, 340]], o.coat, 'rgba(0,0,0,0.45)', 3);
+        skP(c, [[124, 340], [124, 100], [62, 84], [8, 150], [14, 340]], o.coat, 'rgba(0,0,0,0.45)', 3);
+        for (const y of [190, 240, 290]) { skE(c, -22, y, 5, 5, '#7a5a2c'); skE(c, 22, y, 5, 5, '#7a5a2c'); }
+    }
+    if (o.cardigan) {
+        skP(c, [[-124, 340], [-124, 100], [-62, 84], [-8, 140], [-14, 340]], o.cardigan, 'rgba(0,0,0,0.4)', 3);
+        skP(c, [[124, 340], [124, 100], [62, 84], [8, 140], [14, 340]], o.cardigan, 'rgba(0,0,0,0.4)', 3);
+        for (const y of [190, 240, 290]) skE(c, -24, y, 5, 5, '#e9dcc0');
+    }
+    if (o.straps) {                                   // רצועות אלכסוניות (נינג'ה / אביר)
+        c.strokeStyle = o.straps; c.lineWidth = 16;
+        c.beginPath(); c.moveTo(-110, 90); c.lineTo(100, 330); c.stroke();
+        c.beginPath(); c.moveTo(110, 90); c.lineTo(-100, 330); c.stroke();
+    }
+    if (o.sash) {
+        skP(c, [[-124, 255], [124, 235], [124, 275], [-124, 295]], o.sash, 'rgba(0,0,0,0.4)', 2);
+    }
+    if (o.fur) {                                      // גלימת פרווה
+        for (let i = 0; i < 17; i++) {
+            const a = Math.PI + (i / 16) * Math.PI;
+            const x = Math.cos(a) * 112, y = 92 + Math.sin(a) * -6 + Math.abs(Math.cos(a)) * 36;
+            skE(c, x, y, 24, 22, i % 2 ? '#8a6a45' : '#a07d52', 'rgba(40,24,10,0.6)', 2);
+        }
+        skR(c, -118, 120, 236, 24, 8, '#4a3220', 'rgba(0,0,0,0.5)', 2);
+        skE(c, 0, 132, 9, 9, '#d9b25a');
+    }
+    if (o.badge) {                                    // תג
+        skP(c, [[-72, 130], [-52, 122], [-32, 130], [-36, 154], [-52, 164], [-68, 154]], o.badge, 'rgba(0,0,0,0.5)', 2);
+        skStar(c, -52, 142, 8, '#fff6c8');
+    }
+    if (o.emblem) {                                   // סמל על החזה (גיבור-על)
+        skP(c, [[-34, 118], [34, 118], [38, 168], [0, 196], [-38, 168]], o.emblem, 'rgba(0,0,0,0.6)', 3);
+        c.fillStyle = '#d6291f';
+        c.font = 'bold 44px Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText('ק', 0, 154);
+    }
+    if (o.patchFlag) {                                // טלאי חלל
+        skR(c, 54, 140, 36, 22, 3, '#ffffff', 'rgba(0,0,0,0.4)', 1.5);
+        c.fillStyle = '#d6291f'; c.fillRect(54, 146, 36, 5); c.fillRect(54, 154, 36, 5);
+        c.fillStyle = '#2a3f9a'; c.fillRect(54, 140, 14, 11);
+        skE(c, -64, 150, 14, 14, '#2a3f9a', '#ffffff', 2);
+        skE(c, -64, 150, 5, 5, '#ffffff');
+    }
+    if (o.belt) {
+        c.fillStyle = o.belt; c.fillRect(-124, 290, 248, 16);
+        skR(c, -14, 288, 28, 20, 3, '#e9c46a', 'rgba(0,0,0,0.5)', 2);
+    }
+    if (o.tabard) {                                   // טבארד עם צלב
+        skP(c, [[-58, 86], [58, 86], [66, 340], [-66, 340]], '#f5f5f7', 'rgba(0,0,0,0.35)', 2);
+        c.fillStyle = '#c42b2b'; c.fillRect(-9, 100, 18, 150); c.fillRect(-40, 138, 80, 18);
+    }
+    if (o.trimEdge) {
+        c.strokeStyle = o.trimEdge; c.lineWidth = 8;
+        c.beginPath(); c.moveTo(-14, 110); c.lineTo(-30, 340); c.moveTo(14, 110); c.lineTo(30, 340); c.stroke();
+    }
+    c.restore();
+    c.strokeStyle = SK_OUT; c.lineWidth = 3;
+    skTorsoPath(c);
+    c.stroke();
+
+    // צווארונים
+    switch (o.collar) {
+        case 'crew':
+            skE(c, 0, 52, 36, 16, skShade(o.base, -0.22), SK_OUT, 2.5);
+            skE(c, 0, 48, 28, 10, skShade(sk.tone, -0.12));
+            break;
+        case 'v':
+            skP(c, [[-34, 46], [34, 46], [0, 118]], o.inner || '#f3f3f6', SK_OUT, 2.5);
+            break;
+        case 'hood':
+            c.beginPath(); c.arc(0, 60, 66, Math.PI * 1.05, Math.PI * 1.95); c.lineWidth = 22; c.strokeStyle = skShade(o.base, -0.2); c.stroke();
+            c.strokeStyle = '#f3f3f6'; c.lineWidth = 3;
+            c.beginPath(); c.moveTo(-24, 74); c.lineTo(-26, 130); c.moveTo(24, 74); c.lineTo(26, 130); c.stroke();
+            skE(c, -26, 132, 4, 4, '#f3f3f6'); skE(c, 26, 132, 4, 4, '#f3f3f6');
+            break;
+        case 'tie':
+            skP(c, [[-36, 44], [0, 74], [-10, 96]], '#f7f7fa', SK_OUT, 2);
+            skP(c, [[36, 44], [0, 74], [10, 96]], '#f7f7fa', SK_OUT, 2);
+            skP(c, [[-8, 74], [8, 74], [12, 150], [0, 166], [-12, 150]], o.tie || '#c42b2b', SK_OUT, 2);
+            break;
+        case 'bandana':
+            skP(c, [[-44, 52], [44, 52], [0, 118]], o.bandana || '#c42b2b', SK_OUT, 2.5);
+            c.fillStyle = 'rgba(255,255,255,0.7)';
+            for (const [x, y] of [[-16, 68], [6, 76], [-4, 92], [14, 62]]) skE(c, x, y, 2.4, 2.4, 'rgba(255,255,255,0.8)');
+            break;
+        case 'high':
+            skR(c, -38, 38, 76, 28, 8, skShade(o.base, -0.15), SK_OUT, 2.5);
+            break;
+        case 'ring':
+            skE(c, 0, 58, 54, 20, '#e8ecf4', 'rgba(60,70,90,0.8)', 3);
+            skE(c, 0, 54, 40, 12, '#cdd3e0');
+            break;
+        case 'crewdark':
+            skE(c, 0, 52, 36, 16, '#14171e', SK_OUT, 2.5);
+            break;
+    }
+}
+
+/* ---------------- פנים ---------------- */
+function skHead(c, sk) {
+    const H = SK_HEAD, tone = sk.tone;
+    // אוזניים
+    for (const s of [-1, 1]) {
+        skE(c, s * 86, -30, 13, 18, tone, SK_OUT, 2.5);
+        skE(c, s * 86, -30, 6, 10, skShade(tone, -0.15));
+    }
+    const g = c.createRadialGradient(-24, -70, 10, 0, -34, 104);
+    g.addColorStop(0, skShade(tone, 0.14));
+    g.addColorStop(0.7, tone);
+    g.addColorStop(1, skShade(tone, -0.16));
+    skE(c, H.cx, H.cy, H.rx, H.ry, g, SK_OUT, 3);
+    // אף
+    skE(c, 0, -30, 11, 9, skShade(tone, -0.14));
+    skE(c, -2, -33, 5, 3.5, skShade(tone, 0.22));
+}
+
+function skEyes(c, sk, st) {
+    const ey = -62;
+    const eyeStyle = sk.eyes || {};
+    const brow = sk.brow || (sk.hair && sk.hair.color) || '#2b1a0e';
+    const happy = st.chew > 0.25;
+    for (const o of [-34, 34]) {
+        const cx = o;
+        const hidden = sk.glasses && (sk.glasses.type === 'shades' || sk.glasses.type === 'aviator') ||
+                       sk.eyepatch === (o < 0 ? 'left' : 'right');
+        if (!hidden) {
+            if (happy) {
+                c.strokeStyle = '#2b1608'; c.lineWidth = 4.5; c.lineCap = 'round';
+                c.beginPath(); c.arc(cx, ey + 6, 12, Math.PI * 1.1, Math.PI * 1.9); c.stroke();
+            } else if (eyeStyle.glow) {
+                const pulse = 0.75 + 0.25 * Math.sin(st.t * 5);
+                skGlow(c, cx, ey, 30, eyeStyle.glow, 0.8 * pulse);
+                skE(c, cx, ey, 12, 12, eyeStyle.glow, 'rgba(0,0,0,0.6)', 2);
+                if (eyeStyle.slit) skE(c, cx, ey, 2.6, 11, '#150500');
+                else skE(c, cx, ey, 5, 5, '#ffffff');
+            } else {
+                skE(c, cx, ey, 15, 17, '#ffffff', 'rgba(30,15,8,0.85)', 2.5);
+                const ang = Math.atan2(st.ty - (st.my + ey), st.tx - (st.mx + cx));
+                const dist = Math.min(6.5, Math.hypot(st.tx - (st.mx + cx), st.ty - (st.my + ey)) / 25);
+                const px = cx + Math.cos(ang) * dist, py = ey + Math.sin(ang) * dist;
+                skE(c, px, py, 8.2, 8.2, eyeStyle.iris || '#3d2a1a');
+                skE(c, px, py, 4.2, 4.2, '#0d0604');
+                skE(c, px - 2.5, py - 2.6, 2.2, 2.2, '#ffffff');
+            }
+        }
+        // גבה
+        const lift = st.surprised ? 6 : 0;
+        c.strokeStyle = brow; c.lineWidth = 6; c.lineCap = 'round';
+        c.beginPath();
+        c.moveTo(cx - 15, ey - 26 - lift + (o < 0 ? 3 : 0));
+        c.quadraticCurveTo(cx, ey - 34 - lift, cx + 15, ey - 26 - lift + (o < 0 ? 0 : 3));
+        c.stroke();
+    }
+    // לחיים
+    if (sk.blush !== false) {
+        c.fillStyle = 'rgba(255, 90, 100, 0.22)';
+        for (const o of [-60, 60]) { c.beginPath(); c.ellipse(o, -16, 12, 7, 0, 0, Math.PI * 2); c.fill(); }
+    }
+}
+
+function skFaceMarks(c, sk, t) {
+    const f = sk.face || [];
+    if (f.includes('freckles')) {
+        c.fillStyle = 'rgba(150, 80, 40, 0.65)';
+        for (const [x, y] of [[-58, -30], [-48, -22], [-38, -32], [-52, -40], [58, -30], [48, -22], [38, -32], [52, -40], [-30, -22], [30, -22]]) skE(c, x, y, 2.2, 2.2, 'rgba(150,80,40,0.65)');
+    }
+    if (f.includes('soot')) {
+        c.fillStyle = 'rgba(30,25,22,0.35)';
+        skE(c, -50, -18, 16, 9, 'rgba(30,25,22,0.32)'); skE(c, 52, -64, 14, 8, 'rgba(30,25,22,0.28)'); skE(c, 6, -88, 18, 7, 'rgba(30,25,22,0.25)');
+    }
+    if (f.includes('scar')) {
+        c.strokeStyle = 'rgba(170, 60, 60, 0.9)'; c.lineWidth = 3; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(36, -92); c.lineTo(52, -30); c.stroke();
+        c.strokeStyle = 'rgba(255,255,255,0.7)'; c.lineWidth = 1.5;
+        for (const y of [-80, -66, -52, -40]) { c.beginPath(); c.moveTo(35 + (y + 92) * 0.27, y); c.lineTo(45 + (y + 92) * 0.27, y + 3); c.stroke(); }
+    }
+    if (f.includes('warpaint')) {
+        c.strokeStyle = 'rgba(210, 40, 40, 0.9)'; c.lineWidth = 5; c.lineCap = 'round';
+        for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 42, -30); c.lineTo(s * 70, -16); c.moveTo(s * 40, -20); c.lineTo(s * 68, -4); c.stroke(); }
+    }
+    if (f.includes('cyberhalf')) {                    // חצי פנים מתכתי
+        c.save();
+        c.beginPath(); c.ellipse(SK_HEAD.cx, SK_HEAD.cy, SK_HEAD.rx - 1, SK_HEAD.ry - 1, 0, 0, Math.PI * 2); c.clip();
+        c.beginPath(); c.moveTo(-8, -140); c.lineTo(-8, -86); c.lineTo(-22, -50); c.lineTo(-14, 10); c.lineTo(-30, 70); c.lineTo(-110, 70); c.lineTo(-110, -140); c.closePath();
+        const g = c.createLinearGradient(-90, 0, 0, 0);
+        g.addColorStop(0, '#5b6577'); g.addColorStop(0.5, '#b8c2d6'); g.addColorStop(1, '#7c879b');
+        c.fillStyle = g; c.fill();
+        c.strokeStyle = '#2a3140'; c.lineWidth = 2.5; c.stroke();
+        c.strokeStyle = '#35e0ff'; c.lineWidth = 2.5; c.shadowColor = '#35e0ff'; c.shadowBlur = 8;
+        c.beginPath(); c.moveTo(-78, -20); c.lineTo(-48, -20); c.lineTo(-34, -4); c.moveTo(-76, -100); c.lineTo(-52, -100); c.lineTo(-40, -84); c.stroke();
+        c.shadowBlur = 0;
+        c.restore();
+        const pulse = 0.7 + 0.3 * Math.sin(t * 4);
+        skGlow(c, -34, -62, 36, '#ff2a2a', pulse);
+        skE(c, -34, -62, 14, 14, '#2a0505', '#9aa4b8', 3);
+        skE(c, -34, -62, 8, 8, '#ff3030');
+        skE(c, -37, -65, 2.6, 2.6, '#ffe0e0');
+    }
+}
+
+function skEyepatch(c, sk) {
+    if (!sk.eyepatch) return;
+    const x = sk.eyepatch === 'left' ? -34 : 34;
+    c.strokeStyle = '#111'; c.lineWidth = 4;
+    c.beginPath(); c.moveTo(-86, -92); c.lineTo(x, -62); c.lineTo(86, -88); c.stroke();
+    skE(c, x, -62, 19, 17, '#15151a', '#000', 2);
+}
+
+/* ---------------- זקן ושפם ---------------- */
+function skBeardBack(c, sk, t) {
+    const b = sk.beard;
+    if (!b) return;
+    const col = b.color, dk = skShade(col, -0.3);
+    if (b.style === 'stubble') {
+        c.beginPath();
+        c.moveTo(-78, -30); c.quadraticCurveTo(-82, 54, 0, 64); c.quadraticCurveTo(82, 54, 78, -30);
+        c.quadraticCurveTo(52, 22, 0, 18); c.quadraticCurveTo(-52, 22, -78, -30); c.closePath();
+        c.fillStyle = skA(col, 0.32); c.fill();
+    } else if (b.style === 'full' || b.style === 'long' || b.style === 'braids') {
+        const len = b.style === 'long' ? 190 : (b.style === 'braids' ? 120 : 94);
+        c.beginPath();
+        c.moveTo(-88, -44);
+        c.bezierCurveTo(-96, 40, -64, len - 20, 0, len);
+        c.bezierCurveTo(64, len - 20, 96, 40, 88, -44);
+        c.quadraticCurveTo(70, 8, 36, 22);
+        c.lineTo(-36, 22);
+        c.quadraticCurveTo(-70, 8, -88, -44);
+        c.closePath();
+        c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+        c.strokeStyle = dk; c.lineWidth = 2;
+        for (let i = -3; i <= 3; i++) { c.beginPath(); c.moveTo(i * 20, 34); c.quadraticCurveTo(i * 24, len * 0.6, i * 14, len - 14); c.stroke(); }
+        if (b.style === 'braids') {
+            for (const s of [-1, 1]) {
+                for (let i = 0; i < 5; i++) skE(c, s * 36, 96 + i * 18, 10, 12, col, SK_OUT, 2);
+                skE(c, s * 36, 190, 7, 7, '#d9b25a', SK_OUT, 1.5);
+            }
+        }
+    } else if (b.style === 'goatee') {
+        c.beginPath();
+        c.moveTo(-26, 24); c.quadraticCurveTo(-30, 70, 0, 84); c.quadraticCurveTo(30, 70, 26, 24); c.closePath();
+        c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2.5; c.stroke();
+    }
+}
+
+function skMustache(c, sk) {
+    const b = sk.beard;
+    if (!b || !(b.mustache || b.style === 'mustache' || b.style === 'full' || b.style === 'long' || b.style === 'braids')) return;
+    const col = b.color;
+    const w = (b.style === 'long' || b.style === 'braids') ? 1.15 : 1;
+    for (const s of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(0, -22);
+        c.bezierCurveTo(s * 20 * w, -34, s * 52 * w, -30, s * 62 * w, -12);
+        c.bezierCurveTo(s * 56 * w, -8, s * 38 * w, -18, s * 20 * w, -14);
+        c.quadraticCurveTo(s * 8, -12, 0, -14);
+        c.closePath();
+        c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2.2; c.stroke();
+    }
+}
+
+/* ---------------- משקפיים וכיסויי ראש ---------------- */
+function skGlasses(c, sk) {
+    const g = sk.glasses;
+    if (!g) return;
+    const ey = -62;
+    if (g.type === 'round') {
+        c.strokeStyle = g.color || '#3a2a1a'; c.lineWidth = 4;
+        for (const o of [-34, 34]) { skE(c, o, ey, 21, 21, 'rgba(190,225,255,0.16)', g.color || '#3a2a1a', 4); }
+        c.beginPath(); c.moveTo(-13, ey); c.quadraticCurveTo(0, ey - 8, 13, ey); c.stroke();
+        c.beginPath(); c.moveTo(-55, ey - 2); c.lineTo(-86, ey - 8); c.moveTo(55, ey - 2); c.lineTo(86, ey - 8); c.stroke();
+    } else if (g.type === 'shades') {
+        for (const o of [-34, 34]) skR(c, o - 24, ey - 15, 48, 30, 11, '#0e0e12', '#000', 2.5);
+        c.fillStyle = '#0e0e12'; c.fillRect(-12, ey - 8, 24, 5);
+        c.strokeStyle = '#0e0e12'; c.lineWidth = 5;
+        c.beginPath(); c.moveTo(-58, ey - 6); c.lineTo(-88, ey - 10); c.moveTo(58, ey - 6); c.lineTo(88, ey - 10); c.stroke();
+        c.fillStyle = 'rgba(255,255,255,0.35)';
+        for (const o of [-34, 34]) { c.beginPath(); c.moveTo(o - 16, ey - 10); c.lineTo(o - 6, ey - 10); c.lineTo(o - 14, ey + 2); c.lineTo(o - 20, ey + 2); c.closePath(); c.fill(); }
+        if (g.neon) { c.strokeStyle = g.neon; c.lineWidth = 2; c.shadowColor = g.neon; c.shadowBlur = 8; for (const o of [-34, 34]) { c.strokeRect(o - 24, ey - 15, 48, 30); } c.shadowBlur = 0; }
+    } else if (g.type === 'aviator') {
+        const col = g.color || '#d9b25a';
+        for (const o of [-34, 34]) {
+            c.beginPath();
+            c.moveTo(o - 24, ey - 14); c.quadraticCurveTo(o, ey - 20, o + 24, ey - 14);
+            c.quadraticCurveTo(o + 22, ey + 26, o, ey + 28);
+            c.quadraticCurveTo(o - 22, ey + 26, o - 24, ey - 14); c.closePath();
+            const gg = c.createLinearGradient(0, ey - 14, 0, ey + 28);
+            gg.addColorStop(0, '#3a3f48'); gg.addColorStop(1, '#111318');
+            c.fillStyle = gg; c.fill(); c.strokeStyle = col; c.lineWidth = 3.5; c.stroke();
+        }
+        c.strokeStyle = col; c.lineWidth = 3.5;
+        c.beginPath(); c.moveTo(-10, ey - 8); c.quadraticCurveTo(0, ey - 14, 10, ey - 8); c.stroke();
+        c.beginPath(); c.moveTo(-58, ey - 10); c.lineTo(-86, ey - 12); c.moveTo(58, ey - 10); c.lineTo(86, ey - 12); c.stroke();
+        c.fillStyle = 'rgba(255,255,255,0.3)';
+        for (const o of [-34, 34]) skE(c, o - 10, ey - 4, 6, 3, 'rgba(255,255,255,0.3)', null, 0, -0.6);
+    } else if (g.type === 'monocle') {
+        skE(c, 34, ey, 22, 22, 'rgba(200,230,255,0.2)', '#d9b25a', 4);
+        c.strokeStyle = '#d9b25a'; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(52, ey + 14); c.quadraticCurveTo(80, 30, 66, 70); c.stroke();
+    } else if (g.type === 'goggles') {                // משקפי מעבדה
+        for (const o of [-34, 34]) skE(c, o, ey, 22, 20, 'rgba(120,255,200,0.22)', '#555d6a', 5);
+        c.strokeStyle = '#3b3f4a'; c.lineWidth = 9;
+        c.beginPath(); c.moveTo(-86, ey - 4); c.lineTo(-56, ey - 2); c.moveTo(56, ey - 2); c.lineTo(86, ey - 4); c.moveTo(-12, ey); c.lineTo(12, ey); c.stroke();
+    }
+}
+
+function skMask(c, sk) {                              // מסכת גיבור-על
+    if (!sk.mask) return;
+    const col = sk.mask;
+    c.beginPath();
+    c.moveTo(-84, -76);
+    c.quadraticCurveTo(0, -112, 84, -76);
+    c.lineTo(82, -52);
+    c.quadraticCurveTo(52, -34, 28, -46);
+    c.quadraticCurveTo(0, -56, -28, -46);
+    c.quadraticCurveTo(-52, -34, -82, -52);
+    c.closePath();
+    c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+    for (const o of [-34, 34]) skE(c, o, -62, 20, 15, '#ffffff', 'rgba(0,0,0,0.7)', 2.5, o < 0 ? -0.12 : 0.12);
+}
+
+function skHatUnder(c, sk, t) {
+    const h = sk.hat;
+    if (!h) return;
+    if (h.type === 'kabuto') {                         // מגן עורף של קסדת סמוראי
+        for (let i = 0; i < 4; i++) {
+            skP(c, [[-96 - i * 4, -70 + i * 22], [96 + i * 4, -70 + i * 22], [102 + i * 5, -50 + i * 22], [-102 - i * 5, -50 + i * 22]], i % 2 ? '#8a1c1c' : '#a52a2a', 'rgba(0,0,0,0.7)', 2);
+        }
+    }
+    if (h.type === 'astro') {
+        skE(c, 0, 62, 70, 22, '#e8ecf4', 'rgba(60,70,90,0.85)', 3);
+    }
+}
+
+// כיסוי ראש שנמצא "על" הראש אבל לפני הפנים (ברדס נינג'ה)
+function skHatMid(c, sk) {
+    const h = sk.hat;
+    if (!h || h.type !== 'ninja') return;
+    c.save();
+    c.beginPath(); c.ellipse(SK_HEAD.cx, SK_HEAD.cy, SK_HEAD.rx + 2, SK_HEAD.ry + 2, 0, 0, Math.PI * 2);
+    c.fillStyle = '#17181d'; c.fill();
+    c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 2;
+    for (let i = -3; i <= 3; i++) { c.beginPath(); c.moveTo(i * 24, -126); c.quadraticCurveTo(i * 30, -60, i * 22, 44); c.stroke(); }
+    skR(c, -64, -92, 128, 108, 46, sk.tone, SK_OUT, 3);            // חלון הפנים
+    skE(c, 0, -30, 11, 9, skShade(sk.tone, -0.14));
+    skE(c, -2, -33, 5, 3.5, skShade(sk.tone, 0.22));
+    c.restore();
+}
+
+function skHatOver(c, sk, t) {
+    const h = sk.hat;
+    if (!h) return;
+    const c1 = h.c1 || '#c42b2b', c2 = h.c2 || '#e9c46a', out = SK_OUT;
+    switch (h.type) {
+        case 'cap': {
+            c.beginPath(); c.moveTo(-86, -78); c.bezierCurveTo(-90, -158, 90, -158, 86, -78); c.closePath();
+            c.fillStyle = c1; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            skE(c, 0, -142, 6, 6, skShade(c1, -0.25));
+            skE(c, 4, -92, 118, 22, skShade(c1, -0.2), out, 3);          // מצחייה
+            break;
+        }
+        case 'chef': {
+            for (const [x, y, r] of [[-44, -150, 30], [44, -150, 30], [0, -172, 36], [-22, -190, 24], [26, -188, 26]]) skE(c, x, y, r, r, '#ffffff', 'rgba(60,60,70,0.55)', 2.5);
+            skR(c, -68, -132, 136, 52, 10, '#ffffff', 'rgba(60,60,70,0.55)', 2.5);
+            c.strokeStyle = 'rgba(140,140,160,0.45)'; c.lineWidth = 2;
+            for (const x of [-34, 0, 34]) { c.beginPath(); c.moveTo(x, -128); c.lineTo(x, -84); c.stroke(); }
+            break;
+        }
+        case 'straw': {
+            skE(c, 0, -104, 138, 26, '#e6c46a', out, 3);
+            c.beginPath(); c.moveTo(-64, -108); c.bezierCurveTo(-60, -170, 60, -170, 64, -108); c.closePath();
+            c.fillStyle = '#efd27c'; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            skR(c, -63, -122, 126, 16, 3, c1, out, 2);
+            c.strokeStyle = 'rgba(140,100,30,0.5)'; c.lineWidth = 1.5;
+            for (let i = -5; i <= 5; i++) { c.beginPath(); c.moveTo(i * 22, -104 + 18); c.lineTo(i * 25, -104 - 14); c.stroke(); }
+            break;
+        }
+        case 'hardhat': {
+            c.beginPath(); c.moveTo(-78, -84); c.bezierCurveTo(-86, -166, 86, -166, 78, -84); c.closePath();
+            c.fillStyle = '#f5c518'; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            skR(c, -16, -158, 32, 70, 8, '#d9a90f', out, 2);
+            skE(c, 0, -86, 98, 14, '#f5c518', out, 3);
+            c.fillStyle = 'rgba(255,255,255,0.45)'; c.beginPath(); c.ellipse(-44, -122, 18, 8, -0.6, 0, Math.PI * 2); c.fill();
+            break;
+        }
+        case 'fire': {
+            c.beginPath(); c.moveTo(-82, -80); c.bezierCurveTo(-90, -160, 90, -160, 82, -80); c.closePath();
+            c.fillStyle = '#c42b2b'; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            skE(c, 0, -80, 108, 14, '#a82020', out, 3);
+            skP(c, [[-24, -150], [24, -150], [30, -100], [0, -86], [-30, -100]], '#f1c40f', out, 2.5);
+            skStar(c, 0, -122, 12, '#7a1010');
+            c.fillStyle = 'rgba(255,255,255,0.35)'; c.beginPath(); c.ellipse(-52, -124, 14, 7, -0.6, 0, Math.PI * 2); c.fill();
+            break;
+        }
+        case 'cowboy': {
+            c.beginPath(); c.moveTo(-132, -92); c.quadraticCurveTo(-110, -70, 0, -72); c.quadraticCurveTo(110, -70, 132, -92);
+            c.quadraticCurveTo(100, -118, 0, -112); c.quadraticCurveTo(-100, -118, -132, -92); c.closePath();
+            c.fillStyle = '#8a5a2b'; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            c.beginPath(); c.moveTo(-62, -104); c.quadraticCurveTo(-64, -156, -30, -158); c.quadraticCurveTo(0, -140, 30, -158); c.quadraticCurveTo(64, -156, 62, -104); c.closePath();
+            c.fillStyle = '#9b6a36'; c.fill(); c.stroke();
+            skR(c, -62, -118, 124, 14, 3, '#3a2412', out, 2);
+            skE(c, 0, -111, 8, 8, '#d9b25a', out, 1.5);
+            break;
+        }
+        case 'police': {
+            skR(c, -76, -148, 152, 66, 12, '#1d2a52', out, 3);
+            skE(c, 0, -86, 96, 18, '#10151f', out, 3);
+            skR(c, -76, -108, 152, 12, 3, '#0f1730', null);
+            skP(c, [[-14, -142], [14, -142], [18, -116], [0, -104], [-18, -116]], '#d9b25a', out, 2);
+            skStar(c, 0, -125, 7, '#fff3b0');
+            break;
+        }
+        case 'pilot': {
+            skR(c, -74, -146, 148, 62, 14, '#f4f4f8', out, 3);
+            skE(c, 0, -86, 94, 18, '#12161e', out, 3);
+            skR(c, -74, -104, 148, 14, 3, '#1d2a52', null);
+            c.strokeStyle = '#d9b25a'; c.lineWidth = 4;
+            c.beginPath(); c.moveTo(-26, -126); c.quadraticCurveTo(0, -140, 26, -126); c.moveTo(-18, -118); c.quadraticCurveTo(0, -130, 18, -118); c.stroke();
+            skE(c, 0, -118, 6, 6, '#d9b25a');
+            break;
+        }
+        case 'tricorn': {
+            skP(c, [[-136, -84], [-84, -154], [0, -118], [84, -154], [136, -84], [0, -66]], '#16161c', out, 3);
+            skP(c, [[-84, -154], [0, -126], [84, -154], [0, -170]], '#23232b', out, 2.5);
+            c.strokeStyle = '#d9b25a'; c.lineWidth = 3;
+            c.beginPath(); c.moveTo(-132, -84); c.lineTo(-84, -150); c.moveTo(132, -84); c.lineTo(84, -150); c.stroke();
+            skE(c, 0, -112, 15, 14, '#ece8d8', out, 2);                   // גולגולת
+            skE(c, -5, -112, 3, 3.5, '#111'); skE(c, 5, -112, 3, 3.5, '#111');
+            skR(c, -6, -102, 12, 6, 2, '#ece8d8', out, 1.5);
+            break;
+        }
+        case 'ninja': {                                   // סרט + לוחית
+            c.fillStyle = '#c42b2b';
+            c.beginPath(); c.moveTo(-90, -86); c.quadraticCurveTo(0, -112, 90, -86); c.lineTo(88, -66); c.quadraticCurveTo(0, -92, -88, -66); c.closePath();
+            c.fill(); c.strokeStyle = out; c.lineWidth = 2.5; c.stroke();
+            skR(c, -26, -102, 52, 26, 5, '#aeb6c4', out, 2.5);
+            c.strokeStyle = '#4a5160'; c.lineWidth = 2.5;
+            c.beginPath(); c.moveTo(-14, -92); c.lineTo(14, -92); c.moveTo(0, -98); c.lineTo(0, -80); c.stroke();
+            skP(c, [[88, -76], [128, -62], [118, -50]], '#c42b2b', out, 2);
+            skP(c, [[88, -72], [134, -84], [124, -96]], '#a82020', out, 2);
+            break;
+        }
+        case 'viking': {
+            for (const s of [-1, 1]) {
+                c.beginPath(); c.moveTo(s * 70, -98); c.bezierCurveTo(s * 130, -100, s * 150, -150, s * 122, -190);
+                c.bezierCurveTo(s * 126, -150, s * 100, -126, s * 60, -118); c.closePath();
+                c.fillStyle = '#efe6cf'; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            }
+            c.beginPath(); c.moveTo(-78, -86); c.bezierCurveTo(-84, -160, 84, -160, 78, -86); c.closePath();
+            const g = c.createLinearGradient(-80, 0, 80, 0);
+            g.addColorStop(0, '#6b7280'); g.addColorStop(0.45, '#c3cad6'); g.addColorStop(1, '#6b7280');
+            c.fillStyle = g; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            skR(c, -80, -108, 160, 18, 4, '#7a5a2c', out, 2.5);
+            for (const x of [-56, -28, 0, 28, 56]) skE(c, x, -99, 3.6, 3.6, '#e7d28a');
+            break;
+        }
+        case 'wizard': {
+            skE(c, 0, -100, 130, 24, c1, out, 3);
+            c.beginPath(); c.moveTo(-64, -104); c.quadraticCurveTo(-30, -200, 18, -272); c.quadraticCurveTo(30, -190, 64, -104); c.closePath();
+            c.fillStyle = c1; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            skR(c, -64, -122, 128, 16, 3, c2, out, 2);
+            skStar(c, -10, -170, 11, '#fff3b0'); skStar(c, 24, -214, 7, '#fff3b0'); skE(c, 14, -142, 10, 10, '#fff3b0'); skE(c, 19, -145, 9, 9, c1);
+            break;
+        }
+        case 'fedora': {
+            skE(c, 0, -98, 122, 26, '#6b6f78', out, 3, -0.04);
+            c.beginPath(); c.moveTo(-62, -102); c.quadraticCurveTo(-60, -158, -20, -158); c.quadraticCurveTo(0, -146, 20, -158); c.quadraticCurveTo(60, -158, 62, -102); c.closePath();
+            c.fillStyle = '#7b808a'; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            skR(c, -62, -122, 124, 16, 3, '#1b1d22', out, 2);
+            break;
+        }
+        case 'astro': {                                   // בועת קסדה שקופה
+            const g = c.createRadialGradient(-30, -90, 10, 0, -34, 126);
+            g.addColorStop(0, 'rgba(210,235,255,0.34)'); g.addColorStop(0.7, 'rgba(120,180,255,0.14)'); g.addColorStop(1, 'rgba(90,150,240,0.34)');
+            skE(c, 0, -34, 112, 118, g, 'rgba(210,225,255,0.9)', 4);
+            c.fillStyle = 'rgba(255,255,255,0.55)';
+            c.beginPath(); c.ellipse(-56, -104, 30, 14, -0.7, 0, Math.PI * 2); c.fill();
+            c.fillStyle = 'rgba(255,255,255,0.3)';
+            c.beginPath(); c.ellipse(70, 16, 14, 6, -0.8, 0, Math.PI * 2); c.fill();
+            skR(c, -9, -174, 18, 36, 6, '#d6291f', out, 2);
+            skE(c, 0, -178, 7, 7, '#ffffff', out, 2);
+            break;
+        }
+        case 'kabuto': {
+            c.beginPath(); c.moveTo(-84, -76); c.bezierCurveTo(-92, -164, 92, -164, 84, -76); c.closePath();
+            const g = c.createLinearGradient(-80, 0, 80, 0);
+            g.addColorStop(0, '#7a1c1c'); g.addColorStop(0.5, '#c0342f'); g.addColorStop(1, '#7a1c1c');
+            c.fillStyle = g; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            c.strokeStyle = 'rgba(0,0,0,0.5)'; c.lineWidth = 2;
+            for (let i = -4; i <= 4; i++) { c.beginPath(); c.moveTo(i * 18, -158 + Math.abs(i) * 4); c.lineTo(i * 20, -84); c.stroke(); }
+            skE(c, 0, -80, 96, 12, '#d9b25a', out, 2.5);
+            for (const s of [-1, 1]) skP(c, [[s * 8, -158], [s * 60, -214], [s * 30, -158]], '#e9c46a', out, 2.5);   // קרניים זהובות
+            skE(c, 0, -164, 10, 10, '#e9c46a', out, 2);
+            break;
+        }
+        case 'knight': {
+            c.beginPath(); c.moveTo(-86, -40); c.bezierCurveTo(-96, -170, 96, -170, 86, -40); c.lineTo(66, -46); c.lineTo(62, -86); c.quadraticCurveTo(0, -102, -62, -86); c.lineTo(-66, -46); c.closePath();
+            const g = c.createLinearGradient(-86, 0, 86, 0);
+            g.addColorStop(0, '#5b6577'); g.addColorStop(0.4, '#d3dae6'); g.addColorStop(1, '#5b6577');
+            c.fillStyle = g; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            skR(c, -8, -168, 16, 90, 4, '#aab3c2', out, 2);
+            const sway = Math.sin(t * 3) * 6;
+            c.beginPath(); c.moveTo(0, -168); c.bezierCurveTo(30 + sway, -230, 80 + sway, -200, 96 + sway, -150); c.bezierCurveTo(60 + sway, -178, 30, -168, 0, -150); c.closePath();
+            c.fillStyle = '#c42b2b'; c.fill(); c.strokeStyle = out; c.lineWidth = 2.5; c.stroke();
+            break;
+        }
+        case 'crown': {
+            const gold = '#f1c40f';
+            c.beginPath();
+            c.moveTo(-70, -104); c.lineTo(-76, -170); c.lineTo(-40, -138); c.lineTo(-18, -186); c.lineTo(0, -140); c.lineTo(18, -186); c.lineTo(40, -138); c.lineTo(76, -170); c.lineTo(70, -104); c.closePath();
+            const g = c.createLinearGradient(0, -190, 0, -100);
+            g.addColorStop(0, '#fff0a0'); g.addColorStop(0.5, gold); g.addColorStop(1, '#b8860b');
+            c.fillStyle = g; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            for (const [x, y] of [[-76, -172], [-18, -188], [18, -188], [76, -172]]) skE(c, x, y, 6, 6, '#ffffff', out, 1.5);
+            skE(c, 0, -122, 10, 10, '#d6291f', out, 2); skE(c, -36, -118, 7, 7, '#2a7be4', out, 2); skE(c, 36, -118, 7, 7, '#2ea043', out, 2);
+            skR(c, -72, -108, 144, 12, 3, '#b8860b', out, 2);
+            break;
+        }
+        case 'halo': {
+            const pulse = 0.8 + 0.2 * Math.sin(t * 3);
+            const hy = -164 + Math.sin(t * 2.2) * 4;
+            skGlow(c, 0, hy, 90, '#ffe27a', 0.55 * pulse);
+            c.save(); c.translate(0, hy); c.scale(1, 0.32);
+            c.strokeStyle = '#ffe27a'; c.lineWidth = 15; c.shadowColor = '#ffd23d'; c.shadowBlur = 14;
+            c.beginPath(); c.arc(0, 0, 58, 0, Math.PI * 2); c.stroke();
+            c.restore();
+            break;
+        }
+        case 'dragon': {
+            for (const s of [-1, 1]) {
+                c.beginPath(); c.moveTo(s * 40, -126); c.bezierCurveTo(s * 70, -150, s * 120, -170, s * 136, -240);
+                c.bezierCurveTo(s * 100, -200, s * 70, -184, s * 20, -148); c.closePath();
+                const g = c.createLinearGradient(0, -240, 0, -126);
+                g.addColorStop(0, '#f4d36a'); g.addColorStop(1, '#2a2118');
+                c.fillStyle = g; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+            }
+            c.beginPath(); c.moveTo(-70, -108); c.lineTo(-62, -150); c.lineTo(-34, -126); c.lineTo(-16, -166); c.lineTo(0, -128); c.lineTo(16, -166); c.lineTo(34, -126); c.lineTo(62, -150); c.lineTo(70, -108); c.closePath();
+            c.fillStyle = '#2a2118'; c.fill(); c.strokeStyle = '#e9c46a'; c.lineWidth = 3; c.stroke();
+            skE(c, 0, -122, 9, 9, '#ff6a00', out, 2); skGlow(c, 0, -122, 26, '#ff6a00', 0.6);
+            break;
+        }
+        case 'cosmiccrown': {
+            const tw = Math.sin(t * 3) * 0.5 + 0.5;
+            c.beginPath(); c.moveTo(-66, -108); c.lineTo(-58, -160); c.lineTo(-30, -130); c.lineTo(0, -178); c.lineTo(30, -130); c.lineTo(58, -160); c.lineTo(66, -108); c.closePath();
+            const g = c.createLinearGradient(0, -180, 0, -106);
+            g.addColorStop(0, '#e6f0ff'); g.addColorStop(1, '#6e7bd9');
+            c.fillStyle = g; c.fill(); c.strokeStyle = '#2b2f6e'; c.lineWidth = 3; c.stroke();
+            for (const [x, y, r] of [[0, -180, 7], [-58, -162, 5], [58, -162, 5]]) skStar(c, x, y, r + tw * 3, '#ffffff');
+            skE(c, 0, -122, 10, 10, '#35e0ff', '#2b2f6e', 2); skGlow(c, 0, -122, 30, '#35e0ff', 0.7);
+            break;
+        }
+        case 'plate': {                                   // קסדת סייבורג
+            c.beginPath(); c.moveTo(-84, -76); c.bezierCurveTo(-90, -150, -30, -146, -4, -140); c.lineTo(-6, -86); c.closePath();
+            const g = c.createLinearGradient(-84, 0, 0, 0);
+            g.addColorStop(0, '#4b5568'); g.addColorStop(1, '#b8c2d6');
+            c.fillStyle = g; c.fill(); c.strokeStyle = '#1f2531'; c.lineWidth = 2.5; c.stroke();
+            c.strokeStyle = '#35e0ff'; c.lineWidth = 2; c.shadowColor = '#35e0ff'; c.shadowBlur = 6;
+            c.beginPath(); c.moveTo(-70, -100); c.lineTo(-30, -100); c.lineTo(-22, -116); c.stroke(); c.shadowBlur = 0;
+            skR(c, 70, -64, 20, 28, 5, '#2a3140', '#9aa4b8', 2);
+            c.strokeStyle = '#9aa4b8'; c.lineWidth = 3; c.beginPath(); c.moveTo(80, -64); c.lineTo(84, -104); c.stroke();
+            skE(c, 84, -106, 4.5, 4.5, '#ff3030'); skGlow(c, 84, -106, 18, '#ff3030', 0.7);
+            break;
+        }
+        case 'headphones': {
+            c.strokeStyle = '#222'; c.lineWidth = 9;
+            c.beginPath(); c.arc(0, -40, 96, Math.PI * 1.08, Math.PI * 1.92); c.stroke();
+            for (const s of [-1, 1]) skR(c, s * 92 - 12, -50, 24, 44, 8, c1, out, 2.5);
+            break;
+        }
+    }
+}
+
+function skEarring(c, sk) {
+    if (sk.earring) { skE(c, 88, -8, 6, 7, null, '#e9c46a', 3); skE(c, -88, -8, 4, 4, '#e9c46a'); }
+}
+
+/* ---------------- אפקטים קדמיים ---------------- */
+function skFxFront(c, sk, t) {
+    const f = sk.fx;
+    if (!f) return;
+    const n = f.count || 14;
+    for (let i = 0; i < n; i++) {
+        const ph = (t * (f.speed || 0.35) + i / n) % 1;
+        const seed = i * 97.31;
+        const x = Math.sin(seed) * 130 + Math.sin(t * 1.3 + i) * 10;
+        let y, alpha = 1 - ph;
+        if (f.type === 'feathers') y = -140 + ph * 340;
+        else y = 130 - ph * 300;
+        c.globalAlpha = Math.max(0, Math.min(1, alpha * 1.4));
+        if (f.type === 'sparkles') skStar(c, x, y, 3 + (i % 3) * 1.6, '#ffe27a', t * 2 + i);
+        else if (f.type === 'embers') skE(c, x, y, 2.4 + (i % 3), 2.4 + (i % 3), i % 2 ? '#ff8a1a' : '#ffd33d');
+        else if (f.type === 'stars') skStar(c, x, y, 3 + (i % 4) * 1.4, i % 2 ? '#ffffff' : '#9fd4ff', t + i);
+        else if (f.type === 'feathers') { c.save(); c.translate(x, y); c.rotate(Math.sin(t * 2 + i) * 0.9); skE(c, 0, 0, 3.6, 9, '#ffffff', 'rgba(150,170,210,0.7)', 1); c.restore(); }
+        else if (f.type === 'flames') skE(c, x, y, 3, 6, '#ff8a1a');
+    }
+    c.globalAlpha = 1;
+}
+
+/* ---------------- הרכבה: דמות אנושית מלאה ---------------- */
+// st: { x, y (מרכז הפה), hw, ry, chew, t, tx, ty, surprised, mx, my }
+function skDrawHumanBack(c, sk, st) {
+    const t = st.t;
+    c.save();
+    c.translate(st.x, st.y);
+    skAuraBack(c, sk, t);
+    skWings(c, sk, t);
+    skCapeBack(c, sk, t);
+    skHairBack(c, sk, t);
+    skOutfit(c, sk, t);
+    skHatUnder(c, sk, t);
+    skHead(c, sk);
+    skHatMid(c, sk);
+    skFaceMarks(c, sk, t);
+    skEyes(c, sk, st);
+    skMask(c, sk);
+    skEyepatch(c, sk);
+    skBeardBack(c, sk, t);
+    c.restore();
+}
+
+function skMouthBack(c, sk, st) {
+    c.save();
+    c.translate(st.x, st.y);
+    const hw = st.hw, ry = st.ry;
+    skE(c, 0, 0, hw, ry, '#3a0a12');
+    // שיניים עליונות
+    c.save();
+    c.beginPath(); c.ellipse(0, 0, hw - 2, ry - 1, 0, 0, Math.PI * 2); c.clip();
+    skR(c, -hw + 6, -ry - 2, (hw - 6) * 2, ry * 0.62, 5, '#ffffff', 'rgba(0,0,0,0.25)', 1.5);
+    c.fillStyle = '#ec7a89';
+    c.beginPath(); c.ellipse(0, ry * 0.78, hw * 0.58, ry * 0.58, 0, 0, Math.PI * 2); c.fill();
+    c.restore();
+    const lip = sk.lips || '#c4575f';
+    c.strokeStyle = lip; c.lineWidth = 7; c.lineCap = 'round';
+    c.beginPath(); c.ellipse(0, 0, hw, ry, 0, Math.PI, Math.PI * 2); c.stroke();
+    c.restore();
+}
+
+function skMouthFront(c, sk, st) {
+    c.save();
+    c.translate(st.x, st.y);
+    const lip = sk.lips || '#c4575f';
+    c.strokeStyle = skShade(lip, -0.12); c.lineWidth = 9; c.lineCap = 'round';
+    c.beginPath(); c.ellipse(0, 0, st.hw, st.ry, 0, 0, Math.PI); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,0.55)';
+    for (const side of [-1, 1]) { c.beginPath(); c.arc(side * st.hw, 0, 5.5, 0, Math.PI * 2); c.fill(); }
+    c.restore();
+}
+
+function skDrawHumanFront(c, sk, st) {
+    const t = st.t;
+    c.save();
+    c.translate(st.x, st.y);
+    skMustache(c, sk);
+    skGlasses(c, sk);
+    skHairFront(c, sk, t);
+    skEarring(c, sk);
+    skHatOver(c, sk, t);
+    c.restore();
+}
+
+function skDrawHumanFx(c, sk, st) {
+    c.save();
+    c.translate(st.x, st.y);
+    skFxFront(c, sk, st.t);
+    c.restore();
+}
+
+/* ============================================================
+   קטלוג הסקינים של שוורץ - 30 דמויות אנושיות
+   rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי
+   ============================================================ */
+const SK_RARITY = [
+    { name: 'נפוץ',    price: 50,   color: '#9aa4b2' },
+    { name: 'לא נפוץ', price: 120,  color: '#4ac26b' },
+    { name: 'נדיר',    price: 300,  color: '#3b9cff' },
+    { name: 'אפי',     price: 600,  color: '#b66bff' },
+    { name: 'אגדי',    price: 1200, color: '#ff9f1c' },
+    { name: 'מיתי',    price: 2500, color: '#ff4d6d' }
+];
+
+const SV_SKINS = [
+    { id: 'classic', name: 'שוורץ הקלאסי', kind: 'cone', rarity: -1, price: 0 },
+
+    /* ---------- נפוץ ---------- */
+    { id: 'danny', name: 'דני', rarity: 0, tone: '#f0c08f', hair: { style: 'short', color: '#4a2e18' },
+      outfit: { base: '#3b6fd4', collar: 'crew' } },
+    { id: 'noa', name: 'נועה', rarity: 0, tone: '#e0a977', hair: { style: 'ponytail', color: '#2a1a12' }, lips: '#d9566f',
+      outfit: { base: '#e86a9a', collar: 'crew' } },
+    { id: 'yosi', name: 'סבא יוסי', rarity: 0, tone: '#f3d2b0', hair: { style: 'sidebald', color: '#e8e8ee' }, brow: '#cfcfd6',
+      glasses: { type: 'round', color: '#5a4630' }, beard: { style: 'mustache', color: '#e8e8ee' },
+      outfit: { base: '#f3f3f6', cardigan: '#4f7a4a', collar: 'v', inner: '#f3f3f6' } },
+    { id: 'roei', name: 'רועי', rarity: 0, tone: '#f1c8a0', hair: { style: 'short', color: '#a8641e' }, face: ['freckles'],
+      hat: { type: 'cap', c1: '#d6291f' }, outfit: { base: '#f2c230', collar: 'crew' } },
+    { id: 'michal', name: 'מיכל', rarity: 0, tone: '#c68642', hair: { style: 'curly', color: '#1f130c' }, lips: '#a8434f',
+      outfit: { base: '#f08a2a', collar: 'hood' } },
+    { id: 'avi', name: 'אבי', rarity: 0, tone: '#8d5524', hair: { style: 'buzz', color: '#14110f' }, lips: '#7a3a32',
+      beard: { style: 'stubble', color: '#14110f' }, outfit: { base: '#7d8590', collar: 'crew' } },
+    { id: 'shira', name: 'שירה', rarity: 0, tone: '#f6d3b8', hair: { style: 'long', color: '#1b1f3a' }, lips: '#d9566f',
+      outfit: { base: '#2ea043', collar: 'crew' } },
+
+    /* ---------- לא נפוץ ---------- */
+    { id: 'chef', name: 'השף', rarity: 1, tone: '#e8b88a', hair: { style: 'sidebald', color: '#3a2412' },
+      beard: { style: 'mustache', color: '#3a2412' }, hat: { type: 'chef' },
+      outfit: { base: '#f4f4f7', apron: true, collar: 'bandana', bandana: '#c42b2b' } },
+    { id: 'farmer', name: 'האיכר', rarity: 1, tone: '#d9a066', hair: { style: 'short', color: '#d8b24a' },
+      beard: { style: 'stubble', color: '#8a6a2a' }, hat: { type: 'straw', c1: '#c42b2b' },
+      outfit: { base: '#c24a3a', pattern: 'plaid', trim: '#7a1f18', overall: '#3f6fb0', collar: 'crew' } },
+    { id: 'fire', name: 'הכבאי', rarity: 1, tone: '#c68642', hair: { style: 'buzz', color: '#14110f' }, face: ['soot'],
+      hat: { type: 'fire' }, lips: '#8a4038',
+      outfit: { base: '#e4b521', pattern: 'vest', under: '#3a3d46', collar: 'high' } },
+    { id: 'builder', name: 'הבנאי', rarity: 1, tone: '#f0c08f', hair: { style: 'short', color: '#5a3a1a' },
+      beard: { style: 'mustache', color: '#5a3a1a' }, hat: { type: 'hardhat' },
+      outfit: { base: '#ff7a1a', pattern: 'vest', under: '#6b7280', collar: 'crew' } },
+    { id: 'cowboy', name: 'הקאובוי', rarity: 1, tone: '#d9a066', hair: { style: 'short', color: '#4a2e18' },
+      beard: { style: 'stubble', color: '#3a2412' }, hat: { type: 'cowboy' },
+      outfit: { base: '#b5432b', pattern: 'plaid', trim: '#6a1d12', collar: 'bandana', bandana: '#2a6fd0' } },
+    { id: 'police', name: 'השוטר', rarity: 1, tone: '#8d5524', hair: { style: 'buzz', color: '#14110f' }, lips: '#7a3a32',
+      beard: { style: 'mustache', color: '#14110f' }, hat: { type: 'police' },
+      outfit: { base: '#3b5ca8', badge: '#d9b25a', collar: 'tie', tie: '#14182e' } },
+    { id: 'pilot', name: 'הטייס', rarity: 1, tone: '#f0c08f', hair: { style: 'short', color: '#3a2a1a' },
+      glasses: { type: 'aviator', color: '#d9b25a' }, hat: { type: 'pilot' },
+      outfit: { base: '#f4f4f8', collar: 'tie', tie: '#1d2a52', badge: '#d9b25a' } },
+
+    /* ---------- נדיר ---------- */
+    { id: 'pirate', name: 'הפיראט', rarity: 2, tone: '#d9a066', hair: { style: 'long', color: '#1a1410' }, eyepatch: 'left', earring: true,
+      beard: { style: 'full', color: '#1a1410' }, hat: { type: 'tricorn' }, lips: '#8a4038',
+      outfit: { base: '#f1f1f5', pattern: 'stripes', trim: '#1d2a52', jacket: '#4a2a18', collar: 'crew' } },
+    { id: 'ninja', name: 'הנינג\'ה', rarity: 2, tone: '#e8b88a', hat: { type: 'ninja' }, brow: '#14110f',
+      outfit: { base: '#1b1c22', pattern: 'none', straps: '#c42b2b', sash: '#c42b2b', collar: 'high' } },
+    { id: 'viking', name: 'הוויקינג', rarity: 2, tone: '#f3d2b0', hair: { style: 'long', color: '#c8641e' }, brow: '#a8501a',
+      beard: { style: 'braids', color: '#c8641e' }, hat: { type: 'viking' }, face: ['warpaint'],
+      outfit: { base: '#6b4a2c', fur: true, collar: 'none' } },
+    { id: 'wizard', name: 'הקוסם', rarity: 2, tone: '#f3d2b0', hair: { style: 'long', color: '#f0f0f6' }, brow: '#e8e8ee',
+      beard: { style: 'long', color: '#f0f0f6' }, hat: { type: 'wizard', c1: '#5b3fb5', c2: '#e9c46a' },
+      outfit: { base: '#5b3fb5', pattern: 'stars', collar: 'crew' } },
+    { id: 'rocker', name: 'הרוקר', rarity: 2, tone: '#e8b88a', hair: { style: 'mohawk', color: '#ff2f92', color2: '#35c9ff' },
+      glasses: { type: 'shades', neon: '#ff2f92' }, earring: true, beard: { style: 'stubble', color: '#2a1a12' },
+      outfit: { base: '#23232b', jacket: '#15151a', collar: 'crewdark' } },
+    { id: 'detective', name: 'הבלש', rarity: 2, tone: '#f0c08f', hair: { style: 'short', color: '#3a2a1a' },
+      glasses: { type: 'monocle' }, beard: { style: 'mustache', color: '#3a2a1a' }, hat: { type: 'fedora' },
+      outfit: { base: '#d9d4c5', coat: '#a8875a', collar: 'tie', tie: '#6a1d12' } },
+
+    /* ---------- אפי ---------- */
+    { id: 'astronaut', name: 'האסטרונאוט', rarity: 3, tone: '#e0a977', hair: { style: 'short', color: '#2a1a12' }, hat: { type: 'astro' },
+      outfit: { base: '#eef1f7', patchFlag: true, collar: 'ring' }, aura: { color: '#6ea8ff', alpha: 0.28 }, fx: { type: 'stars', count: 10 } },
+    { id: 'samurai', name: 'הסמוראי', rarity: 3, tone: '#e8b88a', hair: { style: 'bald', color: '#111' }, brow: '#14110f',
+      beard: { style: 'mustache', color: '#14110f' }, hat: { type: 'kabuto' },
+      outfit: { base: '#a52a2a', pattern: 'plates', trim: '#3a0c0c', collar: 'high' }, aura: { color: '#ff4d4d', alpha: 0.2 } },
+    { id: 'knight', name: 'האביר', rarity: 3, tone: '#f0c08f', hair: { style: 'bald', color: '#111' },
+      beard: { style: 'stubble', color: '#6a4a2a' }, hat: { type: 'knight' },
+      outfit: { base: '#b6bfcd', pattern: 'plates', trim: '#4b5568', tabard: true, collar: 'high' }, aura: { color: '#c9d6ff', alpha: 0.18 } },
+    { id: 'hero', name: 'גיבור העל', rarity: 3, tone: '#e8b88a', hair: { style: 'slick', color: '#14110f' }, mask: '#2a5bd7',
+      outfit: { base: '#2a5bd7', emblem: '#f2c230', belt: '#f2c230', collar: 'crew' }, cape: { color: '#d6291f' }, aura: { color: '#ffd23d', alpha: 0.22 } },
+    { id: 'cyborg', name: 'הסייבורג', rarity: 3, tone: '#d9a98a', hair: { style: 'wild', color: '#aeb6c4' }, face: ['cyberhalf'], hat: { type: 'plate' },
+      outfit: { base: '#161a22', pattern: 'neon', glow: '#35e0ff', collar: 'high' }, aura: { color: '#35e0ff', alpha: 0.24 }, fx: { type: 'sparkles', count: 8 } },
+
+    /* ---------- אגדי ---------- */
+    { id: 'king', name: 'מלך הקבב', rarity: 4, tone: '#f0c08f', hair: { style: 'long', color: '#7a4a24' },
+      beard: { style: 'full', color: '#7a4a24' }, hat: { type: 'crown' },
+      outfit: { base: '#b3202a', pattern: 'none', fur: true, collar: 'none' }, aura: { color: '#ffd23d', alpha: 0.4 }, fx: { type: 'sparkles', count: 16 } },
+    { id: 'angel', name: 'המלאך', rarity: 4, tone: '#f6d9bd', hair: { style: 'wavy', color: '#f0cf6a' }, hat: { type: 'halo' }, lips: '#e0707f',
+      outfit: { base: '#fbfbff', trim: '#f1c40f', collar: 'crew' }, wings: { type: 'feather' }, aura: { color: '#fff3b0', alpha: 0.45 }, fx: { type: 'feathers', count: 12, speed: 0.18 } },
+    { id: 'firemage', name: 'הלוחש לאש', rarity: 4, tone: '#d9a066', hair: { style: 'flame' }, eyes: { glow: '#ffb02e' }, brow: '#7a1f0a',
+      outfit: { base: '#5a1410', trim: '#ff8a1a', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.5 }, fx: { type: 'embers', count: 20, speed: 0.5 } },
+
+    /* ---------- מיתי ---------- */
+    { id: 'cosmic', name: 'קיסר הגלקסיה', rarity: 5, tone: '#e6c6e8', hair: { style: 'galaxy', color: '#3b2a9c' }, eyes: { glow: '#35e0ff' }, brow: '#cfd8ff', hat: { type: 'cosmiccrown' },
+      outfit: { base: '#1a1450', pattern: 'stars', collar: 'high' }, cape: { color: '#2a1a78', stars: true },
+      aura: { color: '#8f6bff', alpha: 0.5, rings: true }, fx: { type: 'stars', count: 22, speed: 0.3 }, lips: '#c067d9' },
+    { id: 'dragon', name: 'אדון הדרקונים', rarity: 5, tone: '#c9a77c', hair: { style: 'slick', color: '#1a1410' }, eyes: { glow: '#ff7a1a', slit: true }, brow: '#14110f', hat: { type: 'dragon' },
+      beard: { style: 'goatee', color: '#1a1410' }, wings: { type: 'dragon', color: '#2d6a3a' },
+      outfit: { base: '#2f7a42', pattern: 'scales', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.45, runes: true }, fx: { type: 'embers', count: 22, speed: 0.45 } }
+];
+
+function skinById(id) { return SV_SKINS.find(s => s.id === id) || SV_SKINS[0]; }
+function skinPrice(s) { return s.rarity < 0 ? 0 : SK_RARITY[s.rarity].price; }
+
+/* ============================================================
+   כלכלת המשחק: מטבעות קבב, קופונים וחנות סקינים
+   ============================================================ */
+const COIN_KEY = 'kebab_coins';
+const SKINS_KEY = 'kebab_skins_owned';
+const SKIN_EQ_KEY = 'kebab_skin_equipped';
+
+function getCoins() { return parseInt(store.get(COIN_KEY)) || 0; }
+function setCoins(n) {
+    store.set(COIN_KEY, Math.max(0, Math.floor(n)));
+    renderCoinBadges();
+}
+function addCoins(n) { setCoins(getCoins() + n); }
+function spendCoins(n) {
+    if (getCoins() < n) return false;
+    setCoins(getCoins() - n);
+    return true;
+}
+let lastCoinsShown = null;
+function renderCoinBadges() {
+    const n = getCoins();
+    const grew = lastCoinsShown !== null && n > lastCoinsShown;
+    lastCoinsShown = n;
+    document.querySelectorAll('.coin-balance').forEach(e => {
+        e.textContent = n;
+        const chip = e.closest('.coin-chip');
+        if (grew && chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
+    });
+}
+
+/* ---------- קופונים ---------- */
+// wLow = משקל כשהניקוד נמוך, wHigh = משקל כשהניקוד גבוה מאוד.
+// כל קופון נדיר בצורה שונה, וככל שהניקוד עולה הקופונים הנדירים נעשים סבירים יותר.
+const COUPONS = [
+    { text: "תוספת צ'יפס מוגדל חינם!",                  coins: 5,   wLow: 60, wHigh: 10 },
+    { text: 'פחיות שתייה במתנה בארוחת סינגל!',          coins: 15,  wLow: 28, wHigh: 25 },
+    { text: 'קינוח מלבי מתנה בהזמנה מעל 100 ש״ח!',      coins: 35,  wLow: 9,  wHigh: 35 },
+    { text: '10% הנחה על כל השיפודים!',                 coins: 100, wLow: 3,  wHigh: 30 }
+];
+
+// min: עד ניקוד זה (כולל) אין קופון. great: הניקוד שממנו המזל במקסימום.
+// חידון ו-Kebable לא מופיעים כאן - הם אף פעם לא נותנים מטבעות.
+const GAME_REWARD = {
+    catch:   { min: 7,  great: 16 },
+    builder: { min: 2,  great: 8 },
+    goods:   { min: 16, great: 60 },
+    shvartz: { min: 30, great: 140 },
+    ninja:   { min: 10, great: 70 }
+};
+
+function rollCoupon(gameKey, score) {
+    const cfg = GAME_REWARD[gameKey];
+    if (!cfg || score <= cfg.min) return null;
+    const luck = Math.min(1, (score - cfg.min) / (cfg.great - cfg.min));
+    const weights = COUPONS.map(c => c.wLow + (c.wHigh - c.wLow) * luck);
+    let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < COUPONS.length; i++) {
+        r -= weights[i];
+        if (r <= 0) return COUPONS[i];
+    }
+    return COUPONS[0];
+}
+
+function showResultReward(gameKey, score) {
+    const box = document.getElementById('coupon-box');
+    const txt = document.getElementById('coupon-text');
+    const coinsEl = document.getElementById('coupon-coins');
+    const totalEl = document.getElementById('coupon-total');
+    if (!GAME_REWARD[gameKey]) { box.style.display = 'none'; return; }
+
+    box.style.display = 'block';
+    // מפעילים מחדש את אנימציות הכניסה בכל תוצאה
+    box.style.animation = 'none'; void box.offsetWidth; box.style.animation = '';
+    coinsEl.style.animation = 'none'; void coinsEl.offsetWidth; coinsEl.style.animation = '';
+
+    const coupon = rollCoupon(gameKey, score);
+    if (!coupon) {
+        box.classList.add('empty');
+        txt.textContent = 'הפעם אין קופון. נסו שוב!';
+        coinsEl.textContent = '';
+        totalEl.textContent = '';
+        sfx.low();
+        return;
+    }
+    box.classList.remove('empty');
+    txt.textContent = coupon.text;
+    const before = getCoins();
+    addCoins(coupon.coins);
+    coinsEl.textContent = '+' + coupon.coins + ' 🪙 קבב קוינס';
+    totalEl.innerHTML = 'סה״כ: <b id="coupon-total-num">' + before + '</b> 🪙';
+    setTimeout(() => {
+        const el = document.getElementById('coupon-total-num');
+        if (el) animateNumber(el, before, before + coupon.coins, 900);
+    }, 650);
+    sfx.win();
+    confettiBurst(coupon.coins >= 35 ? 70 : 40);
+    haptic([20, 40, 20]);
+}
+
+/* ---------- סקינים: בעלות ובחירה ---------- */
+function getOwnedSkins() {
+    try {
+        const a = JSON.parse(store.get(SKINS_KEY) || '[]');
+        return new Set(['classic'].concat(Array.isArray(a) ? a : []));
+    } catch (e) { return new Set(['classic']); }
+}
+function saveOwnedSkins(set) {
+    store.set(SKINS_KEY, JSON.stringify(Array.from(set).filter(x => x !== 'classic')));
+}
+function getEquippedSkinId() {
+    const id = store.get(SKIN_EQ_KEY) || 'classic';
+    return (SV_SKINS.some(s => s.id === id) && getOwnedSkins().has(id)) ? id : 'classic';
+}
+
+let toastTimer = null;
+function showToast(text, ok) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = text;
+    t.style.borderColor = ok === false ? '#f85149' : 'var(--accent-gold)';
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function buySkin(id) {
+    const sk = skinById(id);
+    const owned = getOwnedSkins();
+    if (owned.has(id)) return;
+    const price = skinPrice(sk);
+    if (!spendCoins(price)) {
+        sfx.err();
+        showToast('אין מספיק קבב קוינס 🪙', false);
+        return;
+    }
+    owned.add(id);
+    saveOwnedSkins(owned);
+    store.set(SKIN_EQ_KEY, id);               // סקין שנרכש נבחר אוטומטית
+    sfx.buy();
+    confettiBurst(26);
+    showToast('נרכש! ' + sk.name + ' מוכן לאכול 🥙');
+    renderShop();
+}
+function equipSkin(id) {
+    if (!getOwnedSkins().has(id)) return;
+    store.set(SKIN_EQ_KEY, id);
+    showToast('נבחר: ' + skinById(id).name);
+    renderShop();
+}
+
+/* ---------- תצוגה מקדימה של סקין ---------- */
+const previewCache = {};
+function getPreview(sk) {
+    if (!previewCache[sk.id]) {
+        const cv = document.createElement('canvas');
+        cv.width = 360; cv.height = 400;
+        cv.className = 'shop-preview';
+        drawSkinPreview(cv, sk);
+        previewCache[sk.id] = cv;
+    }
+    return previewCache[sk.id];
+}
+
+function drawSkinPreview(cv, skin) {
+    const c = cv.getContext('2d');
+    c.clearRect(0, 0, cv.width, cv.height);
+    const bg = c.createLinearGradient(0, 0, 0, cv.height);
+    bg.addColorStop(0, '#1a0f0a');
+    bg.addColorStop(1, '#3a2012');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, cv.width, cv.height);
+
+    c.save();
+    c.beginPath();
+    c.rect(0, 0, cv.width, cv.height);
+    c.clip();
+    c.translate(cv.width / 2, cv.height * 0.6);
+    c.scale(0.85, 0.85);
+    const t = 1.3;
+    if (skin.kind === 'cone') {
+        const saved = sv;                     // הציור של הקונוס משתמש במצב המשחק, אז מחליפים זמנית
+        sv = { mouth: { x: 0, y: 0, hw: 44, chew: 0 }, ball: null, t: t, aim: null };
+        svDrawBody(c);
+        svDrawMouthBack(c);
+        svDrawLowerLip(c);
+        sv = saved;
+    } else {
+        const st = { x: 0, y: 0, hw: 44, ry: 44 * 0.36, chew: 0, t: t, tx: 120, ty: -200, surprised: false, mx: 0, my: 0 };
+        skDrawHumanBack(c, skin, st);
+        skMouthBack(c, skin, st);
+        skDrawHumanFront(c, skin, st);
+        skMouthFront(c, skin, st);
+        skDrawHumanFx(c, skin, st);
+    }
+    c.restore();
+}
+
+/* ---------- מסך החנות ---------- */
+function renderShop() {
+    const grid = document.getElementById('shop-grid');
+    if (!grid) return;
+    renderCoinBadges();
+    const owned = getOwnedSkins();
+    const eq = getEquippedSkinId();
+    const coins = getCoins();
+    const prevScroll = document.getElementById('screen-shop').scrollTop;
+    grid.innerHTML = '';
+
+    const groups = [{ rarity: -1, title: 'ברירת מחדל', color: '#b9a38e' }];
+    SK_RARITY.forEach((r, i) => groups.push({ rarity: i, title: r.name, color: r.color, price: r.price }));
+
+    groups.forEach(g => {
+        const skins = SV_SKINS.filter(s => s.rarity === g.rarity);
+        if (!skins.length) return;
+        const head = document.createElement('div');
+        head.className = 'shop-group-head';
+        head.style.color = g.color;
+        head.style.borderColor = g.color;
+        const l = document.createElement('span');
+        l.textContent = g.title;
+        const r = document.createElement('span');
+        r.textContent = g.price ? ('🪙 ' + g.price) : 'חינם';
+        head.appendChild(l);
+        head.appendChild(r);
+        grid.appendChild(head);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'shop-cards';
+        skins.forEach(sk => {
+            const card = document.createElement('div');
+            card.className = 'shop-card r' + sk.rarity + (eq === sk.id ? ' equipped' : '');
+            card.style.setProperty('--rc', g.color);
+
+            card.appendChild(getPreview(sk));
+
+            const nm = document.createElement('div');
+            nm.className = 'shop-name';
+            nm.textContent = sk.name;
+            card.appendChild(nm);
+
+            const btn = document.createElement('button');
+            btn.className = 'btn shop-btn';
+            if (eq === sk.id) {
+                btn.textContent = 'נבחר ✓';
+                btn.disabled = true;
+            } else if (owned.has(sk.id)) {
+                btn.textContent = 'בחר';
+                btn.onclick = () => equipSkin(sk.id);
+            } else {
+                const price = skinPrice(sk);
+                btn.textContent = 'קנה 🪙 ' + price;
+                if (coins < price) btn.classList.add('cant');
+                btn.onclick = () => buySkin(sk.id);
+            }
+            card.appendChild(btn);
+            wrap.appendChild(card);
+        });
+        grid.appendChild(wrap);
+    });
+    document.getElementById('screen-shop').scrollTop = prevScroll;
+}
+
+/* ============================================================
+   משחק: קבב נינג'ה  (בסגנון Fruit Ninja)
+   חותכים בהחלקת אצבע את האוכל שעף באוויר, ולא נוגעים בפצצות!
+   ============================================================ */
+const NJ_W = 360, NJ_H = 540;
+const NJ_G = 900;
+const NJ_SECONDS = 45;
+const NJ_FOODS = ['🍢', '🍢', '🍢', '🥙', '🥩', '🍅', '🧅', '🌶️', '🥒', '🍆', '🥓'];
+const NJ_JUICE = {
+    '🍢': '#e0793a', '🥙': '#e9c46a', '🥩': '#b8322a', '🍅': '#e63946', '🧅': '#f1e3c4',
+    '🌶️': '#d62828', '🥒': '#6abf4b', '🍆': '#7b4fb5', '🥓': '#d96b5b'
+};
+
+let nj = null;
+let njRaf = 0;
+let njCtx = null;
+
+function njNewState() {
+    return {
+        running: false, time: NJ_SECONDS, score: 0, sliced: 0, t: 0, last: 0,
+        spawnIn: 0.5, items: [], halves: [], drops: [], trail: [], fx: [],
+        flash: 0, shake: 0, strokeSlices: 0, comboT: 0, aim: false, lastPt: null,
+        shownTime: -1, shownScore: -1, shownCombo: '#'
+    };
+}
+
+function njStop() {
+    cancelAnimationFrame(njRaf);
+    if (nj) nj.running = false;
+}
+
+function startNinjaGame() {
+    switchTab('ninja');                  // עוצר כל משחק אחר
+    nj = njNewState();
+    njResize();
+    njUpdateHud();
+    nj.running = true;
+    nj.last = performance.now();
+    njRaf = requestAnimationFrame(njLoop);
+}
+
+function njResize() {
+    const wrap = document.getElementById('ninja-wrap');
+    const cv = document.getElementById('ninja-canvas');
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    if (!w || !h) return;
+    const scale = Math.min(w / NJ_W, h / NJ_H);
+    const cssW = Math.floor(NJ_W * scale), cssH = Math.floor(NJ_H * scale);
+    cv.style.width = cssW + 'px';
+    cv.style.height = cssH + 'px';
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(cssW * dpr);
+    cv.height = Math.round(cssH * dpr);
+    njCtx = cv.getContext('2d');
+    njCtx.setTransform(cv.width / NJ_W, 0, 0, cv.height / NJ_H, 0, 0);
+}
+window.addEventListener('resize', () => { if (nj && nj.running) njResize(); });
+
+/* ---------- זריקת אוכל ---------- */
+function njSpawn() {
+    const diff = Math.min(1, nj.t / 35);
+    const n = 1 + Math.floor(Math.random() * (1.6 + diff * 2));
+    for (let i = 0; i < n; i++) {
+        const bomb = nj.t > 4 && Math.random() < 0.11 + 0.12 * diff;
+        const x = 50 + Math.random() * (NJ_W - 100);
+        const h = 270 + Math.random() * 190;
+        nj.items.push({
+            x, y: NJ_H + 30 + i * 18,
+            vx: (NJ_W / 2 - x) * 0.35 + (Math.random() - 0.5) * 90,
+            vy: -Math.sqrt(2 * NJ_G * h),
+            rot: Math.random() * 6, vr: (Math.random() - 0.5) * 6,
+            r: 32, bomb,
+            emoji: bomb ? '💣' : NJ_FOODS[Math.floor(Math.random() * NJ_FOODS.length)],
+            golden: !bomb && Math.random() < 0.06
+        });
+    }
+    nj.spawnIn = Math.max(0.55, 1.25 - diff * 0.55) + Math.random() * 0.35;
+}
+
+/* ---------- חיתוך ---------- */
+function njSegDist(px, py, x0, y0, x1, y1) {
+    const dx = x1 - x0, dy = y1 - y0;
+    const len2 = dx * dx + dy * dy;
+    let t = len2 ? ((px - x0) * dx + (py - y0) * dy) / len2 : 0;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(px - (x0 + t * dx), py - (y0 + t * dy));
+}
+
+function njSlice(x0, y0, x1, y1) {
+    if (Math.hypot(x1 - x0, y1 - y0) < 2) return;
+    const ang = Math.atan2(y1 - y0, x1 - x0);
+    for (const it of nj.items.slice()) {
+        if (it.sliced) continue;
+        if (njSegDist(it.x, it.y, x0, y0, x1, y1) <= it.r) njCut(it, ang);
+    }
+}
+
+function njBurst(x, y, color, n, speed) {
+    for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2, s = (0.3 + Math.random()) * speed;
+        nj.drops.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 60, r: 2 + Math.random() * 3.5, color, life: 0.7 + Math.random() * 0.5, t: 0 });
+    }
+}
+
+function njCut(it, ang) {
+    it.sliced = true;
+    nj.items.splice(nj.items.indexOf(it), 1);
+
+    if (it.bomb) {
+        nj.score = Math.max(0, nj.score - 10);
+        sfx.bomb();
+        nj.flash = 1;
+        nj.shake = 0.6;
+        nj.strokeSlices = 0;
+        njBurst(it.x, it.y, '#ff9f1c', 26, 380);
+        njBurst(it.x, it.y, '#ffd33d', 16, 260);
+        nj.fx.push({ x: it.x, y: it.y - 20, text: '💥 -10', color: '#ff5252', size: 28, t: 0, life: 1 });
+        try { if (navigator.vibrate) navigator.vibrate([40, 30, 60]); } catch (e) { /* ignore */ }
+        return;
+    }
+
+    nj.strokeSlices++;
+    nj.comboT = 0.35;
+    nj.sliced++;
+    sfx.slice(nj.strokeSlices);
+    const pts = (it.golden ? 5 : 1) + Math.max(0, nj.strokeSlices - 1);
+    nj.score += pts;
+
+    const local = ang - it.rot;
+    const nx = Math.cos(ang + Math.PI / 2), ny = Math.sin(ang + Math.PI / 2);
+    for (const side of [-1, 1]) {
+        nj.halves.push({
+            x: it.x, y: it.y, vx: it.vx + nx * side * 130, vy: it.vy + ny * side * 130 - 40,
+            rot: it.rot, vr: it.vr + side * 3.2, emoji: it.emoji, clip: local, side, golden: it.golden, t: 0
+        });
+    }
+    njBurst(it.x, it.y, NJ_JUICE[it.emoji] || '#e9c46a', it.golden ? 18 : 11, 240);
+    nj.fx.push({ x: it.x, y: it.y - 24, text: '+' + pts, color: it.golden ? '#ffd700' : '#ffffff', size: it.golden ? 30 : 22, t: 0, life: 0.8 });
+    if (nj.strokeSlices >= 3) {
+        nj.fx.push({ x: NJ_W / 2, y: 120, text: 'קומבו x' + nj.strokeSlices + '!', color: '#ff9f1c', size: 26, t: 0, life: 0.9 });
+    }
+    try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { /* ignore */ }
+}
+
+/* ---------- לוגיקה ---------- */
+function njStep(dt) {
+    nj.t += dt;
+    nj.time -= dt;
+    if (nj.time <= 0) { nj.time = 0; njEnd(); return; }
+
+    nj.spawnIn -= dt;
+    if (nj.spawnIn <= 0) njSpawn();
+
+    for (const it of nj.items) {
+        it.vy += NJ_G * dt;
+        it.x += it.vx * dt;
+        it.y += it.vy * dt;
+        it.rot += it.vr * dt;
+    }
+    nj.items = nj.items.filter(it => !(it.y > NJ_H + 70 && it.vy > 0));
+
+    for (const h of nj.halves) {
+        h.vy += NJ_G * dt;
+        h.x += h.vx * dt;
+        h.y += h.vy * dt;
+        h.rot += h.vr * dt;
+        h.t += dt;
+    }
+    nj.halves = nj.halves.filter(h => h.y < NJ_H + 80);
+
+    for (const d of nj.drops) {
+        d.vy += 700 * dt;
+        d.x += d.vx * dt;
+        d.y += d.vy * dt;
+        d.t += dt;
+    }
+    nj.drops = nj.drops.filter(d => d.t < d.life);
+
+    for (const p of nj.trail) p.t += dt;
+    nj.trail = nj.trail.filter(p => p.t < 0.22);
+
+    for (const f of nj.fx) f.t += dt;
+    nj.fx = nj.fx.filter(f => f.t < f.life);
+
+    nj.comboT -= dt;
+    if (nj.comboT <= 0) nj.strokeSlices = 0;
+    nj.flash = Math.max(0, nj.flash - dt * 2.2);
+    nj.shake = Math.max(0, nj.shake - dt * 2);
+
+    njUpdateHud();
+}
+
+function njUpdateHud() {
+    const t = Math.ceil(nj.time);
+    if (t !== nj.shownTime) { nj.shownTime = t; document.getElementById('nj-timer').textContent = t; }
+    if (nj.score !== nj.shownScore) { nj.shownScore = nj.score; document.getElementById('nj-score').textContent = nj.score; }
+    const combo = nj.strokeSlices >= 2 ? ('🔥 x' + nj.strokeSlices) : '';
+    if (combo !== nj.shownCombo) { nj.shownCombo = combo; document.getElementById('nj-combo').textContent = combo; }
+}
+
+function njEnd() {
+    if (!nj.running) return;
+    nj.running = false;
+    cancelAnimationFrame(njRaf);
+    saveBestScore('leaderboard_ninja', nj.score, 'kebab_ninjaHighScore');
+    document.getElementById('result-desc').textContent =
+        `חתכתם ${nj.sliced} חלקי אוכל וצברתם ${nj.score} נקודות!`;
+    showResultReward('ninja', nj.score);
+    switchTab('result');
+}
+
+function njLoop(ts) {
+    if (!nj || !nj.running) return;
+    const dt = Math.min(0.033, (ts - nj.last) / 1000 || 0.016);
+    nj.last = ts;
+    njStep(dt);
+    if (nj && nj.running) {
+        njDraw();
+        njRaf = requestAnimationFrame(njLoop);
+    }
+}
+
+/* ---------- ציור ---------- */
+function njDraw() {
+    const c = njCtx;
+    if (!c || !nj) return;
+    c.save();
+    if (nj.shake > 0) c.translate((Math.random() - 0.5) * nj.shake * 16, (Math.random() - 0.5) * nj.shake * 16);
+
+    const bg = c.createLinearGradient(0, 0, 0, NJ_H);
+    bg.addColorStop(0, '#150b07');
+    bg.addColorStop(1, '#341a0d');
+    c.fillStyle = bg;
+    c.fillRect(-20, -20, NJ_W + 40, NJ_H + 40);
+    // "קרשי עץ" עדינים ברקע
+    c.strokeStyle = 'rgba(255, 190, 120, 0.05)';
+    c.lineWidth = 2;
+    for (let y = 40; y < NJ_H; y += 56) { c.beginPath(); c.moveTo(0, y); c.lineTo(NJ_W, y + 8); c.stroke(); }
+
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+
+    // חצאים חתוכים
+    for (const h of nj.halves) {
+        c.save();
+        c.globalAlpha = Math.max(0, 1 - h.t * 0.5);
+        c.translate(h.x, h.y);
+        c.rotate(h.rot);
+        c.save();
+        c.rotate(h.clip);
+        c.beginPath();
+        c.rect(-80, h.side > 0 ? 0 : -80, 160, 80);
+        c.clip();
+        c.rotate(-h.clip);
+        if (h.golden) { c.shadowColor = '#ffd700'; c.shadowBlur = 16; }
+        c.font = '66px ' + SV_EMOJI_FONT;
+        c.fillText(h.emoji, 0, 3);
+        c.restore();
+        c.restore();
+    }
+
+    // פריטים
+    for (const it of nj.items) {
+        c.save();
+        c.translate(it.x, it.y);
+        if (it.bomb) {
+            const p = 0.6 + 0.4 * Math.sin(nj.t * 10);
+            skGlow(c, 0, 0, 62, '#ff3030', 0.55 * p);
+        } else if (it.golden) {
+            skGlow(c, 0, 0, 66, '#ffd700', 0.75);
+        }
+        c.rotate(it.rot);
+        c.font = '66px ' + SV_EMOJI_FONT;
+        c.fillText(it.emoji, 0, 3);
+        c.restore();
+    }
+
+    // התזות
+    for (const d of nj.drops) {
+        c.globalAlpha = Math.max(0, 1 - d.t / d.life);
+        c.fillStyle = d.color;
+        c.beginPath();
+        c.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        c.fill();
+    }
+    c.globalAlpha = 1;
+
+    // להב
+    if (nj.trail.length > 1) {
+        for (let i = 1; i < nj.trail.length; i++) {
+            const a = nj.trail[i - 1], b = nj.trail[i];
+            const life = 1 - b.t / 0.22;
+            c.lineCap = 'round';
+            c.strokeStyle = 'rgba(255, 190, 80, ' + (0.5 * life) + ')';
+            c.lineWidth = 14 * life + 2;
+            c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+            c.strokeStyle = 'rgba(255, 255, 255, ' + (0.95 * life) + ')';
+            c.lineWidth = 6 * life + 1;
+            c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+        }
+    }
+
+    // טקסטים צפים
+    for (const f of nj.fx) {
+        const p = f.t / f.life;
+        c.globalAlpha = 1 - p * p;
+        c.fillStyle = f.color;
+        c.font = 'bold ' + f.size + 'px Rubik, sans-serif';
+        c.fillText(f.text, f.x, f.y - p * 40);
+    }
+    c.globalAlpha = 1;
+
+    // הדרכה בהתחלה
+    if (nj.t < 3.5) {
+        c.globalAlpha = Math.min(1, (3.5 - nj.t));
+        c.fillStyle = 'rgba(1, 4, 9, 0.72)';
+        c.fillRect(20, 250, NJ_W - 40, 52);
+        c.fillStyle = '#f0f6fc';
+        c.font = 'bold 15px Rubik, sans-serif';
+        c.fillText('החליקו כדי לחתוך את האוכל', NJ_W / 2, 268);
+        c.fillText('ותתרחקו מהפצצות 💣', NJ_W / 2, 288);
+        c.globalAlpha = 1;
+    }
+
+    c.restore();
+
+    if (nj.flash > 0) {
+        c.fillStyle = 'rgba(255, 40, 40, ' + (nj.flash * 0.35) + ')';
+        c.fillRect(0, 0, NJ_W, NJ_H);
+    }
+}
+
+/* ---------- קלט ---------- */
+(function njBindInput() {
+    const cv = document.getElementById('ninja-canvas');
+    if (!cv) return;
+    const pt = e => {
+        const r = cv.getBoundingClientRect();
+        return { x: (e.clientX - r.left) / r.width * NJ_W, y: (e.clientY - r.top) / r.height * NJ_H };
+    };
+    const addTrail = p => { nj.trail.push({ x: p.x, y: p.y, t: 0 }); if (nj.trail.length > 24) nj.trail.shift(); };
+
+    cv.addEventListener('pointerdown', e => {
+        if (!nj || !nj.running) return;
+        const p = pt(e);
+        nj.aim = true;
+        nj.lastPt = p;
+        nj.trail.length = 0;
+        addTrail(p);
+        try { cv.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        e.preventDefault();
+    });
+    cv.addEventListener('pointermove', e => {
+        if (!nj || !nj.running || !nj.aim) return;
+        // מעבדים גם את כל הנקודות המאוחדות כדי לא לפספס חיתוך בהחלקה מהירה
+        const evs = (e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
+        for (const ev of evs) {
+            const p = pt(ev);
+            njSlice(nj.lastPt.x, nj.lastPt.y, p.x, p.y);
+            addTrail(p);
+            nj.lastPt = p;
+        }
+        e.preventDefault();
+    });
+    const end = () => { if (nj) nj.aim = false; };
+    cv.addEventListener('pointerup', end);
+    cv.addEventListener('pointercancel', end);
+})();
+
+function loadNinjaLeaderboard() {
+    loadLeaderboardInto('ninja-leaderboard-container', 'leaderboard_ninja');
+}
+
+/* ============================================================
+   UI: צלילים, אפקטי לחיצה, גחלים, קונפטי וקודים
+   ============================================================ */
+
+/* ---------- צלילים (WebAudio מסונתז, בלי קבצים) ---------- */
+const sfx = (() => {
+    let ctx = null;
+    let muted = store.get('kebab_muted') === '1';
+    let noiseBuf = null;
+
+    function ac() {
+        if (muted) return null;
+        if (!ctx) {
+            try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+        }
+        if (ctx.state === 'suspended') ctx.resume();
+        return ctx;
+    }
+    function tone(freq, dur, type, vol, delay, endFreq) {
+        const c = ac(); if (!c) return;
+        const t0 = c.currentTime + (delay || 0);
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = type || 'sine';
+        o.frequency.setValueAtTime(freq, t0);
+        if (endFreq) o.frequency.exponentialRampToValueAtTime(endFreq, t0 + dur);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(vol || 0.15, t0 + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(g); g.connect(c.destination);
+        o.start(t0); o.stop(t0 + dur + 0.03);
+    }
+    function noise(dur, vol, f0, f1, delay) {
+        const c = ac(); if (!c) return;
+        if (!noiseBuf) {
+            noiseBuf = c.createBuffer(1, c.sampleRate * 0.6, c.sampleRate);
+            const d = noiseBuf.getChannelData(0);
+            for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        }
+        const t0 = c.currentTime + (delay || 0);
+        const s = c.createBufferSource(); s.buffer = noiseBuf;
+        const f = c.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.2;
+        f.frequency.setValueAtTime(f0, t0);
+        f.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+        const g = c.createGain();
+        g.gain.setValueAtTime(vol, t0);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        s.connect(f); f.connect(g); g.connect(c.destination);
+        s.start(t0); s.stop(t0 + dur + 0.05);
+    }
+    return {
+        isMuted: () => muted,
+        toggle() { muted = !muted; store.set('kebab_muted', muted ? '1' : '0'); if (!muted) this.tap(); return muted; },
+        unlock() { if (!muted) ac(); },
+        tap()   { tone(640, 0.06, 'triangle', 0.10); tone(960, 0.05, 'sine', 0.05, 0.02); },
+        pop()   { tone(420, 0.09, 'sine', 0.16, 0, 760); },
+        tick()  { tone(1100, 0.04, 'square', 0.05); },
+        good()  { tone(660, 0.1, 'triangle', 0.14); tone(880, 0.14, 'triangle', 0.14, 0.07); },
+        score(clean) {
+            tone(523, 0.1, 'triangle', 0.16); tone(659, 0.1, 'triangle', 0.16, 0.07); tone(784, 0.18, 'triangle', 0.18, 0.14);
+            if (clean) tone(1046, 0.22, 'sine', 0.13, 0.2);
+        },
+        miss()  { tone(300, 0.2, 'sawtooth', 0.07, 0, 150); },
+        err()   { tone(190, 0.18, 'square', 0.09, 0, 130); },
+        whoosh(){ noise(0.28, 0.16, 500, 2600); },
+        slice(n){ noise(0.14, 0.22, 3200, 900); tone(900 + Math.min(6, n || 1) * 120, 0.08, 'triangle', 0.08, 0.02); },
+        bomb()  { noise(0.5, 0.45, 600, 60); tone(110, 0.45, 'sawtooth', 0.16, 0, 40); },
+        match(n){ tone(784, 0.1, 'triangle', 0.16); tone(988, 0.1, 'triangle', 0.16, 0.08); tone(1318, 0.2, 'triangle', 0.18, 0.16); },
+        coin()  { tone(1318, 0.08, 'square', 0.07); tone(1760, 0.2, 'square', 0.07, 0.07); },
+        buy()   { tone(523, 0.1, 'triangle', 0.16); tone(784, 0.1, 'triangle', 0.16, 0.09); tone(1046, 0.1, 'triangle', 0.16, 0.18); tone(1568, 0.3, 'sine', 0.14, 0.27); },
+        win()   { [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.22, 'triangle', 0.17, i * 0.1)); tone(1318, 0.5, 'sine', 0.14, 0.4); },
+        low()   { tone(330, 0.16, 'triangle', 0.1); tone(262, 0.24, 'triangle', 0.1, 0.12); }
+    };
+})();
+document.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
+
+function haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* ignore */ } }
+
+/* ---------- אפקט לחיצה: ניצוצות + צליל + רטט ---------- */
+const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn';
+const BURST_COLORS = ['#ffd24a', '#ff9f1c', '#ff6a1a', '#fff2b0'];
+
+function burstAt(x, y, n, spread) {
+    for (let i = 0; i < n; i++) {
+        const d = document.createElement('div');
+        d.className = 'burst-dot';
+        d.style.left = x + 'px';
+        d.style.top = y + 'px';
+        d.style.background = BURST_COLORS[i % BURST_COLORS.length];
+        document.body.appendChild(d);
+        const a = Math.random() * Math.PI * 2, r = (0.5 + Math.random()) * (spread || 38);
+        d.animate([
+            { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+            { transform: 'translate(calc(-50% + ' + Math.cos(a) * r + 'px), calc(-50% + ' + (Math.sin(a) * r - 10) + 'px)) scale(0.1)', opacity: 0 }
+        ], { duration: 420 + Math.random() * 200, easing: 'cubic-bezier(.2,.8,.3,1)' }).onfinish = () => d.remove();
+    }
+}
+
+document.addEventListener('click', e => {
+    const t = e.target.closest(PRESS_SELECTOR);
+    if (!t || t.disabled) return;
+    let x = e.clientX, y = e.clientY;
+    if (!x && !y) { const r = t.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
+    sfx.tap();
+    haptic(8);
+    burstAt(x, y, t.classList.contains('goods-slot') ? 4 : 7, 36);
+}, true);
+
+function confettiBurst(n) {
+    const cols = ['#ffd24a', '#ff6a1a', '#ff4d6d', '#4ac26b', '#3b9cff', '#b66bff', '#ffffff'];
+    for (let i = 0; i < (n || 46); i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti-bit';
+        c.style.left = (Math.random() * 100) + 'vw';
+        c.style.background = cols[i % cols.length];
+        document.body.appendChild(c);
+        const dx = (Math.random() - 0.5) * 220, rot = (Math.random() - 0.5) * 900;
+        c.animate([
+            { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+            { transform: 'translate(' + dx + 'px, ' + (window.innerHeight + 40) + 'px) rotate(' + rot + 'deg)', opacity: 0.9 }
+        ], { duration: 1500 + Math.random() * 1300, delay: Math.random() * 350, easing: 'cubic-bezier(.3,.1,.6,1)', fill: 'forwards' }).onfinish = () => c.remove();
+    }
+}
+
+function animateNumber(el, from, to, ms) {
+    const t0 = performance.now();
+    const step = now => {
+        const p = Math.min(1, (now - t0) / ms);
+        el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+/* ---------- גחלים ברקע ---------- */
+(function buildEmbers() {
+    const host = document.querySelector('.app-container');
+    if (!host) return;
+    const box = document.createElement('div');
+    box.className = 'embers';
+    for (let i = 0; i < 16; i++) {
+        const e = document.createElement('i');
+        e.style.left = Math.round(Math.random() * 100) + '%';
+        e.style.setProperty('--dx', Math.round((Math.random() - 0.5) * 90) + 'px');
+        e.style.animationDuration = (7 + Math.random() * 8) + 's';
+        e.style.animationDelay = (-Math.random() * 12) + 's';
+        const s = 3 + Math.random() * 4;
+        e.style.width = e.style.height = s + 'px';
+        box.appendChild(e);
+    }
+    host.insertBefore(box, host.firstChild);
+})();
+
+/* ---------- כפתור שמע ---------- */
+(function buildSoundButton() {
+    const logo = document.querySelector('.brand-logo');
+    if (!logo) return;
+    const b = document.createElement('button');
+    b.className = 'sound-btn';
+    b.title = 'צלילים';
+    const upd = () => { b.textContent = sfx.isMuted() ? '🔇' : '🔊'; };
+    b.onclick = () => { sfx.toggle(); upd(); };
+    upd();
+    logo.appendChild(b);
+})();
+
+/* ---------- טיימרים: אזהרה ב-5 השניות האחרונות ---------- */
+(function watchTimers() {
+    document.querySelectorAll('.hud-pill span[id$="-timer"]').forEach(span => {
+        new MutationObserver(() => {
+            const v = parseInt(span.textContent);
+            const pill = span.closest('.hud-pill');
+            const danger = v > 0 && v <= 5;
+            pill.classList.toggle('danger', danger);
+            if (danger) sfx.tick();
+        }).observe(span, { childList: true, characterData: true, subtree: true });
+    });
+})();
+
+/* ---------- קודים ---------- */
+// כאן יתווספו הקודים בהמשך. דוגמה:
+//   'KEBAB100': { coins: 100 },
+//   'SHVARTZ':  { skin: 'king' },
+// שימו לב: קוד שנמצא בצד הלקוח גלוי לכל מי שפותח את הקובץ.
+const REDEEM_CODES = {};
+const CODES_USED_KEY = 'kebab_codes_used';
+
+function getUsedCodes() {
+    try { return new Set(JSON.parse(store.get(CODES_USED_KEY) || '[]')); } catch (e) { return new Set(); }
+}
+
+function redeemCode(raw) {
+    const code = String(raw || '').trim().toUpperCase();
+    if (!code) return { ok: false, msg: 'הכניסו קוד' };
+    const reward = REDEEM_CODES[code];
+    if (!reward) return { ok: false, msg: 'הקוד לא נמצא' };
+    const used = getUsedCodes();
+    if (used.has(code)) return { ok: false, msg: 'הקוד כבר נוצל' };
+
+    used.add(code);
+    store.set(CODES_USED_KEY, JSON.stringify(Array.from(used)));
+    const parts = [];
+    if (reward.coins) { addCoins(reward.coins); parts.push('+' + reward.coins + ' 🪙'); }
+    if (reward.skin && SV_SKINS.some(s => s.id === reward.skin)) {
+        const owned = getOwnedSkins();
+        owned.add(reward.skin);
+        saveOwnedSkins(owned);
+        parts.push('סקין חדש: ' + skinById(reward.skin).name);
+    }
+    return { ok: true, msg: 'הקוד הופעל! ' + parts.join('  ·  ') };
+}
+
+function openCodeModal() {
+    const m = document.getElementById('code-modal');
+    m.classList.add('open');
+    document.getElementById('code-msg').textContent = '';
+    const inp = document.getElementById('code-input');
+    inp.value = '';
+    setTimeout(() => inp.focus(), 60);
+}
+function closeCodeModal() { document.getElementById('code-modal').classList.remove('open'); }
+function submitCode() {
+    const msg = document.getElementById('code-msg');
+    const r = redeemCode(document.getElementById('code-input').value);
+    msg.style.color = r.ok ? '#4ad66d' : '#ff6a5c';
+    msg.textContent = r.msg;
+    if (r.ok) { sfx.buy(); confettiBurst(30); renderShop(); document.getElementById('code-input').value = ''; }
+    else sfx.err();
+}
+document.getElementById('code-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitCode(); });
+document.getElementById('code-modal').addEventListener('click', e => { if (e.target.id === 'code-modal') closeCodeModal(); });
+
+renderCoinBadges();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
