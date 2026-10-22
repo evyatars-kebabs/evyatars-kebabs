@@ -4232,7 +4232,8 @@ function renderShop() {
     SK_RARITY.forEach((r, i) => groups.push({ rarity: i, title: r.name, color: r.color, price: r.price, codeOnly: r.codeOnly }));
 
     groups.forEach(g => {
-        const skins = SV_SKINS.filter(s => s.rarity === g.rarity);
+        // סקינים של מהדורה מיוחדת מופיעים רק אחרי שהושגו עם קוד
+        const skins = SV_SKINS.filter(s => s.rarity === g.rarity && (!g.codeOnly || owned.has(s.id)));
         if (!skins.length) return;
         const head = document.createElement('div');
         head.className = 'shop-group-head';
@@ -4241,7 +4242,7 @@ function renderShop() {
         const l = document.createElement('span');
         l.textContent = g.title;
         const r = document.createElement('span');
-        r.textContent = g.codeOnly ? '🎟 קוד בלבד' : g.price ? ('🪙 ' + g.price) : 'חינם';
+        r.textContent = g.codeOnly ? '🎟 מהדורה מיוחדת' : g.price ? ('🪙 ' + g.price) : 'חינם';
         head.appendChild(l);
         head.appendChild(r);
         grid.appendChild(head);
@@ -4268,10 +4269,6 @@ function renderShop() {
             } else if (owned.has(sk.id)) {
                 btn.textContent = 'בחר';
                 btn.onclick = () => equipSkin(sk.id);
-            } else if (g.codeOnly) {
-                btn.textContent = '🔒 קוד בלבד';
-                btn.classList.add('cant');
-                btn.onclick = openCodeModal;
             } else {
                 const price = skinPrice(sk);
                 btn.textContent = 'קנה 🪙 ' + price;
