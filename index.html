@@ -8,8 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=Secular+One&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#120a06">
 	<link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/svg+xml" href="kebab.svg">
-	<link rel="apple-touch-icon" href="kebab.svg">
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+	<link rel="apple-touch-icon" href="logo-180.png">
 	
 	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -584,6 +584,8 @@
             50%      { filter: drop-shadow(0 2px 0 #7a2a05) drop-shadow(0 0 20px rgba(255, 150, 40, 0.75)); }
         }
         .brand-logo p { color: var(--muted); letter-spacing: 0.5px; }
+        .brand-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .brand-icon { width: 46px; height: 46px; flex-shrink: 0; filter: drop-shadow(0 3px 8px rgba(255, 106, 26, 0.45)); }
         .sound-btn {
             position: absolute; top: 0; right: 0; width: 36px; height: 36px; border-radius: 50%;
             border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.25); color: var(--text-color);
@@ -670,13 +672,13 @@
             box-shadow: 0 5px 0 #7d120b, 0 10px 18px rgba(214, 41, 31, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35);
         }
         .btn.danger:active { background: linear-gradient(180deg, #ff6a5c, #d6291f); color: #fff; box-shadow: 0 1px 0 #7d120b; }
-        .btn.ingredient {
-            margin: 0; padding: 12px 10px; font-size: 1.05rem;
+        .btn.secondary {
+            margin-top: 8px;
             background: linear-gradient(180deg, #4a3326, #35231a);
             color: var(--text-color);
             box-shadow: 0 5px 0 #1a0f09, 0 8px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
         }
-        .btn.ingredient:active { background: linear-gradient(180deg, #4a3326, #35231a); color: var(--text-color); box-shadow: 0 1px 0 #1a0f09; }
+        .btn.secondary:active { background: linear-gradient(180deg, #4a3326, #35231a); color: var(--text-color); box-shadow: 0 1px 0 #1a0f09; }
 
         /* כרטיסי משחקים */
         #screen-home h2 { color: var(--muted) !important; font-family: 'Rubik', sans-serif !important; font-size: 0.9rem !important; letter-spacing: 1px; }
@@ -781,8 +783,6 @@
         @keyframes okPulse { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
         @keyframes wrongShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
 
-        .builder-box { border-radius: 16px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.25); padding: 12px; text-align: center; margin-bottom: 10px; }
-        .builder-skewer { min-height: 60px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; padding: 5px; background: #0b0604; }
 
         /* סידור מדפים */
         .goods-shelf { border-radius: 12px; border: 1px solid var(--border-color); border-bottom: 4px solid #a8670a; background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01)); }
@@ -861,8 +861,8 @@
         .shop-card:active { transform: scale(0.98); }
         .shop-card.equipped { background: linear-gradient(180deg, rgba(255, 194, 51, 0.14), rgba(255, 194, 51, 0.04)); border-color: var(--accent-gold); box-shadow: 0 4px 0 #0c0603, 0 0 18px rgba(255, 194, 51, 0.25); }
         .shop-card.r3 { box-shadow: 0 4px 0 #0c0603, 0 0 14px color-mix(in srgb, var(--rc) 35%, transparent); }
-        .shop-card.r4, .shop-card.r5 { box-shadow: 0 4px 0 #0c0603, 0 0 22px color-mix(in srgb, var(--rc) 55%, transparent); }
-        .shop-card.r4::after, .shop-card.r5::after {
+        .shop-card.r4, .shop-card.r5, .shop-card.r6 { box-shadow: 0 4px 0 #0c0603, 0 0 22px color-mix(in srgb, var(--rc) 55%, transparent); }
+        .shop-card.r4::after, .shop-card.r5::after, .shop-card.r6::after {
             content: ''; position: absolute; top: 0; left: -80%; width: 50%; height: 100%; pointer-events: none;
             background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.18), transparent);
             animation: shine 3.6s ease-in-out infinite;
@@ -904,7 +904,7 @@
 <div class="app-container">
     
     <div class="brand-logo">
-        <h1>הקבביה של אביתר</h1>
+        <div class="brand-row"><img class="brand-icon" src="logo.svg" alt=""><h1>הקבביה של אביתר</h1></div>
         <p>הטעם האותנטי ששורף את העיר 🔥</p>
     </div>
 	
@@ -945,12 +945,6 @@
             <div class="gc-go">◀</div>
         </div>
 		
-		<div class="game-card" onclick="startBuilderGame()">
-            <div class="gc-icon">👨‍🍳</div>
-            <div class="gc-body"><h3>בונה הקבבים</h3><p>הרכיבו את השיפודים בדיוק לפי ההזמנה במהירות!</p></div>
-            <div class="gc-go">◀</div>
-        </div>
-		
 		<div class="game-card" onclick="startGoodsSortGame()">
             <div class="gc-icon">🥫</div>
             <div class="gc-body"><h3>סידור המדפים</h3><p>סדרו 3 מוצרים זהים על אותו המדף כדי להעלים אותם!</p></div>
@@ -981,32 +975,6 @@
         <h3 id="trivia-question-text" style="margin-bottom: 15px; font-size: 1rem; min-height: 50px; line-height: 1.3; font-weight: 400;"></h3>
         <div id="trivia-options-container"></div>
     </div>
-	
-	<div id="screen-builder" class="screen">
-    <div class="hud">
-            <div class="hud-pill"><small>זמן</small><span id="builder-timer">20</span></div>
-            <div class="hud-pill"><small>ניקוד</small><span id="builder-score">0</span></div>
-        </div>
-
-    <div class="builder-box">
-        <div style="font-size: 0.8rem; color: var(--muted); margin-bottom: 5px;">ההזמנה של הלקוח:</div>
-        <div id="builder-target-order" style="font-size: 1.2rem; font-weight: bold; color: var(--accent-gold);"></div>
-    </div>
-
-    <div class="builder-skewer">
-        <div id="builder-current-skewer" style="font-size: 1.3rem;"></div>
-    </div>
-
-    <div id="builder-msg" style="text-align: center; color: #f85149; font-size: 0.85rem; min-height: 20px; margin-bottom: 10px;"></div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <button class="btn ingredient" onclick="addIngredient('🥩 בשר')">🥩 בשר</button>
-        <button class="btn ingredient" onclick="addIngredient('🧅 בצל')">🧅 בצל</button>
-        <button class="btn ingredient" onclick="addIngredient('🍅 עגבנייה')">🍅 עגבנייה</button>
-        <button class="btn ingredient" onclick="addIngredient('🌶️ פלפל')">🌶️ פלפל</button>
-    </div>
-    <button class="btn danger" style="margin-top: 12px;" onclick="resetCurrentSkewer()">נקה שיפוד 🔄</button>
-	</div>
 	
 	<div id="screen-goods" class="screen">
     <div class="hud">
@@ -1075,7 +1043,6 @@
 
 		<div class="sub-tabs">
 			<button id="sub-btn-main" class="sub-tab-btn active" onclick="switchLeaderboardTab('main')">🍢 תפוס</button>
-			<button id="sub-btn-builder" class="sub-tab-btn" onclick="switchLeaderboardTab('builder')">👨‍🍳 בונה</button>
 			<button id="sub-btn-goods" class="sub-tab-btn" onclick="switchLeaderboardTab('goods')">🥫 מדפים</button>
 			<button id="sub-btn-shvartz" class="sub-tab-btn" onclick="switchLeaderboardTab('shvartz')">🥙 שוורץ</button>
 			<button id="sub-btn-ninja" class="sub-tab-btn" onclick="switchLeaderboardTab('ninja')">🥷 נינג'ה</button>
@@ -1083,10 +1050,6 @@
 
 		<div id="sub-screen-main" class="leaderboard-sub-screen">
 			<ul id="leaderboard-container" class="leaderboard-list"></ul>
-		</div>
-
-		<div id="sub-screen-builder" class="leaderboard-sub-screen" style="display: none;">
-			<ul id="builder-leaderboard-container" class="leaderboard-list"></ul>
 		</div>
 
 		<div id="sub-screen-ninja" class="leaderboard-sub-screen" style="display: none;">
@@ -1113,7 +1076,8 @@
             <div id="coupon-total"></div>
         </div>
 
-        <button class="btn" onclick="switchTab('home')">חזרה לתפריט</button>
+        <button class="btn" id="play-again-btn" onclick="playAgain()">🔄 שחק שוב</button>
+        <button class="btn secondary" onclick="switchTab('home')">חזרה לתפריט</button>
     </div>
 
     <div id="code-modal">
@@ -1186,14 +1150,12 @@ const firebaseConfig = {
     }
 
     /* --- משתנים גלובליים לטיימרים (מנוקים ב-stopAllGames) --- */
-    let builderNextTimeout = null;
     let triviaTimeout = null;
     let goodsTimeouts = [];
 
     /* --- שיאים אישיים (מקומי) + שמירה בענן --- */
     const GAME_STATS = [
         ['🍢 תפוס את הקבב', 'kebab_highScore'],
-        ['👨‍🍳 בונה הקבבים', 'kebab_builderHighScore'],
         ['🥷 קבב נינג\'ה', 'kebab_ninjaHighScore'],
         ['🥙 האכל את השוורץ', 'kebab_shvartzHighScore'],
         ['🥫 סידור המדפים', 'kebab_goodsHighScore'],
@@ -1256,7 +1218,7 @@ const firebaseConfig = {
     const LB_CACHE_MS = 60000;            // שומרים תשובה דקה כדי לא לקרוא 500 מסמכים בכל מעבר בין לשוניות
     const lbCache = {};
     const LB_LOCAL_KEY = {
-        leaderboard: 'kebab_highScore', leaderboard_builder: 'kebab_builderHighScore',
+        leaderboard: 'kebab_highScore',
         leaderboard_goods: 'kebab_goodsHighScore', leaderboard_shvartz: 'kebab_shvartzHighScore',
         leaderboard_ninja: 'kebab_ninjaHighScore'
     };
@@ -1379,8 +1341,6 @@ const firebaseConfig = {
     function stopAllGames() {
         clearInterval(catchInterval);
         clearTimeout(kebabTimeout);
-        clearInterval(builderInterval);
-        clearTimeout(builderNextTimeout);
         clearInterval(goodsInterval);
         goodsTimeouts.forEach(clearTimeout);
         goodsTimeouts = [];
@@ -1407,7 +1367,6 @@ const firebaseConfig = {
 	/* --- החלפה בין טבלאות השיאים בתוך המסך --- */
 	const LB_TABS = {
 		main:    () => loadLeaderboard(),
-		builder: () => loadBuilderLeaderboard(),
 		goods:   () => loadGoodsLeaderboard(),
 		shvartz: () => loadShvartzLeaderboard(),
 		ninja:   () => loadNinjaLeaderboard()
@@ -1433,7 +1392,7 @@ const firebaseConfig = {
 
 		if (targetScreen) targetScreen.classList.add('active');
 		if (targetBtn) targetBtn.classList.add('active');
-		document.body.classList.toggle('in-game', ['catch', 'trivia', 'builder', 'goods', 'shvartz', 'ninja'].includes(screenId));
+		document.body.classList.toggle('in-game', ['catch', 'trivia', 'goods', 'shvartz', 'ninja'].includes(screenId));
 
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
 		if (screenId === 'shop') renderShop();
@@ -1454,7 +1413,7 @@ const firebaseConfig = {
 
         // עדכון השם בכל טבלאות השיאים שבהן השחקן כבר קיים
         if (db) {
-            ['leaderboard', 'leaderboard_builder', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja'].forEach(col => {
+            ['leaderboard', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja'].forEach(col => {
                 const ref = db.collection(col).doc(playerId);
                 ref.get().then(doc => {
                     if (doc.exists && typeof doc.data().score === 'number') return ref.update({ name: playerName });
@@ -1483,6 +1442,7 @@ const firebaseConfig = {
     let catchTimer = 15;
     let catchInterval = null;
     let kebabTimeout = null;
+    let catchStarted = false;
 
     function startCatchGame() {
         catchScore = 0;
@@ -1491,7 +1451,14 @@ const firebaseConfig = {
         document.getElementById('catch-timer').textContent = catchTimer;
         
         switchTab('catch');
+        catchStarted = false;
+        spawnKebab();
+    }
 
+    // הטיימר מתחיל רק בנגיעה הראשונה במסך
+    function startCatchTimer() {
+        if (catchStarted) return;
+        catchStarted = true;
         clearInterval(catchInterval);
         catchInterval = setInterval(() => {
             catchTimer--;
@@ -1500,9 +1467,10 @@ const firebaseConfig = {
                 endCatchGame();
             }
         }, 1000);
-
-        spawnKebab();
+        clearTimeout(kebabTimeout);
+        kebabTimeout = setTimeout(spawnKebab, 850);
     }
+    document.getElementById('game-area').addEventListener('pointerdown', startCatchTimer);
 
     let kebabImgFailed = false;   // אם kebab.png לא נטען - לא מנסים שוב בכל הופעה
 
@@ -1548,6 +1516,7 @@ const firebaseConfig = {
         kebab.style.top = top;
 
         kebab.onclick = () => {
+            startCatchTimer();
             catchScore += 1;
             sfx.pop();
             document.getElementById('catch-score').textContent = catchScore;
@@ -1556,7 +1525,7 @@ const firebaseConfig = {
         };
 
         area.appendChild(kebab);
-        kebabTimeout = setTimeout(spawnKebab, 850);
+        if (catchStarted) kebabTimeout = setTimeout(spawnKebab, 850);
     }
 
     function endCatchGame() {
@@ -1756,114 +1725,6 @@ const firebaseConfig = {
         showResultReward('trivia', totalPoints);
         switchTab('result');
     }
-	/* --- משחק 4: בונה הקבבים --- */
-const builderIngredients = ['🥩 בשר', '🧅 בצל', '🍅 עגבנייה', '🌶️ פלפל'];
-let builderTargetOrder = [];
-let builderCurrentSkewer = [];
-let builderScore = 0;
-let builderTimer = 20;
-let builderInterval = null;
-let builderLocked = false;
-
-function startBuilderGame() {
-    builderScore = 0;
-    builderTimer = 20;
-    document.getElementById('builder-score').textContent = builderScore;
-    document.getElementById('builder-timer').textContent = builderTimer;
-
-    switchTab('builder');
-    generateNewOrder();
-
-    clearInterval(builderInterval);
-    builderInterval = setInterval(() => {
-        builderTimer--;
-        document.getElementById('builder-timer').textContent = builderTimer;
-        if (builderTimer <= 0) {
-            endBuilderGame();
-        }
-    }, 1000);
-}
-
-function generateNewOrder() {
-    builderLocked = false;
-    builderCurrentSkewer = [];
-    builderTargetOrder = [];
-    document.getElementById('builder-msg').textContent = '';
-
-    // ייצור הזמנה אקראית של 4 מרכיבים
-    for (let i = 0; i < 4; i++) {
-        const randIndex = Math.floor(Math.random() * builderIngredients.length);
-        builderTargetOrder.push(builderIngredients[randIndex]);
-    }
-
-    renderBuilderDisplay();
-}
-
-function renderBuilderDisplay() {
-    document.getElementById('builder-target-order').textContent = builderTargetOrder.join(' ⬅️ ');
-    document.getElementById('builder-current-skewer').textContent = builderCurrentSkewer.length > 0 
-        ? builderCurrentSkewer.join(' ⬅️ ') 
-        : '(לחץ על המרכיבים כדי להרכיב)';
-}
-
-function addIngredient(ingredient) {
-    if (builderTimer <= 0 || builderLocked) return;
-
-    const currentIndex = builderCurrentSkewer.length;
-
-    // בדיקה אם המרכיב הנכון נבחר
-    if (ingredient === builderTargetOrder[currentIndex]) {
-        builderCurrentSkewer.push(ingredient);
-        document.getElementById('builder-msg').textContent = '';
-        renderBuilderDisplay();
-
-        // בדיקה אם השיפוד הושלם
-        if (builderCurrentSkewer.length === builderTargetOrder.length) {
-            builderScore += 1;
-            sfx.good();
-            document.getElementById('builder-score').textContent = builderScore;
-            document.getElementById('builder-msg').style.color = '#2ea043';
-            document.getElementById('builder-msg').textContent = '✓ שיפוד מושלם! +1 נקודה';
-            
-            builderLocked = true;
-            builderNextTimeout = setTimeout(generateNewOrder, 500);
-        }
-    } else {
-        // טעות במרכיב
-        document.getElementById('builder-msg').style.color = '#f85149';
-        document.getElementById('builder-msg').textContent = '❌ טעות במרכיב! השיפוד התאפס';
-        sfx.err();
-        builderCurrentSkewer = [];
-        renderBuilderDisplay();
-    }
-}
-
-function resetCurrentSkewer() {
-    if (builderLocked) return;
-    builderCurrentSkewer = [];
-    document.getElementById('builder-msg').textContent = '';
-    renderBuilderDisplay();
-}
-
-function endBuilderGame() {
-    clearInterval(builderInterval);
-    clearTimeout(builderNextTimeout);
-
-    // ⬇️ הוספת שמירת הניקוד בטבלה הנפרדת
-    checkBuilderHighScore(builderScore);
-
-    document.getElementById('result-desc').textContent = `הכנת שיפודים בשווי ${builderScore} נקודות!`;
-        showResultReward('builder', builderScore);
-    switchTab('result');
-}
-/* --- שיא בונה הקבבים + טבלה --- */
-function checkBuilderHighScore(score) {
-    saveBestScore('leaderboard_builder', score, 'kebab_builderHighScore');
-}
-
-function loadBuilderLeaderboard() {
-    loadLeaderboardInto('builder-leaderboard-container', 'leaderboard_builder');
-}
 /* --- משחק: סידור מדפים --- */
 
 let goodsBoard = [];            // 12 מדפים x 3 מקומות
@@ -1871,6 +1732,7 @@ let selectedGoodsSlot = null;   // { shelf, slot }
 let goodsScore = 0;
 let goodsTimer = 30;
 let goodsInterval = null;
+let goodsStarted = false;
 let goodsLocked = false;        // נעילת קלט בזמן אנימציית היעלמות
 let goodsVanishing = new Set(); // אינדקסים של מדפים שמוסרים כרגע
 
@@ -1896,8 +1758,14 @@ function startGoodsSortGame() {
     document.getElementById('goods-msg').textContent = '';
 
     switchTab('goods');   // עוצר טיימרים קודמים
+    goodsStarted = false;
     initGoodsBoard();
+}
 
+// הטיימר מתחיל רק בנגיעה הראשונה בלוח
+function startGoodsTimer() {
+    if (goodsStarted) return;
+    goodsStarted = true;
     goodsInterval = setInterval(() => {
         goodsTimer--;
         document.getElementById('goods-timer').textContent = goodsTimer;
@@ -1961,6 +1829,7 @@ function renderGoodsBoard() {
 // לחיצה: בחירה / ביטול / החלפה בין כל שני תאים
 function handleGoodsClick(shelfIdx, slotIdx) {
     if (goodsLocked || goodsTimer <= 0) return;
+    startGoodsTimer();
 
     const clickedItem = goodsBoard[shelfIdx][slotIdx];
 
@@ -2078,7 +1947,7 @@ function svNewState() {
         mouth: { x: SV_W / 2, y: SV_BASE_Y, hw: SV_TIERS[0].hw, amp: 0, bob: 0, phase: 0, chew: 0 },
         tier: SV_TIERS[0],
         fx: [], aim: null, hasShot: false, t: 0, last: 0,
-        shownTime: -1, shownScore: -1, shownCombo: '#', skin: null
+        shownTime: -1, shownScore: -1, shownCombo: '#', skin: null, started: false
     };
 }
 
@@ -2170,7 +2039,7 @@ function svStep(dt) {
     m.chew = Math.max(0, m.chew - dt * 2);
 
     // טיימר
-    if (!sv.over) {
+    if (!sv.over && sv.started) {             // הטיימר מתחיל בנגיעה הראשונה
         sv.time -= dt;
         if (sv.time <= 0) { sv.time = 0; sv.over = true; }
     } else {
@@ -2618,6 +2487,7 @@ function svDrawLowerLip(c) {
         return { x: (e.clientX - r.left) / r.width * SV_W, y: (e.clientY - r.top) / r.height * SV_H };
     };
     cv.addEventListener('pointerdown', e => {
+        if (sv && sv.running) sv.started = true;
         if (!sv || !sv.running || !sv.ball || sv.ball.state !== 'ready') return;
         const p = pt(e);
         if (p.y < SV_H * 0.35) return;               // מתחילים את ההחלקה בחלק התחתון
@@ -3671,6 +3541,7 @@ function skDrawHumanBack(c, sk, st) {
     const t = st.t;
     c.save();
     c.translate(st.x, st.y);
+    if (sk.drawBack) { sk.drawBack(c, sk, st); c.restore(); return; }     // סקין מיוחד עם ציור משלו
     skAuraBack(c, sk, t);
     skWings(c, sk, t);
     skCapeBack(c, sk, t);
@@ -3720,6 +3591,7 @@ function skDrawHumanFront(c, sk, st) {
     const t = st.t;
     c.save();
     c.translate(st.x, st.y);
+    if (sk.drawBack) { if (sk.drawFront) sk.drawFront(c, sk, st); c.restore(); return; }
     skMustache(c, sk);
     skGlasses(c, sk);
     skHairFront(c, sk, t);
@@ -3736,8 +3608,199 @@ function skDrawHumanFx(c, sk, st) {
 }
 
 /* ============================================================
+   סקינים של מהדורה מיוחדת - דמויות לא אנושיות עם ציור משלהן.
+   הקואורדינטות יחסיות למרכז הפה (0,0); הפה עצמו מצויר בנפרד.
+   ============================================================ */
+function skBananaBack(c, sk, st) {
+    skAuraBack(c, sk, st.t);
+    const peel = '#f6d22e', dk = '#c9a20e';
+    // קליפה (גוף הבננה)
+    c.beginPath();
+    c.moveTo(-84, -110);
+    c.bezierCurveTo(-104, 20, -96, 220, -58, 330);
+    c.lineTo(58, 330);
+    c.bezierCurveTo(100, 220, 108, 20, 84, -110);
+    c.closePath();
+    const g = c.createLinearGradient(-100, 0, 100, 0);
+    g.addColorStop(0, dk); g.addColorStop(0.35, peel); g.addColorStop(0.7, '#ffe066'); g.addColorStop(1, dk);
+    c.fillStyle = g; c.fill();
+    c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = skA('#8a6a0a', 0.45); c.lineWidth = 2.5;           // רכסים
+    for (const x of [-46, 46]) { c.beginPath(); c.moveTo(x, -100); c.quadraticCurveTo(x * 1.12, 110, x * 0.72, 320); c.stroke(); }
+    for (const [x, y, r] of [[-56, 60, 6], [60, 120, 5], [-40, 200, 7], [48, 30, 4], [30, 250, 5]]) skE(c, x, y, r, r * 0.8, '#7a5a1a');
+    // הפרי הקלוף
+    c.beginPath();
+    c.moveTo(-62, -100);
+    c.bezierCurveTo(-70, -190, -40, -250, 0, -258);
+    c.bezierCurveTo(40, -250, 70, -190, 62, -100);
+    c.closePath();
+    const f = c.createLinearGradient(-60, 0, 60, 0);
+    f.addColorStop(0, '#e9dcb0'); f.addColorStop(0.5, '#fff6d8'); f.addColorStop(1, '#e2d3a2');
+    c.fillStyle = f; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = skA('#b8a46a', 0.6); c.lineWidth = 2;
+    c.beginPath(); c.moveTo(0, -250); c.lineTo(0, -110); c.stroke();
+    // קליפות מקופלות שנופלות לצדדים
+    for (const s of [-1, 1]) {
+        c.save(); c.scale(s, 1);
+        c.beginPath();
+        c.moveTo(30, -110);
+        c.bezierCurveTo(70, -150, 140, -120, 162, -40);
+        c.quadraticCurveTo(150, -10, 136, -26);
+        c.bezierCurveTo(124, -80, 100, -96, 86, -96);
+        c.closePath();
+        const pg = c.createLinearGradient(40, -130, 160, -20);
+        pg.addColorStop(0, '#ffe066'); pg.addColorStop(1, dk);
+        c.fillStyle = pg; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+        skE(c, 150, -34, 7, 5, '#5a3e0a');
+        c.restore();
+    }
+    // שפת הקליפה בחזית
+    c.beginPath();
+    c.moveTo(-84, -110); c.lineTo(-56, -132); c.lineTo(-30, -104); c.lineTo(0, -128); c.lineTo(30, -104); c.lineTo(56, -132); c.lineTo(84, -110);
+    c.lineTo(84, -96); c.lineTo(-84, -96); c.closePath();
+    c.fillStyle = peel; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+    skEyes(c, sk, st);
+}
+
+function skLizardBack(c, sk, st) {
+    const t = st.t, g1 = '#4caf3c', g2 = '#2e7d2a';
+    skAuraBack(c, sk, t);
+    // זנב מתפתל
+    const wag = Math.sin(t * 2.2) * 14;
+    c.lineCap = 'round';
+    for (const [w, col] of [[46, SK_OUT], [40, g2], [28, g1]]) {
+        c.strokeStyle = col; c.lineWidth = w;
+        c.beginPath(); c.moveTo(70, 250); c.bezierCurveTo(200, 260, 210 + wag, 120, 150 + wag, 60); c.stroke();
+    }
+    skE(c, 148 + wag, 58, 12, 12, g1);
+    // גוף ובטן
+    skE(c, 0, 190, 112, 150, g1, SK_OUT, 3);
+    skE(c, 0, 200, 64, 122, '#cfe68a', skA('#2e5a1a', 0.5), 2);
+    c.strokeStyle = skA('#6a8a2a', 0.5); c.lineWidth = 2;
+    for (let y = 110; y < 320; y += 22) { c.beginPath(); c.moveTo(-56, y); c.quadraticCurveTo(0, y + 8, 56, y); c.stroke(); }
+    // רגליים קדמיות
+    for (const s of [-1, 1]) {
+        c.strokeStyle = SK_OUT; c.lineWidth = 34; c.beginPath(); c.moveTo(s * 90, 110); c.lineTo(s * 138, 220); c.stroke();
+        c.strokeStyle = g1; c.lineWidth = 28; c.beginPath(); c.moveTo(s * 90, 110); c.lineTo(s * 138, 220); c.stroke();
+        for (const d of [-16, 0, 16]) skE(c, s * 138 + d, 238, 9, 9, g1, SK_OUT, 2);
+    }
+    // ראש
+    const hg = c.createRadialGradient(-30, -80, 10, 0, -34, 120);
+    hg.addColorStop(0, '#7fd06a'); hg.addColorStop(1, g2);
+    for (let i = -3; i <= 3; i++) skP(c, [[i * 22 - 10, -110], [i * 22, -136 - (3 - Math.abs(i)) * 5], [i * 22 + 10, -110]], '#f2c230', SK_OUT, 2);
+    skE(c, 0, -30, 104, 84, hg, SK_OUT, 3);
+    for (const [x, y, r] of [[-70, -10, 8], [-50, 20, 6], [66, -4, 9], [52, 26, 6], [0, -96, 7], [-26, -104, 5], [28, -104, 5]]) skE(c, x, y, r, r, skA('#1e5a1a', 0.55));
+    for (const s of [-1, 1]) skE(c, s * 36, -70, 30, 28, '#5cbf48', SK_OUT, 3);     // בליטות העיניים
+    skE(c, -12, -26, 4, 3, '#14300f'); skE(c, 12, -26, 4, 3, '#14300f');               // נחיריים
+    skEyes(c, sk, st);
+}
+
+function skDosusBack(c, sk, st) {
+    const t = st.t, hc = '#8a5a32', hd = '#5e3a1c';
+    skAuraBack(c, sk, t);
+    // זנב
+    const sw = Math.sin(t * 2) * 10;
+    c.strokeStyle = '#2a1a10'; c.lineCap = 'round';
+    for (let i = 0; i < 5; i++) { c.lineWidth = 9 - i; c.beginPath(); c.moveTo(196, 90); c.quadraticCurveTo(236 + sw, 130 + i * 6, 214 + sw, 210 + i * 6); c.stroke(); }
+    // רגליים
+    for (const [x, dk] of [[44, 1], [158, 1], [74, 0], [186, 0]]) {
+        skR(c, x - 13, 120, 26, 140, 9, dk ? hd : hc, SK_OUT, 2.5);
+        skR(c, x - 15, 252, 30, 16, 4, '#2a1a10');
+    }
+    // גוף הסוס
+    const bg = c.createLinearGradient(0, 50, 0, 170);
+    bg.addColorStop(0, '#a87044'); bg.addColorStop(1, hd);
+    skE(c, 116, 110, 96, 56, bg, SK_OUT, 3);
+    // צוואר ורעמה
+    skP(c, [[-50, 30], [50, 24], [90, 80], [40, 150]], hc, SK_OUT, 3);
+    c.strokeStyle = '#2a1a10'; c.lineWidth = 12;
+    c.beginPath(); c.moveTo(56, 22); c.quadraticCurveTo(80, 50, 96, 76); c.stroke();
+    // צווארון לבן של חולצה וחליפה שחורה
+    skP(c, [[-60, 46], [60, 46], [64, 84], [-64, 84]], '#15151a', SK_OUT, 2);
+    skP(c, [[-34, 40], [0, 70], [34, 40], [30, 56], [0, 84], [-30, 56]], '#f7f7fa', SK_OUT, 2);
+    // ראש אנושי
+    skHead(c, sk);
+    skEyes(c, sk, st);
+    skBeardBack(c, sk, t);
+}
+function skDosusFront(c, sk, st) {
+    skMustache(c, sk);
+    skGlasses(c, sk);
+    skHairFront(c, sk, st.t);
+    // פאות מסולסלות
+    for (const s of [-1, 1]) {
+        for (let i = 0; i < 6; i++) {
+            const y = -60 + i * 18, x = s * (90 + (i % 2 ? 7 : -3));
+            c.beginPath(); c.ellipse(x, y, 9, 10, 0, 0, Math.PI * 2);
+            c.strokeStyle = '#1a1410'; c.lineWidth = 5; c.stroke();
+        }
+    }
+    // כובע שחור רחב שוליים
+    skR(c, -70, -206, 140, 96, 22, '#15151a', SK_OUT, 3);
+    c.fillStyle = '#2b2b33'; c.fillRect(-69, -132, 138, 14);
+    c.strokeStyle = 'rgba(255,255,255,0.12)'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(-6, -200); c.lineTo(-6, -140); c.stroke();
+    skE(c, 0, -110, 134, 24, '#15151a', SK_OUT, 3);
+}
+
+function skDogBack(c, sk, st) {
+    const t = st.t, brown = '#6b3a1e', white = '#f6f1e8';
+    skAuraBack(c, sk, t);
+    skOutfit(c, sk, t);
+    // אוזניים ארוכות ומתנופפות
+    const flop = Math.sin(t * 2.4) * 0.06;
+    for (const s of [-1, 1]) {
+        c.save(); c.translate(s * 76, -84); c.rotate(s * (0.18 + flop));
+        skE(c, s * 14, 70, 36, 86, brown, SK_OUT, 3);
+        c.strokeStyle = skA('#3a1e0e', 0.6); c.lineWidth = 2.5;
+        for (const d of [-14, 0, 14]) { c.beginPath(); c.moveTo(s * 14 + d, 10); c.quadraticCurveTo(s * 14 + d + 6, 80, s * 14 + d - 4, 146); c.stroke(); }
+        c.restore();
+    }
+    // ראש לבן עם כתמים חומים
+    const H = SK_HEAD;
+    skE(c, H.cx, H.cy, H.rx, H.ry, white, SK_OUT, 3);
+    c.save();
+    c.beginPath(); c.ellipse(H.cx, H.cy, H.rx - 1.5, H.ry - 1.5, 0, 0, Math.PI * 2); c.clip();
+    skE(c, -44, -86, 52, 58, brown); skE(c, 44, -86, 52, 58, brown);
+    skE(c, 0, -134, 18, 40, white);                       // פס לבן באמצע המצח
+    c.restore();
+    // לוע
+    skE(c, 0, -6, 60, 44, white, skA('#8a7a6a', 0.6), 2);
+    for (const [x, y] of [[-30, -10], [-22, 0], [-38, 2], [30, -10], [22, 0], [38, 2]]) skE(c, x, y, 2.6, 2.6, '#7a4a2a');
+    skE(c, 0, -34, 20, 14, '#1a1410', SK_OUT, 2);
+    skE(c, -6, -38, 6, 3.5, 'rgba(255,255,255,0.5)');
+    skEyes(c, sk, st);
+}
+
+function skOrangeBack(c, sk, st) {
+    const t = st.t;
+    skAuraBack(c, sk, t);
+    // רגליים קטנות
+    for (const s of [-1, 1]) { skR(c, s * 50 - 9, 90, 18, 70, 8, '#2e7d2a', SK_OUT, 2); skE(c, s * 50 + s * 8, 164, 22, 11, '#2e7d2a', SK_OUT, 2); }
+    // התפוז
+    const g = c.createRadialGradient(-44, -80, 14, 0, -20, 136);
+    g.addColorStop(0, '#ffc266'); g.addColorStop(0.55, '#ff9a1f'); g.addColorStop(1, '#d9650a');
+    skE(c, 0, -20, 128, 124, g, SK_OUT, 3);
+    c.save();
+    c.beginPath(); c.ellipse(0, -20, 126, 122, 0, 0, Math.PI * 2); c.clip();
+    for (let i = 0; i < 70; i++) {                         // נקבוביות הקליפה
+        const x = ((i * 67) % 240) - 120, y = ((i * 43) % 230) - 132;
+        skE(c, x, y, 2, 2, 'rgba(160, 70, 0, 0.35)');
+    }
+    c.restore();
+    skE(c, -54, -92, 26, 14, 'rgba(255,255,255,0.35)', null, 0, -0.6);
+    // עוקץ ועלה
+    skR(c, -5, -160, 10, 22, 3, '#6b4a1a', SK_OUT, 2);
+    c.save(); c.translate(6, -152); c.rotate(-0.5 + Math.sin(t * 2) * 0.08);
+    skE(c, 34, 0, 36, 14, '#3fa33a', SK_OUT, 2.5);
+    c.strokeStyle = '#2a6a26'; c.lineWidth = 2; c.beginPath(); c.moveTo(2, 0); c.lineTo(66, 0); c.stroke();
+    c.restore();
+    skEyes(c, sk, st);
+}
+
+/* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
-   rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי
+   rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
    ============================================================ */
 const SK_RARITY = [
     { name: 'נפוץ',    price: 50,   color: '#9aa4b2' },
@@ -3745,7 +3808,8 @@ const SK_RARITY = [
     { name: 'נדיר',    price: 300,  color: '#3b9cff' },
     { name: 'אפי',     price: 600,  color: '#b66bff' },
     { name: 'אגדי',    price: 1200, color: '#ff9f1c' },
-    { name: 'מיתי',    price: 2500, color: '#ff4d6d' }
+    { name: 'מיתי',    price: 2500, color: '#ff4d6d' },
+    { name: 'מהדורה מיוחדת', price: 0, color: '#ff5ec4', codeOnly: true }
 ];
 
 const SV_SKINS = [
@@ -3828,7 +3892,7 @@ const SV_SKINS = [
     { id: 'king', name: 'מלך הבייגלה', rarity: 4, tone: '#f0c08f', hair: { style: 'long', color: '#7a4a24' },
       beard: { style: 'full', color: '#7a4a24' }, hat: { type: 'crown' },
       outfit: { base: '#b3202a', pattern: 'none', fur: true, collar: 'none' }, aura: { color: '#ffd23d', alpha: 0.4 }, fx: { type: 'sparkles', count: 16 } },
-    { id: 'angel', name: 'איתמר האגדי', rarity: 4, tone: '#f6d9bd', hair: { style: 'wavy', color: '#f0cf6a' }, hat: { type: 'halo' }, lips: '#e0707f',
+    { id: 'angel', name: 'המלאך', rarity: 4, tone: '#f6d9bd', hair: { style: 'wavy', color: '#f0cf6a' }, hat: { type: 'halo' }, lips: '#e0707f',
       outfit: { base: '#fbfbff', trim: '#f1c40f', collar: 'crew' }, wings: { type: 'feather' }, aura: { color: '#fff3b0', alpha: 0.45 }, fx: { type: 'feathers', count: 12, speed: 0.18 } },
     { id: 'firemage', name: 'הלוחש לאש', rarity: 4, tone: '#d9a066', hair: { style: 'flame' }, eyes: { glow: '#ffb02e' }, brow: '#7a1f0a',
       outfit: { base: '#5a1410', trim: '#ff8a1a', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.5 }, fx: { type: 'embers', count: 20, speed: 0.5 } },
@@ -3931,7 +3995,20 @@ const SV_SKINS = [
     { id: 'voidlord', name: 'שליט הריק', rarity: 5, tone: '#cfc6e6', hair: { style: 'galaxy', color: '#120a3d' }, eyes: { glow: '#ff2fd0', slit: true }, brow: '#2a1a5a',
       hat: { type: 'cosmiccrown' }, wings: { type: 'dragon', color: '#2a1a5a' }, lips: '#6a2a9a',
       outfit: { base: '#0e0a24', pattern: 'neon', glow: '#ff2fd0', collar: 'high' }, cape: { color: '#1a0e3a', stars: true },
-      aura: { color: '#ff2fd0', alpha: 0.5, runes: true, rings: true }, fx: { type: 'stars', count: 24, speed: 0.35 } }
+      aura: { color: '#ff2fd0', alpha: 0.5, runes: true, rings: true }, fx: { type: 'stars', count: 24, speed: 0.35 } },
+
+    /* ---------- מהדורה מיוחדת: זמינים רק עם קוד ---------- */
+    { id: 'banana', name: 'איתמר האגדי', rarity: 6, brow: '#5a3e0a', lips: '#b8860b', eyes: { iris: '#4a2e10' },
+      aura: { color: '#ffe066', alpha: 0.4 }, drawBack: skBananaBack },
+    { id: 'lizard', name: 'השרגונת', rarity: 6, brow: '#1e5a1a', lips: '#2e6a2a', eyes: { iris: '#e0b020' },
+      aura: { color: '#7fff6a', alpha: 0.28 }, drawBack: skLizardBack },
+    { id: 'dosus', name: 'דוסוס', rarity: 6, tone: '#f0c08f', hair: { style: 'short', color: '#1a1410' },
+      beard: { style: 'long', color: '#1a1410' }, glasses: { type: 'round', color: '#15151a' },
+      aura: { color: '#9fc4ff', alpha: 0.25 }, drawBack: skDosusBack, drawFront: skDosusFront },
+    { id: 'yuvaldog', name: 'הכלב של יובל', rarity: 6, tone: '#f6f1e8', brow: '#4a2814', lips: '#3a1e14', eyes: { iris: '#5a3216' },
+      outfit: { base: '#c9b3f2', collar: 'crew' }, aura: { color: '#d9c4ff', alpha: 0.3 }, drawBack: skDogBack },
+    { id: 'tapuzi', name: 'תפוזי', rarity: 6, brow: '#8a3a00', lips: '#a8400a', eyes: { iris: '#3a2410' },
+      aura: { color: '#ffb347', alpha: 0.35 }, drawBack: skOrangeBack }
 ];
 
 function skinById(id) { return SV_SKINS.find(s => s.id === id) || SV_SKINS[0]; }
@@ -3981,7 +4058,6 @@ const COUPONS = [
 // חידון לא מופיע כאן - הוא אף פעם לא נותן מטבעות.
 const GAME_REWARD = {
     catch:   { min: 7,  great: 16 },
-    builder: { min: 2,  great: 8 },
     goods:   { min: 16, great: 60 },
     shvartz: { min: 30, great: 140 },
     ninja:   { min: 10, great: 70 }
@@ -4000,7 +4076,14 @@ function rollCoupon(gameKey, score) {
     return COUPONS[0];
 }
 
+let lastGameKey = null;
+function playAgain() {
+    const starters = { catch: startCatchGame, trivia: startTriviaGame, goods: startGoodsSortGame, shvartz: startShvartzGame, ninja: startNinjaGame };
+    (starters[lastGameKey] || (() => switchTab('home')))();
+}
+
 function showResultReward(gameKey, score) {
+    lastGameKey = gameKey;
     const box = document.getElementById('coupon-box');
     const txt = document.getElementById('coupon-text');
     const coinsEl = document.getElementById('coupon-coins');
@@ -4065,7 +4148,7 @@ function showToast(text, ok) {
 function buySkin(id) {
     const sk = skinById(id);
     const owned = getOwnedSkins();
-    if (owned.has(id)) return;
+    if (owned.has(id) || SK_RARITY[sk.rarity].codeOnly) return;
     const price = skinPrice(sk);
     if (!spendCoins(price)) {
         sfx.err();
@@ -4146,7 +4229,7 @@ function renderShop() {
     grid.innerHTML = '';
 
     const groups = [{ rarity: -1, title: 'ברירת מחדל', color: '#b9a38e' }];
-    SK_RARITY.forEach((r, i) => groups.push({ rarity: i, title: r.name, color: r.color, price: r.price }));
+    SK_RARITY.forEach((r, i) => groups.push({ rarity: i, title: r.name, color: r.color, price: r.price, codeOnly: r.codeOnly }));
 
     groups.forEach(g => {
         const skins = SV_SKINS.filter(s => s.rarity === g.rarity);
@@ -4158,7 +4241,7 @@ function renderShop() {
         const l = document.createElement('span');
         l.textContent = g.title;
         const r = document.createElement('span');
-        r.textContent = g.price ? ('🪙 ' + g.price) : 'חינם';
+        r.textContent = g.codeOnly ? '🎟 קוד בלבד' : g.price ? ('🪙 ' + g.price) : 'חינם';
         head.appendChild(l);
         head.appendChild(r);
         grid.appendChild(head);
@@ -4185,6 +4268,10 @@ function renderShop() {
             } else if (owned.has(sk.id)) {
                 btn.textContent = 'בחר';
                 btn.onclick = () => equipSkin(sk.id);
+            } else if (g.codeOnly) {
+                btn.textContent = '🔒 קוד בלבד';
+                btn.classList.add('cant');
+                btn.onclick = openCodeModal;
             } else {
                 const price = skinPrice(sk);
                 btn.textContent = 'קנה 🪙 ' + price;
@@ -4221,7 +4308,7 @@ function njNewState() {
         running: false, time: NJ_SECONDS, score: 0, sliced: 0, t: 0, last: 0,
         spawnIn: 0.5, items: [], halves: [], drops: [], trail: [], fx: [],
         flash: 0, shake: 0, strokeSlices: 0, comboT: 0, aim: false, lastPt: null,
-        shownTime: -1, shownScore: -1, shownCombo: '#'
+        shownTime: -1, shownScore: -1, shownCombo: '#', started: false, playT: 0
     };
 }
 
@@ -4346,11 +4433,14 @@ function njCut(it, ang) {
 /* ---------- לוגיקה ---------- */
 function njStep(dt) {
     nj.t += dt;
-    nj.time -= dt;
-    if (nj.time <= 0) { nj.time = 0; njEnd(); return; }
+    if (nj.started) {                         // הטיימר והאוכל מתחילים בנגיעה הראשונה
+        nj.playT += dt;
+        nj.time -= dt;
+        if (nj.time <= 0) { nj.time = 0; njEnd(); return; }
 
-    nj.spawnIn -= dt;
-    if (nj.spawnIn <= 0) njSpawn();
+        nj.spawnIn -= dt;
+        if (nj.spawnIn <= 0) njSpawn();
+    }
 
     for (const it of nj.items) {
         it.vy += NJ_G * dt;
@@ -4512,8 +4602,8 @@ function njDraw() {
     c.globalAlpha = 1;
 
     // הדרכה בהתחלה
-    if (nj.t < 3.5) {
-        c.globalAlpha = Math.min(1, (3.5 - nj.t));
+    if (!nj.started || nj.playT < 1) {
+        c.globalAlpha = nj.started ? 1 - nj.playT : 1;
         c.fillStyle = 'rgba(1, 4, 9, 0.72)';
         c.fillRect(20, 250, NJ_W - 40, 52);
         c.fillStyle = '#f0f6fc';
@@ -4543,6 +4633,7 @@ function njDraw() {
 
     cv.addEventListener('pointerdown', e => {
         if (!nj || !nj.running) return;
+        nj.started = true;
         const p = pt(e);
         nj.aim = true;
         nj.lastPt = p;
@@ -4759,26 +4850,21 @@ const REDEEM_CODES = {
     'KC100KOLESKI':   { coins: 100 },
     'KC1000KOLESKI':  { coins: 1000 },
     'KC10000KOLESKI': { coins: 10000 },
-    // מוחק את כל המטבעות והסקינים של השחקן. אפשר להפעיל שוב ושוב.
-    'DESTRUCTION':    { wipe: true, reusable: true }
+    // מוחק את כל המטבעות והסקינים של השחקן
+    'DESTRUCTION':    { wipe: true },
+    // סקינים של מהדורה מיוחדת - זמינים רק דרך קוד
+    'ITAMARTHEAGADI455': { skin: 'banana' },
+    'SHRAGONT888':       { skin: 'lizard' },
+    'DOSUS505':          { skin: 'dosus' },
+    'SPRINGYDADOG3':     { skin: 'yuvaldog' },
+    'TAPUZIYUVAL':       { skin: 'tapuzi' }
 };
-const CODES_USED_KEY = 'kebab_codes_used';
-
-function getUsedCodes() {
-    try { return new Set(JSON.parse(store.get(CODES_USED_KEY) || '[]')); } catch (e) { return new Set(); }
-}
-
 function redeemCode(raw) {
     const code = String(raw || '').trim().toUpperCase();
     if (!code) return { ok: false, msg: 'הכניסו קוד' };
     const reward = REDEEM_CODES[code];
     if (!reward) return { ok: false, msg: 'הקוד לא נמצא' };
-    const used = getUsedCodes();
-    if (!reward.reusable) {
-        if (used.has(code)) return { ok: false, msg: 'הקוד כבר נוצל' };
-        used.add(code);
-        store.set(CODES_USED_KEY, JSON.stringify(Array.from(used)));
-    }
+    // קודי פיתוח: כל קוד אפשר להפעיל שוב ושוב, ללא הגבלה
 
     if (reward.wipe) {                                // איפוס מלא של המלאי
         setCoins(0);
@@ -4792,6 +4878,7 @@ function redeemCode(raw) {
         const owned = getOwnedSkins();
         owned.add(reward.skin);
         saveOwnedSkins(owned);
+        store.set(SKIN_EQ_KEY, reward.skin);
         parts.push('סקין חדש: ' + skinById(reward.skin).name);
     }
     return { ok: true, msg: 'הקוד הופעל! ' + parts.join('  ·  ') };

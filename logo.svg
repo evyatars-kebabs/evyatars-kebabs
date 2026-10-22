@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="62%" r="70%">
+      <stop offset="0" stop-color="#5a1f08"/>
+      <stop offset="0.55" stop-color="#2a0f05"/>
+      <stop offset="1" stop-color="#140703"/>
+    </radialGradient>
+    <linearGradient id="flameOut" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#ff3b0f"/>
+      <stop offset="1" stop-color="#ff8a1a"/>
+    </linearGradient>
+    <linearGradient id="flameIn" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#ff9f1c"/>
+      <stop offset="1" stop-color="#ffe066"/>
+    </linearGradient>
+    <linearGradient id="meat" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6d3512"/>
+      <stop offset="0.4" stop-color="#c97a32"/>
+      <stop offset="0.7" stop-color="#a85a20"/>
+      <stop offset="1" stop-color="#5a2a0c"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd54f"/>
+      <stop offset="1" stop-color="#ff9f1c"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="14" y="14" width="484" height="484" rx="100" fill="none" stroke="url(#ring)" stroke-width="10" opacity="0.9"/>
+
+  <!-- להבה -->
+  <path d="M256 448c-92 0-150-58-150-138 0-62 34-98 58-132 8 40 26 60 44 66-6-64 22-122 78-164-4 52 18 92 52 122 30 26 68 58 68 112 0 80-58 134-150 134z" fill="url(#flameOut)"/>
+  <path d="M256 440c-58 0-96-36-96-86 0-40 22-62 40-84 6 26 18 38 30 42-2-42 16-78 50-104-2 34 12 58 34 78 20 18 40 38 40 70 0 50-40 84-98 84z" fill="url(#flameIn)"/>
+
+  <!-- שיפוד -->
+  <g transform="rotate(-18 256 256)">
+    <rect x="248" y="70" width="16" height="390" rx="8" fill="#d9dee6" stroke="#3a1a08" stroke-width="5"/>
+    <circle cx="256" cy="70" r="16" fill="#e9c46a" stroke="#3a1a08" stroke-width="5"/>
+    <!-- בשר -->
+    <rect x="196" y="112" width="120" height="66" rx="24" fill="url(#meat)" stroke="#2a1206" stroke-width="6"/>
+    <path d="M206 132q50 10 100 0M206 156q50 10 100 0" stroke="#4a1e08" stroke-width="5" fill="none" opacity="0.55"/>
+    <!-- עגבנייה -->
+    <ellipse cx="256" cy="204" rx="58" ry="26" fill="#e8402a" stroke="#2a1206" stroke-width="6"/>
+    <ellipse cx="236" cy="198" rx="16" ry="6" fill="#ff9a8a" opacity="0.7"/>
+    <!-- בשר -->
+    <rect x="192" y="232" width="128" height="70" rx="26" fill="url(#meat)" stroke="#2a1206" stroke-width="6"/>
+    <path d="M202 254q54 10 108 0M202 278q54 10 108 0" stroke="#4a1e08" stroke-width="5" fill="none" opacity="0.55"/>
+    <!-- פלפל ירוק -->
+    <ellipse cx="256" cy="328" rx="56" ry="24" fill="#3fa33a" stroke="#2a1206" stroke-width="6"/>
+    <ellipse cx="238" cy="322" rx="16" ry="6" fill="#9ee08a" opacity="0.7"/>
+    <!-- בצל -->
+    <ellipse cx="256" cy="372" rx="52" ry="24" fill="#f3e6f4" stroke="#2a1206" stroke-width="6"/>
+    <ellipse cx="256" cy="372" rx="32" ry="13" fill="none" stroke="#c9a2cf" stroke-width="5"/>
+  </g>
+</svg>
