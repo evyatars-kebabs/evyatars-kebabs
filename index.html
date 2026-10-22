@@ -4460,6 +4460,74 @@ function skHedgehogBack(c, sk, st) {
     }
 }
 
+// פחית משקה מוגז. sk.can: { body, dark, ribbon, text, textColor, sub }
+function skSodaBack(c, sk, st) {
+    const t = st.t, cn = sk.can, out = '#1a0a0a';
+    // גוף הפחית
+    const can = new Path2D();
+    can.moveTo(-80, -128);
+    can.quadraticCurveTo(-88, -118, -88, -96);
+    can.lineTo(-88, 300);
+    can.quadraticCurveTo(-88, 330, -70, 336);
+    can.lineTo(70, 336);
+    can.quadraticCurveTo(88, 330, 88, 300);
+    can.lineTo(88, -96);
+    can.quadraticCurveTo(88, -118, 80, -128);
+    can.closePath();
+    const g = c.createLinearGradient(-90, 0, 90, 0);
+    g.addColorStop(0, cn.dark); g.addColorStop(0.22, cn.body); g.addColorStop(0.4, skShade(cn.body, 0.25));
+    g.addColorStop(0.55, cn.body); g.addColorStop(1, cn.dark);
+    c.fillStyle = g; c.fill(can);
+    c.save(); c.clip(can);
+    // סרט גלי מתחת לפה
+    c.beginPath();
+    c.moveTo(-100, 168);
+    c.bezierCurveTo(-50, 120, 10, 210, 100, 150);
+    c.lineTo(100, 176);
+    c.bezierCurveTo(10, 238, -50, 150, -100, 196);
+    c.closePath();
+    c.fillStyle = cn.ribbon; c.fill();
+    // לוגו
+    c.save(); c.translate(0, 112); c.rotate(-0.06);
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = 'italic bold 36px "Secular One", Rubik, sans-serif';
+    c.lineWidth = 5; c.strokeStyle = skA('#000000', 0.25); c.strokeText(cn.text, 0, 0);
+    c.fillStyle = cn.textColor; c.fillText(cn.text, 0, 0);
+    if (cn.sub) { c.font = 'bold 16px Rubik, sans-serif'; c.fillText(cn.sub, 0, 30); }
+    c.restore();
+    // ברק מתכתי וטיפות עיבוי
+    c.fillStyle = 'rgba(255,255,255,0.28)'; c.fillRect(-46, -130, 14, 470);
+    c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(-26, -130, 6, 470);
+    for (let i = 0; i < 22; i++) {
+        const x = ((i * 53) % 160) - 80, y = -100 + ((i * 89) % 420);
+        if (Math.abs(x) < 64 && y > -100 && y < 34) continue;             // לא על הפנים
+        const r = 2.5 + (i % 3) * 1.5;
+        skE(c, x, y, r, r * 1.25, 'rgba(255,255,255,0.35)');
+        skE(c, x - r * 0.3, y - r * 0.4, r * 0.35, r * 0.35, 'rgba(255,255,255,0.8)');
+    }
+    // טבעות הפחית למעלה ולמטה
+    c.fillStyle = skA('#000000', 0.22); c.fillRect(-100, 318, 200, 6);
+    c.restore();
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke(can);
+    // מכסה כסוף עם טבעת פתיחה
+    const lg = c.createLinearGradient(-80, 0, 80, 0);
+    lg.addColorStop(0, '#8a919e'); lg.addColorStop(0.45, '#f1f4f8'); lg.addColorStop(1, '#7a818e');
+    skE(c, 0, -128, 82, 16, lg, out, 3);
+    skE(c, 0, -130, 70, 11, '#c9ced8');
+    c.save(); c.translate(14, -132); c.rotate(-0.15);
+    skE(c, 0, 0, 22, 8, null, '#7a818e', 4);
+    skE(c, -16, 0, 6, 4, '#9aa1ae');
+    c.restore();
+    // בועות תסיסה שעולות מהפחית
+    for (let i = 0; i < 7; i++) {
+        const ph = (t * 0.6 + i / 7) % 1, x = -40 + (i * 37) % 80 + Math.sin(t * 3 + i) * 6;
+        c.globalAlpha = 1 - ph;
+        skE(c, x, -140 - ph * 70, 3 + (i % 3), 3 + (i % 3), null, 'rgba(255,255,255,0.8)', 1.5);
+    }
+    c.globalAlpha = 1;
+    skEyes(c, sk, st);
+}
+
 /* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
@@ -4516,6 +4584,10 @@ const SV_SKINS = [
     { id: 'pilot', name: 'הטייס', rarity: 1, tone: '#f0c08f', hair: { style: 'short', color: '#3a2a1a' },
       glasses: { type: 'aviator', color: '#d9b25a' }, hat: { type: 'pilot' },
       outfit: { base: '#f4f4f8', collar: 'tie', tie: '#1d2a52', badge: '#d9b25a' } },
+    { id: 'bubacola', name: 'בובה בולה', rarity: 1, brow: '#5a0a0a', lips: '#7a0a10', eyes: { iris: '#3a1a10' }, blush: false,
+      can: { body: '#d8161e', dark: '#7a0a0e', ribbon: '#ffffff', text: 'בובה בולה', textColor: '#ffffff' }, drawBack: skSodaBack },
+    { id: 'rolazero', name: 'רולה זירו', rarity: 1, brow: '#000000', lips: '#d8161e', eyes: { iris: '#2a2a2a' }, blush: false,
+      can: { body: '#1a1a1e', dark: '#050506', ribbon: '#d8161e', text: 'רולה', textColor: '#d8161e', sub: 'זירו סוכר' }, drawBack: skSodaBack },
 
     /* ---------- נדיר ---------- */
     { id: 'pirate', name: 'הפיראט', rarity: 2, tone: '#d9a066', hair: { style: 'long', color: '#1a1410' }, eyepatch: 'left', earring: true,
