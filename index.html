@@ -4124,6 +4124,46 @@ function skLaffaBack(c, sk, st) {
     skEyes(c, sk, st);
 }
 
+function skMouseBack(c, sk, st) {
+    const t = st.t, blk = '#15151a', skin = '#f6c9a0';
+    skAuraBack(c, sk, t);
+    // שרביט קסמים ביד עם כפפה לבנה
+    c.save(); c.translate(118, 230); c.rotate(0.42 + Math.sin(t * 2) * 0.06);
+    skR(c, -5, -150, 10, 150, 4, '#6b4a2c', '#2a1206', 2);
+    skGlow(c, 0, -158, 34, '#9fd4ff', 0.6 + 0.3 * Math.sin(t * 5));
+    skStar(c, 0, -158, 13, '#fff3b0', t * 2);
+    skE(c, 0, 4, 24, 20, '#ffffff', '#2a2a30', 2.5);
+    for (const x of [-12, 0, 12]) { c.strokeStyle = '#2a2a30'; c.lineWidth = 2; c.beginPath(); c.moveTo(x, -6); c.lineTo(x, 8); c.stroke(); }
+    c.restore();
+    // גלימה אדומה
+    skOutfit(c, sk, t);
+    // אוזניים עגולות גדולות
+    for (const s of [-1, 1]) {
+        const g = c.createRadialGradient(s * 108 - 14, -164, 6, s * 108, -148, 52);
+        g.addColorStop(0, '#3a3a44'); g.addColorStop(1, blk);
+        skE(c, s * 110, -146, 50, 50, g, '#000', 3);
+    }
+    // ראש שחור ופנים בצבע עור
+    const H = SK_HEAD;
+    skE(c, H.cx, H.cy, H.rx, H.ry, blk, '#000', 3);
+    const face = new Path2D();
+    face.ellipse(0, -2, 66, 56, 0, 0, Math.PI * 2);
+    face.ellipse(-28, -68, 28, 40, 0, 0, Math.PI * 2);
+    face.ellipse(28, -68, 28, 40, 0, 0, Math.PI * 2);
+    const fg = c.createRadialGradient(-20, -60, 10, 0, -30, 110);
+    fg.addColorStop(0, '#ffe2c4'); fg.addColorStop(1, '#e8a878');
+    c.fillStyle = fg; c.fill(face, 'nonzero');
+    skE(c, 0, -32, 18, 12, blk, '#000', 2);                           // אף
+    skE(c, -5, -36, 6, 3.5, 'rgba(255,255,255,0.6)');
+    skEyes(c, sk, st);
+}
+function skMouseFront(c, sk, st) {
+    c.save();
+    c.translate(0, -40); c.scale(0.86, 0.86);                // הכובע מורם כדי לא להסתיר את הפנים
+    skHatOver(c, sk, st.t);
+    c.restore();
+}
+
 /* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
@@ -4343,7 +4383,10 @@ const SV_SKINS = [
       aura: { color: '#ffd23d', alpha: 0.5, rings: true }, fx: { type: 'sparkles', count: 16 }, drawBack: skCapybaraBack },
     { id: 'vader', name: 'סטארוורס', rarity: 6, tone: '#2a2c34', lips: '#3a3d48', blush: false,
       outfit: { base: '#141418', collar: 'high' }, cape: { color: '#16161c' },
-      aura: { color: '#ff2a2a', alpha: 0.3 }, drawBack: skVaderBack }
+      aura: { color: '#ff2a2a', alpha: 0.3 }, drawBack: skVaderBack },
+    { id: 'wizmouse', name: 'מיקי המכשף', rarity: 6, tone: '#f6c9a0', brow: '#15151a', lips: '#7a1a1a', eyes: { iris: '#15151a' },
+      hat: { type: 'wizard', c1: '#2a4fb8', c2: '#2a4fb8' }, outfit: { base: '#c42b2b', belt: '#d9b25a', collar: 'v', inner: '#e8a878' },
+      aura: { color: '#6ea8ff', alpha: 0.4 }, fx: { type: 'stars', count: 14, speed: 0.3 }, drawBack: skMouseBack, drawFront: skMouseFront }
 ];
 
 function skinById(id) { return SV_SKINS.find(s => s.id === id) || SV_SKINS[0]; }
@@ -5256,7 +5299,8 @@ const REDEEM_CODES = {
     'SPRINGYDADOG3':     { skin: 'yuvaldog' },
     'TAPUZIYUVAL':       { skin: 'tapuzi' },
     'GOLDCAPYSHVARTZ6':  { skin: 'goldcapy' },
-    'DARKSIDEKEBAB57':   { skin: 'vader' }
+    'DARKSIDEKEBAB57':   { skin: 'vader' },
+    'WIZMICK6611':       { skin: 'wizmouse' }
 };
 function redeemCode(raw) {
     const code = String(raw || '').trim().toUpperCase();
