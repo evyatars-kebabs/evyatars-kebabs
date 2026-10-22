@@ -3736,7 +3736,7 @@ function skDrawHumanFx(c, sk, st) {
 }
 
 /* ============================================================
-   קטלוג הסקינים של שוורץ - 30 דמויות אנושיות
+   קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי
    ============================================================ */
 const SK_RARITY = [
@@ -3839,7 +3839,99 @@ const SV_SKINS = [
       aura: { color: '#8f6bff', alpha: 0.5, rings: true }, fx: { type: 'stars', count: 22, speed: 0.3 }, lips: '#c067d9' },
     { id: 'dragon', name: 'אדון הדרקונים', rarity: 5, tone: '#c9a77c', hair: { style: 'slick', color: '#1a1410' }, eyes: { glow: '#ff7a1a', slit: true }, brow: '#14110f', hat: { type: 'dragon' },
       beard: { style: 'goatee', color: '#1a1410' }, wings: { type: 'dragon', color: '#2d6a3a' },
-      outfit: { base: '#2f7a42', pattern: 'scales', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.45, runes: true }, fx: { type: 'embers', count: 22, speed: 0.45 } }
+      outfit: { base: '#2f7a42', pattern: 'scales', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.45, runes: true }, fx: { type: 'embers', count: 22, speed: 0.45 } },
+
+    /* ============ 30 סקינים חדשים ============ */
+
+    /* ---------- נפוץ ---------- */
+    { id: 'shira', name: 'שירה', rarity: 0, tone: '#f3d2b0', hair: { style: 'bun', color: '#7a4a24' }, lips: '#d9566f',
+      outfit: { base: '#8f6bd6', collar: 'crew' } },
+    { id: 'omer', name: 'עומר', rarity: 0, tone: '#d9a066', hair: { style: 'curly', color: '#2a1a12' },
+      hat: { type: 'cap', c1: '#2a6fd0' }, outfit: { base: '#f4f4f7', pattern: 'stripes', trim: '#2a6fd0', collar: 'crew' } },
+    { id: 'tamar', name: 'תמר', rarity: 0, tone: '#8d5524', hair: { style: 'afro', color: '#1a120c' }, lips: '#7a3a32',
+      outfit: { base: '#f2c230', collar: 'v', inner: '#f4f4f7' } },
+    { id: 'itay', name: 'איתי', rarity: 0, tone: '#f1c8a0', hair: { style: 'bob', color: '#d8b24a' },
+      glasses: { type: 'round', color: '#222' }, outfit: { base: '#4f7a4a', collar: 'hood' } },
+    { id: 'dudu', name: 'דודו', rarity: 0, tone: '#e0a977', hair: { style: 'sidebald', color: '#3a2412' },
+      beard: { style: 'full', color: '#3a2412' }, outfit: { base: '#c24a3a', pattern: 'plaid', trim: '#6a1d12', collar: 'crew' } },
+    { id: 'maya', name: 'מאיה', rarity: 0, tone: '#f6d3b8', hair: { style: 'wavy', color: '#a8501a' }, face: ['freckles'], lips: '#e0707f',
+      outfit: { base: '#35c9b0', collar: 'crew' } },
+    { id: 'gili', name: 'גילי', rarity: 0, tone: '#c68642', hair: { style: 'ponytail', color: '#14110f' }, lips: '#a8434f',
+      hat: { type: 'cap', c1: '#2ea043' }, outfit: { base: '#23232b', collar: 'crewdark' } },
+
+    /* ---------- לא נפוץ ---------- */
+    { id: 'dj', name: 'הדי-ג\'יי', rarity: 1, tone: '#8d5524', hair: { style: 'buzz', color: '#14110f' }, lips: '#7a3a32',
+      glasses: { type: 'shades' }, hat: { type: 'headphones', c1: '#ff2f92' },
+      outfit: { base: '#1b1c22', pattern: 'neon', glow: '#ff2f92', collar: 'crewdark' } },
+    { id: 'scientist', name: 'המדענית', rarity: 1, tone: '#f3d2b0', hair: { style: 'bun', color: '#4a2e18' }, lips: '#c25a6a',
+      glasses: { type: 'goggles' }, outfit: { base: '#7fb3e0', coat: '#f7f7fa', collar: 'tie', tie: '#2a6fd0' } },
+    { id: 'sailor', name: 'המלח', rarity: 1, tone: '#e8b88a', hair: { style: 'short', color: '#3a2a1a' },
+      beard: { style: 'full', color: '#3a2a1a' }, hat: { type: 'cap', c1: '#1d2a52' },
+      outfit: { base: '#f4f4f8', pattern: 'stripes', trim: '#1d2a52', collar: 'bandana', bandana: '#c42b2b' } },
+    { id: 'waiter', name: 'המלצר', rarity: 1, tone: '#f0c08f', hair: { style: 'slick', color: '#14110f' },
+      beard: { style: 'mustache', color: '#14110f' }, outfit: { base: '#f7f7fa', jacket: '#15151a', collar: 'tie', tie: '#14182e' } },
+    { id: 'beekeeper', name: 'הכוורן', rarity: 1, tone: '#d9a066', hair: { style: 'short', color: '#5a3a1a' }, hat: { type: 'straw', c1: '#f2c230' },
+      outfit: { base: '#f2e6b8', overall: '#e4b521', collar: 'crew' } },
+    { id: 'lifeguard', name: 'המציל', rarity: 1, tone: '#c68642', hair: { style: 'wavy', color: '#e8c04a' }, glasses: { type: 'shades' },
+      outfit: { base: '#e83a2a', badge: '#f4f4f7', collar: 'crew' } },
+    { id: 'mechanic', name: 'המכונאי', rarity: 1, tone: '#e0a977', hair: { style: 'buzz', color: '#3a2412' }, face: ['soot'],
+      beard: { style: 'stubble', color: '#3a2412' }, outfit: { base: '#4a6a8a', overall: '#2f4a68', collar: 'crew' } },
+
+    /* ---------- נדיר ---------- */
+    { id: 'boxer', name: 'המתאגרף', rarity: 2, tone: '#8d5524', hair: { style: 'buzz', color: '#14110f' }, face: ['scar'], lips: '#7a3a32',
+      outfit: { base: '#d6291f', belt: '#f2c230', collar: 'high' } },
+    { id: 'yacht', name: 'בעל היאכטה', rarity: 2, tone: '#c9a77c', hair: { style: 'short', color: '#14110f' }, earring: true,
+      beard: { style: 'goatee', color: '#14110f' }, hat: { type: 'cap', c1: '#f4f4f7' },
+      outfit: { base: '#f7f7fa', trimEdge: '#d9b25a', collar: 'high' } },
+    { id: 'gangster', name: 'הגנגסטר', rarity: 2, tone: '#f0c08f', hair: { style: 'slick', color: '#1a1410' }, face: ['scar'],
+      beard: { style: 'stubble', color: '#1a1410' }, hat: { type: 'fedora' },
+      outfit: { base: '#2a2a32', pattern: 'stripes', trim: '#3a3a46', collar: 'tie', tie: '#c42b2b' } },
+    { id: 'punk', name: 'הפאנקיסטית', rarity: 2, tone: '#f6d3b8', hair: { style: 'mohawk', color: '#35e0a0', color2: '#f2c230' }, lips: '#2a1a2a',
+      earring: true, outfit: { base: '#d6291f', jacket: '#15151a', collar: 'crewdark' } },
+    { id: 'hunter', name: 'הצייד', rarity: 2, tone: '#d9a066', hair: { style: 'long', color: '#4a2e18' }, face: ['warpaint'],
+      beard: { style: 'stubble', color: '#4a2e18' }, outfit: { base: '#4f6a3a', fur: true, straps: '#6b4a2c', collar: 'none' } },
+    { id: 'pharaoh', name: 'הפרעה', rarity: 2, tone: '#c68642', hair: { style: 'bob', color: '#14110f' }, brow: '#14110f',
+      beard: { style: 'goatee', color: '#14110f' }, earring: true,
+      outfit: { base: '#f4ecd0', pattern: 'stripes', trim: '#2a5bd7', belt: '#d9b25a', collar: 'ring' } },
+
+    /* ---------- אפי ---------- */
+    { id: 'icequeen', name: 'מלכת הקרח', rarity: 3, tone: '#f3e2e8', hair: { style: 'long', color: '#dff3ff' }, brow: '#cfe8ff', lips: '#7aa8d9',
+      eyes: { iris: '#5ab4ff' }, hat: { type: 'crown' }, outfit: { base: '#9fd4ff', pattern: 'stars', collar: 'high' },
+      cape: { color: '#5ab4ff' }, aura: { color: '#bfe8ff', alpha: 0.3 }, fx: { type: 'sparkles', count: 10 } },
+    { id: 'vampire', name: 'הערפד', rarity: 3, tone: '#e6dde6', hair: { style: 'slick', color: '#14110f' }, brow: '#14110f', lips: '#8a1020',
+      eyes: { glow: '#ff2a2a' }, blush: false, outfit: { base: '#1b1c22', collar: 'tie', tie: '#8a1020' },
+      cape: { color: '#7a0c18' }, aura: { color: '#ff2a4a', alpha: 0.2 } },
+    { id: 'gladiator', name: 'הגלדיאטור', rarity: 3, tone: '#d9a066', hair: { style: 'short', color: '#3a2412' }, face: ['scar'],
+      beard: { style: 'full', color: '#3a2412' }, hat: { type: 'knight' },
+      outfit: { base: '#c9a24a', pattern: 'plates', trim: '#7a5a1a', collar: 'high' }, cape: { color: '#b3202a' }, aura: { color: '#ffb02e', alpha: 0.18 } },
+    { id: 'hacker', name: 'ההאקר', rarity: 3, tone: '#e8b88a', hair: { style: 'wild', color: '#1a1410' }, glasses: { type: 'shades', neon: '#35ff6a' },
+      hat: { type: 'headphones', c1: '#35ff6a' }, outfit: { base: '#101418', pattern: 'neon', glow: '#35ff6a', collar: 'hood' },
+      aura: { color: '#35ff6a', alpha: 0.22 }, fx: { type: 'sparkles', count: 8 } },
+    { id: 'sultan', name: 'הסולטן', rarity: 3, tone: '#c9a77c', hair: { style: 'short', color: '#14110f' }, earring: true,
+      beard: { style: 'full', color: '#14110f' }, hat: { type: 'crown' },
+      outfit: { base: '#5b3fb5', pattern: 'ermine', trimEdge: '#d9b25a', sash: '#d9b25a', collar: 'high' }, aura: { color: '#d9b25a', alpha: 0.26 } },
+
+    /* ---------- אגדי ---------- */
+    { id: 'thunder', name: 'אל הרעם', rarity: 4, tone: '#f0c08f', hair: { style: 'wild', color: '#f0cf6a' }, eyes: { glow: '#9fe8ff' },
+      beard: { style: 'full', color: '#f0cf6a' }, hat: { type: 'viking' },
+      outfit: { base: '#3a4a6a', pattern: 'plates', trim: '#1d2a3a', collar: 'high' }, cape: { color: '#c42b2b' },
+      aura: { color: '#9fe8ff', alpha: 0.45 }, fx: { type: 'sparkles', count: 18, speed: 0.6 } },
+    { id: 'phoenix', name: 'עוף החול', rarity: 4, tone: '#e8b88a', hair: { style: 'flame' }, eyes: { glow: '#ffd33d' }, brow: '#a8401a', lips: '#c2401a',
+      outfit: { base: '#c2401a', pattern: 'scales', collar: 'high' }, wings: { type: 'feather' },
+      aura: { color: '#ff8a1a', alpha: 0.5 }, fx: { type: 'flames', count: 18, speed: 0.5 } },
+    { id: 'shadow', name: 'נינג\'ת הצללים', rarity: 4, tone: '#d9a98a', hat: { type: 'ninja' }, eyes: { glow: '#b66bff' }, brow: '#14110f',
+      outfit: { base: '#15121e', straps: '#6a3fb5', sash: '#6a3fb5', collar: 'high' }, cape: { color: '#2a1a40' },
+      aura: { color: '#7a3fff', alpha: 0.42, runes: true }, fx: { type: 'stars', count: 14, speed: 0.4 } },
+
+    /* ---------- מיתי ---------- */
+    { id: 'kebabgod', name: 'אל השווארמה', rarity: 5, tone: '#f0c08f', hair: { style: 'long', color: '#f0cf6a' }, eyes: { glow: '#ffd23d' }, brow: '#d9b25a',
+      beard: { style: 'long', color: '#f0cf6a' }, hat: { type: 'halo' }, wings: { type: 'feather' },
+      outfit: { base: '#d9b25a', pattern: 'plates', trim: '#8a6a1a', trimEdge: '#fff3b0', collar: 'high' }, cape: { color: '#b3202a', stars: true },
+      aura: { color: '#ffd23d', alpha: 0.55, rings: true }, fx: { type: 'sparkles', count: 24, speed: 0.4 } },
+    { id: 'voidlord', name: 'שליט הריק', rarity: 5, tone: '#cfc6e6', hair: { style: 'galaxy', color: '#120a3d' }, eyes: { glow: '#ff2fd0', slit: true }, brow: '#2a1a5a',
+      hat: { type: 'cosmiccrown' }, wings: { type: 'dragon', color: '#2a1a5a' }, lips: '#6a2a9a',
+      outfit: { base: '#0e0a24', pattern: 'neon', glow: '#ff2fd0', collar: 'high' }, cape: { color: '#1a0e3a', stars: true },
+      aura: { color: '#ff2fd0', alpha: 0.5, runes: true, rings: true }, fx: { type: 'stars', count: 24, speed: 0.35 } }
 ];
 
 function skinById(id) { return SV_SKINS.find(s => s.id === id) || SV_SKINS[0]; }
