@@ -838,6 +838,10 @@
         #coupon-text { color: var(--text-color) !important; font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1.15rem !important; font-weight: 400 !important; }
         #coupon-coins { font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1.5rem; color: var(--accent-gold); text-shadow: 0 0 14px rgba(255, 194, 51, 0.6); animation: coinPop .5s cubic-bezier(.2, 1.8, .4, 1) .5s both; }
         #coupon-total { margin-top: 4px; font-size: 0.85rem; color: var(--muted); }
+        .claim-btn { margin: 12px auto 0; display: block; width: auto; min-width: 60%; padding: 12px 26px; animation: claimPulse 1.4s ease-in-out .9s infinite; }
+        .claim-btn:disabled { animation: none; }
+        @keyframes claimPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+        .fly-coin { position: fixed; z-index: 9998; left: 0; top: 0; font-size: 26px; line-height: 1; pointer-events: none; filter: drop-shadow(0 0 6px rgba(255, 194, 51, 0.8)); }
         @keyframes coinPop { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* חנות */
@@ -1074,6 +1078,7 @@
             <div id="coupon-text" style="font-size: 1rem; font-weight: bold; margin-top: 5px; color: #2ea043;"></div>
             <div id="coupon-coins"></div>
             <div id="coupon-total"></div>
+            <button class="btn claim-btn" id="claim-btn" onclick="claimCoins()"></button>
         </div>
 
         <button class="btn" id="play-again-btn" onclick="playAgain()">🔄 שחק שוב</button>
@@ -1384,6 +1389,7 @@ const firebaseConfig = {
 	/* --- ניווט בין מסכים ראשיים --- */
 	function switchTab(screenId) {
 			stopAllGames();
+		if (screenId !== 'result') creditPendingCoins();
 		document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
 		document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
 
@@ -2193,6 +2199,61 @@ function svLoop(ts) {
 /* ---------- ציור ---------- */
 const SV_EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
 
+/* ---------- ספרייטים של אימוג'י ----------
+   ציור אימוג'י גדול ישירות על קנבס יוצא שחור בחלק מהמכשירים: מעל גודל מסוים הדפדפן
+   מצייר את התו כצורה חד-צבעית (בצבע ה-fillStyle הנוכחי), או כשאין גופן אימוג'י צבעוני.
+   לכן מציירים כל אימוג'י פעם אחת בגודל בטוח לקנבס נפרד ומשתמשים בתמונה.
+   אם התוצאה בכל זאת חד-צבעית - צובעים אותה בצבע הגיבוי של הפריט במקום שחור. */
+const EMOJI_SPRITE_PX = 96;
+const emojiSprites = {};
+function emojiSprite(emoji, tint) {
+    const key = emoji + '|' + (tint || '');
+    if (emojiSprites[key]) return emojiSprites[key];
+    const S = Math.round(EMOJI_SPRITE_PX * 1.3);
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = S;
+    const c = cv.getContext('2d');
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.font = EMOJI_SPRITE_PX + 'px ' + SV_EMOJI_FONT;
+    c.fillStyle = '#000000';
+    c.fillText(emoji, S / 2, S / 2 + EMOJI_SPRITE_PX * 0.05);
+
+    // בדיקה: האם יצא צבעוני? (תו חד-צבעי ייצא שחור לגמרי)
+    let ink = 0, colored = 0;
+    try {
+        const d = c.getImageData(0, 0, S, S).data;
+        for (let i = 0; i < d.length; i += 16) {
+            if (d[i + 3] < 40) continue;
+            ink++;
+            if (d[i] > 40 || d[i + 1] > 40 || d[i + 2] > 40) colored++;
+        }
+    } catch (e) { colored = ink = 1; }
+
+    if (ink === 0) {                                   // לא צויר כלום - עיגול בצבע הגיבוי
+        const col = tint || '#e0793a';
+        skE(c, S / 2, S / 2, S * 0.34, S * 0.34, col, skShade(col, -0.45), 4);
+        skE(c, S * 0.4, S * 0.38, S * 0.1, S * 0.07, 'rgba(255,255,255,0.45)');
+    } else if (colored < ink * 0.1) {                 // צורה חד-צבעית - צובעים אותה
+        const col = tint || '#e0793a';
+        c.globalCompositeOperation = 'source-in';
+        const g = c.createLinearGradient(0, 0, 0, S);
+        g.addColorStop(0, skShade(col, 0.3));
+        g.addColorStop(1, skShade(col, -0.3));
+        c.fillStyle = g;
+        c.fillRect(0, 0, S, S);
+        c.globalCompositeOperation = 'source-over';
+    }
+    emojiSprites[key] = cv;
+    return cv;
+}
+// מצייר אימוג'י במרכז (0,0) בגודל size (גובה הגופן)
+function drawEmoji(c, emoji, size, tint, dy) {
+    const sp = emojiSprite(emoji, tint);
+    const w = size * 1.3;
+    c.drawImage(sp, -w / 2, -w / 2 + (dy || 0), w, w);
+}
+
 function svDraw() {
     const c = svCtx;
     if (!c || !sv) return;
@@ -2316,10 +2377,7 @@ function svDrawBall(c, b) {
     c.globalAlpha = alpha;
     c.translate(x, y);
     c.rotate(b.rot);
-    c.font = Math.round(SV_BALL_R * 2 * sc) + 'px ' + SV_EMOJI_FONT;
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
-    c.fillText(b.food, 0, 2 * sc);
+    drawEmoji(c, b.food, SV_BALL_R * 2 * sc, '#e0793a', 2 * sc);
     c.restore();
 }
 
@@ -4116,6 +4174,63 @@ function rollCoupon(gameKey, score) {
     return COUPONS[0];
 }
 
+/* ---------- איסוף מטבעות: המטבעות עפים אל היתרה ---------- */
+let pendingCoins = 0;
+
+// אם יוצאים מהמסך בלי ללחוץ "אסוף" - המטבעות לא הולכים לאיבוד
+function creditPendingCoins() {
+    if (!pendingCoins) return;
+    addCoins(pendingCoins);
+    pendingCoins = 0;
+}
+
+function claimCoins() {
+    const amount = pendingCoins;
+    if (!amount) return;
+    pendingCoins = 0;
+    const btn = document.getElementById('claim-btn');
+    btn.disabled = true;
+    btn.textContent = 'נאסף ✓';
+    haptic(35);
+
+    const before = getCoins();
+    store.set(COIN_KEY, before + amount);             // נשמר מיד; התצוגה מתעדכנת עם כל מטבע שמגיע
+    const chip = document.querySelector('.top-bar .coin-chip');
+    const from = btn.getBoundingClientRect();
+    const to = chip ? chip.getBoundingClientRect() : { left: 20, top: 20, width: 40, height: 30 };
+    const x0 = from.left + from.width / 2, y0 = from.top + from.height / 2;
+    const x1 = to.left + to.width / 2, y1 = to.top + to.height / 2;
+
+    const n = Math.min(amount, 10);
+    const per = Math.floor(amount / n);
+    let shown = before, landed = 0;
+    for (let i = 0; i < n; i++) {
+        const value = i === n - 1 ? amount - per * (n - 1) : per;
+        const coin = document.createElement('div');
+        coin.className = 'fly-coin';
+        coin.textContent = '🪙';
+        document.body.appendChild(coin);
+        const sx = x0 + (Math.random() - 0.5) * 70, sy = y0 + (Math.random() - 0.5) * 20;
+        const mx = (sx + x1) / 2 + (Math.random() - 0.5) * 120, my = Math.min(sy, y1) - 40 - Math.random() * 60;
+        const anim = coin.animate([
+            { transform: `translate(${sx}px, ${sy}px) translate(-50%, -50%) scale(0.4)`, opacity: 0 },
+            { transform: `translate(${sx}px, ${sy - 30}px) translate(-50%, -50%) scale(1.15)`, opacity: 1, offset: 0.15 },
+            { transform: `translate(${mx}px, ${my}px) translate(-50%, -50%) scale(1)`, opacity: 1, offset: 0.55 },
+            { transform: `translate(${x1}px, ${y1}px) translate(-50%, -50%) scale(0.55)`, opacity: 0.9 }
+        ], { duration: 800, delay: 120 + i * 110, easing: 'cubic-bezier(.45, 0, .55, 1)', fill: 'both' });
+        anim.onfinish = () => {
+            coin.remove();
+            shown += value;
+            landed++;
+            document.querySelectorAll('.coin-balance').forEach(e => { e.textContent = shown; });
+            if (chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
+            sfx.coin();
+            haptic(15);
+            if (landed === n) renderCoinBadges();
+        };
+    }
+}
+
 let lastGameKey = null;
 function playAgain() {
     const starters = { catch: startCatchGame, trivia: startTriviaGame, goods: startGoodsSortGame, shvartz: startShvartzGame, ninja: startNinjaGame };
@@ -4128,6 +4243,9 @@ function showResultReward(gameKey, score) {
     const txt = document.getElementById('coupon-text');
     const coinsEl = document.getElementById('coupon-coins');
     const totalEl = document.getElementById('coupon-total');
+    const claimBtn = document.getElementById('claim-btn');
+    claimBtn.style.display = 'none';
+    pendingCoins = 0;
     if (!GAME_REWARD[gameKey]) { box.style.display = 'none'; return; }
 
     box.style.display = 'block';
@@ -4146,14 +4264,12 @@ function showResultReward(gameKey, score) {
     }
     box.classList.remove('empty');
     txt.textContent = coupon.text;
-    const before = getCoins();
-    addCoins(coupon.coins);
     coinsEl.textContent = '+' + coupon.coins + ' 🪙 קבב קוינס';
-    totalEl.innerHTML = 'סה״כ: <b id="coupon-total-num">' + before + '</b> 🪙';
-    setTimeout(() => {
-        const el = document.getElementById('coupon-total-num');
-        if (el) animateNumber(el, before, before + coupon.coins, 900);
-    }, 650);
+    totalEl.textContent = '';
+    pendingCoins = coupon.coins;                      // המטבעות נכנסים ליתרה רק בלחיצה על "אסוף"
+    claimBtn.style.display = 'block';
+    claimBtn.disabled = false;
+    claimBtn.textContent = 'אסוף ' + coupon.coins + ' 🪙';
     sfx.win();
     confettiBurst(coupon.coins >= 35 ? 70 : 40);
     haptic([20, 40, 20]);
@@ -4581,8 +4697,7 @@ function njDraw() {
         c.clip();
         c.rotate(-h.clip);
         if (h.golden) { c.shadowColor = '#ffd700'; c.shadowBlur = 16; }
-        c.font = '66px ' + SV_EMOJI_FONT;
-        c.fillText(h.emoji, 0, 3);
+        drawEmoji(c, h.emoji, 66, NJ_JUICE[h.emoji], 3);
         c.restore();
         c.restore();
     }
@@ -4598,8 +4713,7 @@ function njDraw() {
             skGlow(c, 0, 0, 66, '#ffd700', 0.75);
         }
         c.rotate(it.rot);
-        c.font = '66px ' + SV_EMOJI_FONT;
-        c.fillText(it.emoji, 0, 3);
+        drawEmoji(c, it.emoji, 66, it.bomb ? '#3a3a44' : NJ_JUICE[it.emoji], 3);
         c.restore();
     }
 
