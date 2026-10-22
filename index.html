@@ -4164,6 +4164,90 @@ function skMouseFront(c, sk, st) {
     c.restore();
 }
 
+function skDeniBack(c, sk, st) {
+    const t = st.t, tone = sk.tone, out = SK_OUT;
+    skAuraBack(c, sk, t);
+    // צוואר, כתפיים וזרועות חשופות (גופייה)
+    skR(c, -28, 26, 56, 56, 12, skShade(tone, -0.12), null);
+    skTorsoPath(c);
+    const sg = c.createLinearGradient(-124, 0, 124, 0);
+    sg.addColorStop(0, skShade(tone, -0.25)); sg.addColorStop(0.5, tone); sg.addColorStop(1, skShade(tone, -0.25));
+    c.fillStyle = sg; c.fill();
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = skA(skShade(tone, -0.4), 0.5); c.lineWidth = 2.5;      // שרירי כתפיים
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 112, 120); c.quadraticCurveTo(s * 100, 170, s * 116, 220); c.stroke(); }
+    // גופייה שחורה
+    const jersey = new Path2D();
+    jersey.moveTo(-60, 82);
+    jersey.lineTo(-34, 80);
+    jersey.quadraticCurveTo(0, 150, 34, 80);
+    jersey.lineTo(60, 82);
+    jersey.bezierCurveTo(70, 130, 84, 160, 106, 172);
+    jersey.lineTo(110, 340);
+    jersey.lineTo(-110, 340);
+    jersey.lineTo(-106, 172);
+    jersey.bezierCurveTo(-84, 160, -70, 130, -60, 82);
+    jersey.closePath();
+    c.fillStyle = '#121216'; c.fill(jersey);
+    c.save(); c.clip(jersey);
+    // פסים אלכסוניים בצד (אדום-לבן-שחור)
+    for (const [w, col] of [[30, '#e03a3e'], [10, '#ffffff']]) {
+        c.strokeStyle = col; c.lineWidth = w;
+        c.beginPath(); c.moveTo(-130, 250); c.quadraticCurveTo(-70, 300, -40, 360); c.stroke();
+    }
+    c.restore();
+    // שוליים אדומים-לבנים בצוואר ובבתי השרוול
+    for (const [w, col] of [[9, '#ffffff'], [5, '#e03a3e']]) {
+        c.strokeStyle = col; c.lineWidth = w;
+        c.beginPath(); c.moveTo(-34, 80); c.quadraticCurveTo(0, 150, 34, 80); c.stroke();
+        c.beginPath(); c.moveTo(60, 82); c.bezierCurveTo(70, 130, 84, 160, 106, 172); c.stroke();
+        c.beginPath(); c.moveTo(-60, 82); c.bezierCurveTo(-70, 130, -84, 160, -106, 172); c.stroke();
+    }
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke(jersey);
+    // כיתוב ומספר
+    c.save();
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = 'bold 30px "Arial Black", Arial, sans-serif';
+    c.fillStyle = '#ffffff';
+    c.fillText('PORTLAND', 0, 178);
+    c.font = 'bold 74px "Arial Black", Arial, sans-serif';
+    c.lineWidth = 7; c.strokeStyle = '#ffffff'; c.lineJoin = 'round';
+    c.strokeText('8', 0, 246);
+    c.fillStyle = '#e03a3e'; c.fillText('8', 0, 246);
+    c.restore();
+    // ראש ופנים
+    skHead(c, sk);
+    skEyes(c, sk, st);
+    skBeardBack(c, sk, t);
+}
+function skDeniFront(c, sk, st) {
+    const t = st.t, col = sk.hair.color, hl = skShade(col, 0.25);
+    // שפם דק ומסודר
+    c.strokeStyle = skA(sk.beard.color, 0.85); c.lineWidth = 7; c.lineCap = 'round';
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 6, -19); c.quadraticCurveTo(s * 30, -24, s * 44, -10); c.stroke(); }
+    // שיער גלי ומבולגן
+    skHairFront(c, sk, t);
+    for (const [x, y, r, rot] of [[-66, -128, 22, -0.5], [-36, -148, 28, -0.2], [0, -156, 30, 0], [36, -150, 28, 0.25], [66, -130, 22, 0.5],
+                                  [-14, -138, 24, -0.6], [22, -136, 22, 0.5]]) {
+        skE(c, x, y, r, r * 0.8, col, SK_OUT, 2.5, rot);
+    }
+    c.strokeStyle = hl; c.lineWidth = 3; c.lineCap = 'round';
+    for (const [x, y] of [[-40, -156], [-4, -166], [30, -158]]) { c.beginPath(); c.arc(x, y + 10, 14, Math.PI * 1.15, Math.PI * 1.75); c.stroke(); }
+    // תלתל שנופל על המצח
+    c.strokeStyle = col; c.lineWidth = 9;
+    c.beginPath(); c.moveTo(-10, -124); c.quadraticCurveTo(-28, -110, -16, -102); c.stroke();
+    // כדורסל
+    c.save(); c.translate(118, 252); c.rotate(t * 0.8);
+    const bg = c.createRadialGradient(-16, -18, 6, 0, 0, 52);
+    bg.addColorStop(0, '#ffa64d'); bg.addColorStop(1, '#c4520e');
+    skE(c, 0, 0, 50, 50, bg, '#2a1206', 3);
+    c.strokeStyle = '#2a1206'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(-50, 0); c.lineTo(50, 0); c.moveTo(0, -50); c.lineTo(0, 50); c.stroke();
+    c.beginPath(); c.arc(-62, 0, 44, -0.8, 0.8); c.stroke();
+    c.beginPath(); c.arc(62, 0, 44, Math.PI - 0.8, Math.PI + 0.8); c.stroke();
+    c.restore();
+}
+
 /* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
@@ -4182,7 +4266,7 @@ const SV_SKINS = [
     { id: 'classic', name: 'שוורץ הקלאסי', kind: 'cone', rarity: -1, price: 0 },
 
     /* ---------- נפוץ ---------- */
-    { id: 'danny', name: 'דני', rarity: 0, tone: '#f0c08f', hair: { style: 'short', color: '#4a2e18' },
+    { id: 'danny', name: 'דניאל', rarity: 0, tone: '#f0c08f', hair: { style: 'short', color: '#4a2e18' },
       outfit: { base: '#3b6fd4', collar: 'crew' } },
     { id: 'noa', name: 'נועה', rarity: 0, tone: '#e0a977', hair: { style: 'ponytail', color: '#2a1a12' }, lips: '#d9566f',
       outfit: { base: '#e86a9a', collar: 'crew' } },
@@ -4274,6 +4358,10 @@ const SV_SKINS = [
     { id: 'dragon', name: 'אדון הדרקונים', rarity: 5, tone: '#c9a77c', hair: { style: 'slick', color: '#1a1410' }, eyes: { glow: '#ff7a1a', slit: true }, brow: '#14110f', hat: { type: 'dragon' },
       beard: { style: 'goatee', color: '#1a1410' }, wings: { type: 'dragon', color: '#2d6a3a' },
       outfit: { base: '#2f7a42', pattern: 'scales', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.45, runes: true }, fx: { type: 'embers', count: 22, speed: 0.45 } },
+    { id: 'deni', name: 'דני', rarity: 5, tone: '#e9c09a', hair: { style: 'short', color: '#2e1d12' }, brow: '#1e130b',
+      beard: { style: 'stubble', color: '#1e130b' }, lips: '#b8676a', eyes: { iris: '#4a3020' },
+      aura: { color: '#e03a3e', alpha: 0.45, rings: true }, fx: { type: 'sparkles', count: 20, speed: 0.4 },
+      drawBack: skDeniBack, drawFront: skDeniFront },
 
     /* ============ 30 סקינים חדשים ============ */
 
