@@ -4015,6 +4015,115 @@ function skKebabBack(c, sk, st) {
     skEyes(c, sk, st);
 }
 
+function skLaffaBack(c, sk, st) {
+    const t = st.t, out = '#2a1206';
+    skAuraBack(c, sk, t);
+
+    // ----- מילוי שגולש מלמעלה (מאחורי שפת הלאפה) -----
+    // צ'יפס
+    for (const [x, y, r] of [[-56, -214, -0.5], [-30, -238, -0.2], [34, -232, 0.3], [60, -206, 0.6], [6, -248, 0.05]]) {
+        c.save(); c.translate(x, y); c.rotate(r);
+        skR(c, -7, -34, 14, 62, 3, '#f5c84a', '#a8761a', 2);
+        c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(-4, -30, 3, 50);
+        c.restore();
+    }
+    // רצועות שווארמה
+    for (let i = 0; i < 9; i++) {
+        const x = -64 + i * 16, y = -196 - Math.sin(i * 1.7) * 14;
+        c.save(); c.translate(x, y); c.rotate(-0.6 + (i % 3) * 0.5);
+        const g = c.createLinearGradient(0, -12, 0, 12);
+        g.addColorStop(0, '#d98a3a'); g.addColorStop(0.5, '#a8521e'); g.addColorStop(1, '#5e2a0c');
+        skR(c, -22, -9, 44, 18, 8, g, out, 2);
+        c.strokeStyle = 'rgba(40,10,2,0.6)'; c.lineWidth = 2.5;
+        c.beginPath(); c.moveTo(-14, -2); c.lineTo(14, 3); c.stroke();
+        c.restore();
+    }
+    // סלט קצוץ, חמוצים ופטרוזיליה
+    const bits = [['#e8402a', -48, -182], ['#e8402a', 22, -204], ['#e8402a', 54, -178], ['#6abf4b', -20, -210], ['#6abf4b', 40, -190],
+                  ['#f3e6f4', -6, -184], ['#f3e6f4', 66, -196], ['#e8402a', -70, -186]];
+    for (const [col, x, y] of bits) skR(c, x - 7, y - 7, 14, 14, 3, col, out, 1.5);
+    for (const [x, y, r] of [[-36, -200, 0.4], [12, -176, -0.3], [58, -212, 0.8]]) {          // מלפפון חמוץ
+        c.save(); c.translate(x, y); c.rotate(r);
+        skE(c, 0, 0, 13, 9, '#7a9a2a', out, 2); skE(c, 0, 0, 8, 5, '#b8d070');
+        c.restore();
+    }
+    for (let i = 0; i < 12; i++) skE(c, -60 + (i * 23) % 124, -178 - (i * 17) % 60, 4, 2.5, '#2f8a2a', null, 0, i);
+    // טחינה ועמבה מטפטפות
+    c.lineCap = 'round';
+    c.strokeStyle = '#f4ead2'; c.lineWidth = 6;
+    c.beginPath(); c.moveTo(-60, -200); c.bezierCurveTo(-30, -236, 0, -170, 30, -214); c.bezierCurveTo(48, -236, 60, -200, 70, -210); c.stroke();
+    c.strokeStyle = '#f2a91c'; c.lineWidth = 5;
+    c.beginPath(); c.moveTo(-50, -222); c.bezierCurveTo(-20, -196, 10, -244, 52, -194); c.stroke();
+
+    // ----- הלאפה -----
+    const laffa = new Path2D();
+    laffa.moveTo(-86, -166);
+    laffa.quadraticCurveTo(-60, -186, -30, -170);
+    laffa.quadraticCurveTo(0, -190, 30, -170);
+    laffa.quadraticCurveTo(60, -186, 86, -166);
+    laffa.bezierCurveTo(98, -40, 96, 200, 84, 340);
+    laffa.lineTo(-84, 340);
+    laffa.bezierCurveTo(-96, 200, -98, -40, -86, -166);
+    laffa.closePath();
+    const lg = c.createLinearGradient(-96, 0, 96, 0);
+    lg.addColorStop(0, '#c99a5a'); lg.addColorStop(0.3, '#f1d6a2'); lg.addColorStop(0.65, '#ecd09a'); lg.addColorStop(1, '#b8874a');
+    c.fillStyle = lg; c.fill(laffa);
+    c.save(); c.clip(laffa);
+    for (let i = 0; i < 22; i++) {                                         // כתמי טאבון חרוכים
+        const x = ((i * 47) % 160) - 80, y = -150 + ((i * 71) % 200);
+        if (Math.abs(x) < 62 && y > -100 && y < 30) continue;            // לא על הפנים
+        skE(c, x, y, 7 + (i % 3) * 3, 5 + (i % 2) * 3, i % 3 ? 'rgba(120,60,20,0.35)' : 'rgba(60,25,8,0.5)');
+    }
+    c.strokeStyle = 'rgba(150,100,50,0.35)'; c.lineWidth = 3;           // קיפול הלאפה
+    c.beginPath(); c.moveTo(58, -160); c.bezierCurveTo(70, -60, 66, 0, 60, 60); c.stroke();
+    c.restore();
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke(laffa);
+
+    // ----- עטיפת נייר חום / עיתון -----
+    const paper = new Path2D();
+    paper.moveTo(-96, 64);
+    paper.lineTo(-60, 44); paper.lineTo(-30, 70); paper.lineTo(4, 40); paper.lineTo(36, 66); paper.lineTo(70, 42); paper.lineTo(98, 62);
+    paper.bezierCurveTo(104, 150, 102, 260, 94, 350);
+    paper.lineTo(-94, 350);
+    paper.bezierCurveTo(-102, 260, -104, 150, -96, 64);
+    paper.closePath();
+    const pg = c.createLinearGradient(-100, 0, 100, 0);
+    pg.addColorStop(0, '#6e4a26'); pg.addColorStop(0.35, '#a87c4c'); pg.addColorStop(0.7, '#9e7444'); pg.addColorStop(1, '#5e3e1e');
+    c.fillStyle = pg; c.fill(paper);
+    c.save(); c.clip(paper);
+    // דפוס עיתון דהוי
+    c.fillStyle = 'rgba(30,18,8,0.7)';
+    c.font = 'bold 22px "Secular One", Rubik, sans-serif';
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.save(); c.translate(-6, 104); c.rotate(-0.06);
+    c.fillText('חדשות הקבביה', 0, 0);
+    c.fillStyle = 'rgba(30,18,8,0.45)';
+    for (let col = 0; col < 3; col++) {
+        for (let r = 0; r < 9; r++) {
+            const w = r % 4 === 3 ? 26 : 44;
+            c.fillRect(-84 + col * 58 + (44 - w), 22 + r * 11, w, 4);
+        }
+    }
+    c.fillStyle = 'rgba(40,28,16,0.25)'; c.fillRect(-84, 128, 70, 46);  // תמונה בעיתון
+    c.strokeStyle = 'rgba(40,28,16,0.35)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-76, 166); c.lineTo(-56, 140); c.lineTo(-40, 156); c.lineTo(-24, 144); c.stroke();
+    c.restore();
+    // כתמי שומן שקופים
+    for (const [x, y, r] of [[42, 96, 20], [-50, 230, 26], [30, 270, 14], [64, 190, 12]]) {
+        skE(c, x, y, r, r * 0.8, 'rgba(70,40,10,0.22)');
+        skE(c, x - r * 0.25, y - r * 0.2, r * 0.45, r * 0.3, 'rgba(255,240,200,0.12)');
+    }
+    // קפלי נייר
+    c.strokeStyle = 'rgba(60,40,20,0.35)'; c.lineWidth = 2.5;
+    for (const [x0, y0, x1, y1] of [[-60, 44, -40, 350], [70, 42, 50, 350], [4, 40, 10, 120]]) { c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); }
+    c.strokeStyle = 'rgba(255,240,210,0.25)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-58, 48); c.lineTo(-38, 350); c.stroke();
+    c.restore();
+    c.strokeStyle = '#4a321a'; c.lineWidth = 3; c.stroke(paper);
+
+    skEyes(c, sk, st);
+}
+
 /* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
@@ -4115,6 +4224,8 @@ const SV_SKINS = [
       outfit: { base: '#5a1410', trim: '#ff8a1a', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.5 }, fx: { type: 'embers', count: 20, speed: 0.5 } },
     { id: 'kebab', name: 'הקבב האגדי', rarity: 4, brow: '#2a1206', lips: '#6a2a0c', eyes: { iris: '#3a1a06' },
       aura: { color: '#ff8a1a', alpha: 0.5 }, fx: { type: 'embers', count: 18, speed: 0.45 }, drawBack: skKebabBack },
+    { id: 'laffa', name: 'שווארמה בלאפה', rarity: 4, brow: '#5a3a1a', lips: '#8a4a1a', eyes: { iris: '#3a2410' },
+      aura: { color: '#ffb02e', alpha: 0.45 }, fx: { type: 'sparkles', count: 14 }, drawBack: skLaffaBack },
 
     /* ---------- מיתי ---------- */
     { id: 'cosmic', name: 'קיסר הגלקסיה', rarity: 5, tone: '#e6c6e8', hair: { style: 'galaxy', color: '#3b2a9c' }, eyes: { glow: '#35e0ff' }, brow: '#cfd8ff', hat: { type: 'cosmiccrown' },
