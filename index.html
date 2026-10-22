@@ -3960,6 +3960,61 @@ function skVaderBack(c, sk, st) {
     for (let i = -3; i <= 3; i++) { c.beginPath(); c.moveTo(i * 12, 20); c.lineTo(i * 8, 64); c.stroke(); }
 }
 
+function skKebabBack(c, sk, st) {
+    const t = st.t, out = '#2a1206';
+    skAuraBack(c, sk, t);
+    // שיפוד מתכת עם ידית מוזהבת
+    const rod = c.createLinearGradient(-6, 0, 6, 0);
+    rod.addColorStop(0, '#8a919e'); rod.addColorStop(0.5, '#eef1f6'); rod.addColorStop(1, '#7a818e');
+    skR(c, -6, -290, 12, 640, 6, rod, out, 2);
+    skE(c, 0, -300, 22, 22, null, '#e9c46a', 7);
+    skStar(c, 0, -300, 7, '#fff3b0', t);
+    // בצל קלוי למעלה ועגבנייה קלויה למטה
+    skE(c, 0, -206, 58, 24, '#f3e6f4', out, 3);
+    skE(c, 0, -206, 36, 13, null, '#c9a2cf', 4);
+    skE(c, 0, 286, 64, 30, '#d8402a', out, 3);
+    skE(c, -22, 278, 18, 7, 'rgba(255,180,160,0.6)');
+    c.strokeStyle = 'rgba(40,10,4,0.55)'; c.lineWidth = 4;
+    for (const x of [-30, 0, 30]) { c.beginPath(); c.moveTo(x - 8, 266); c.lineTo(x + 8, 306); c.stroke(); }
+    // גליל הקבב: בשר טחון צלוי
+    const log = new Path2D();
+    log.moveTo(-80, -120);
+    log.bezierCurveTo(-82, -196, 82, -196, 80, -120);
+    log.bezierCurveTo(90, 0, 88, 150, 74, 214);
+    log.bezierCurveTo(60, 268, -60, 268, -74, 214);
+    log.bezierCurveTo(-88, 150, -90, 0, -80, -120);
+    log.closePath();
+    const meat = c.createLinearGradient(-90, 0, 90, 0);
+    meat.addColorStop(0, '#5a2a0c'); meat.addColorStop(0.3, '#a8582a'); meat.addColorStop(0.55, '#c47038'); meat.addColorStop(1, '#4e2208');
+    c.fillStyle = meat; c.fill(log);
+    c.save(); c.clip(log);
+    // גבשושיות הבשר
+    for (let i = 0; i < 40; i++) {
+        const x = ((i * 53) % 150) - 75, y = -170 + ((i * 89) % 420);
+        skE(c, x, y, 9 + (i % 3) * 3, 7 + (i % 2) * 3, i % 2 ? 'rgba(255,190,130,0.16)' : 'rgba(60,20,4,0.22)');
+    }
+    // סימני גריל חרוכים
+    c.strokeStyle = 'rgba(30,8,2,0.7)'; c.lineWidth = 10; c.lineCap = 'round';
+    for (let y = -150; y < 260; y += 52) {
+        if (y > -120 && y < 30) continue;                 // משאירים את הפנים נקיות
+        c.beginPath(); c.moveTo(-90, y + 22); c.lineTo(90, y - 22); c.stroke(); }
+    // פטרוזיליה ובצל קצוץ
+    for (let i = 0; i < 26; i++) {
+        const x = ((i * 37) % 140) - 70, y = -160 + ((i * 61) % 400);
+        if (i % 3) skR(c, x, y, 6, 3, 1, '#3f9a2a'); else skR(c, x, y, 5, 4, 1, '#f3ead8');
+    }
+    // ברק שומן
+    skE(c, -38, -60, 10, 70, 'rgba(255,230,180,0.18)', null, 0, 0.05);
+    c.restore();
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke(log);
+    // כתר אגדי קטן ומלוכסן
+    c.save(); c.translate(26, -166); c.rotate(0.22);
+    skP(c, [[-34, 14], [-38, -22], [-18, -6], [0, -30], [18, -6], [38, -22], [34, 14]], '#f2c230', out, 2.5);
+    for (const x of [-38, 0, 38]) skE(c, x, x ? -24 : -32, 5, 5, '#ff4d4d', out, 1.5);
+    c.restore();
+    skEyes(c, sk, st);
+}
+
 /* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
@@ -4058,6 +4113,8 @@ const SV_SKINS = [
       outfit: { base: '#fbfbff', trim: '#f1c40f', collar: 'crew' }, wings: { type: 'feather' }, aura: { color: '#fff3b0', alpha: 0.45 }, fx: { type: 'feathers', count: 12, speed: 0.18 } },
     { id: 'firemage', name: 'הלוחש לאש', rarity: 4, tone: '#d9a066', hair: { style: 'flame' }, eyes: { glow: '#ffb02e' }, brow: '#7a1f0a',
       outfit: { base: '#5a1410', trim: '#ff8a1a', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.5 }, fx: { type: 'embers', count: 20, speed: 0.5 } },
+    { id: 'kebab', name: 'הקבב האגדי', rarity: 4, brow: '#2a1206', lips: '#6a2a0c', eyes: { iris: '#3a1a06' },
+      aura: { color: '#ff8a1a', alpha: 0.5 }, fx: { type: 'embers', count: 18, speed: 0.45 }, drawBack: skKebabBack },
 
     /* ---------- מיתי ---------- */
     { id: 'cosmic', name: 'קיסר הגלקסיה', rarity: 5, tone: '#e6c6e8', hair: { style: 'galaxy', color: '#3b2a9c' }, eyes: { glow: '#35e0ff' }, brow: '#cfd8ff', hat: { type: 'cosmiccrown' },
