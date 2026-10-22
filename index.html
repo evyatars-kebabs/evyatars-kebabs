@@ -4217,25 +4217,60 @@ function skDeniBack(c, sk, st) {
     c.restore();
     // ראש ופנים
     skHead(c, sk);
+    // זקן קצר ומסודר לאורך הלסת
+    const bc = sk.beard.color;
+    const beard = new Path2D();
+    beard.moveTo(-86, -48);
+    beard.bezierCurveTo(-90, 24, -50, 60, 0, 60);
+    beard.bezierCurveTo(50, 60, 90, 24, 86, -48);
+    beard.bezierCurveTo(80, -10, 66, 22, 30, 32);
+    beard.quadraticCurveTo(0, 40, -30, 32);
+    beard.bezierCurveTo(-66, 22, -80, -10, -86, -48);
+    beard.closePath();
+    c.fillStyle = skA(bc, 0.92); c.fill(beard);
+    c.save(); c.clip(beard);
+    for (let i = 0; i < 60; i++) {                                        // מרקם שיער
+        const x = ((i * 37) % 176) - 88, y = -40 + ((i * 53) % 104);
+        c.fillStyle = i % 2 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.18)';
+        c.fillRect(x, y, 2, 5);
+    }
+    c.restore();
     skEyes(c, sk, st);
-    skBeardBack(c, sk, t);
 }
 function skDeniFront(c, sk, st) {
     const t = st.t, col = sk.hair.color, hl = skShade(col, 0.25);
-    // שפם דק ומסודר
-    c.strokeStyle = skA(sk.beard.color, 0.85); c.lineWidth = 7; c.lineCap = 'round';
-    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 6, -19); c.quadraticCurveTo(s * 30, -24, s * 44, -10); c.stroke(); }
-    // שיער גלי ומבולגן
-    skHairFront(c, sk, t);
-    for (const [x, y, r, rot] of [[-66, -128, 22, -0.5], [-36, -148, 28, -0.2], [0, -156, 30, 0], [36, -150, 28, 0.25], [66, -130, 22, 0.5],
-                                  [-14, -138, 24, -0.6], [22, -136, 22, 0.5]]) {
-        skE(c, x, y, r, r * 0.8, col, SK_OUT, 2.5, rot);
+    // שיער גלי עם נפח למעלה וצדדים קצרים
+    const hair = new Path2D();
+    hair.moveTo(-90, -44);
+    hair.bezierCurveTo(-98, -96, -92, -140, -62, -158);
+    hair.bezierCurveTo(-46, -178, -20, -172, -8, -180);
+    hair.bezierCurveTo(14, -192, 40, -178, 54, -170);
+    hair.bezierCurveTo(84, -160, 100, -124, 92, -44);
+    hair.lineTo(84, -64);
+    hair.bezierCurveTo(78, -104, 56, -116, 30, -114);
+    hair.bezierCurveTo(14, -124, -4, -130, -18, -120);         // גל שנופל על המצח
+    hair.bezierCurveTo(-30, -110, -40, -112, -50, -116);
+    hair.bezierCurveTo(-70, -116, -82, -96, -84, -64);
+    hair.closePath();
+    const hg = c.createLinearGradient(0, -190, 0, -60);
+    hg.addColorStop(0, skShade(col, 0.15)); hg.addColorStop(1, skShade(col, -0.2));
+    c.fillStyle = hg; c.fill(hair);
+    c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke(hair);
+    // קווי גלים בתוך השיער
+    c.save(); c.clip(hair);
+    c.strokeStyle = skA(hl, 0.8); c.lineWidth = 3; c.lineCap = 'round';
+    for (const [x0, y0, x1, y1, cx, cy] of [[-70, -120, -30, -160, -62, -152], [-40, -116, 10, -168, -30, -150],
+                                             [-6, -120, 44, -160, 10, -152], [30, -112, 76, -140, 50, -140]]) {
+        c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(cx, cy, x1, y1); c.stroke();
     }
-    c.strokeStyle = hl; c.lineWidth = 3; c.lineCap = 'round';
-    for (const [x, y] of [[-40, -156], [-4, -166], [30, -158]]) { c.beginPath(); c.arc(x, y + 10, 14, Math.PI * 1.15, Math.PI * 1.75); c.stroke(); }
-    // תלתל שנופל על המצח
-    c.strokeStyle = col; c.lineWidth = 9;
-    c.beginPath(); c.moveTo(-10, -124); c.quadraticCurveTo(-28, -110, -16, -102); c.stroke();
+    c.strokeStyle = skA('#000000', 0.25);
+    for (const [x0, y0, x1, y1] of [[-56, -110, -20, -140], [14, -110, 50, -134]]) {
+        c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo((x0 + x1) / 2 - 10, y1, x1, y1 - 8); c.stroke();
+    }
+    c.restore();
+    // שפם דק שמתחבר לזקן
+    c.strokeStyle = skA(sk.beard.color, 0.92); c.lineWidth = 7; c.lineCap = 'round';
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 6, -19); c.quadraticCurveTo(s * 30, -24, s * 48, -4); c.stroke(); }
     // כדורסל
     c.save(); c.translate(118, 252); c.rotate(t * 0.8);
     const bg = c.createRadialGradient(-16, -18, 6, 0, 0, 52);
@@ -4359,7 +4394,7 @@ const SV_SKINS = [
       beard: { style: 'goatee', color: '#1a1410' }, wings: { type: 'dragon', color: '#2d6a3a' },
       outfit: { base: '#2f7a42', pattern: 'scales', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.45, runes: true }, fx: { type: 'embers', count: 22, speed: 0.45 } },
     { id: 'deni', name: 'דני', rarity: 5, tone: '#e9c09a', hair: { style: 'short', color: '#2e1d12' }, brow: '#1e130b',
-      beard: { style: 'stubble', color: '#1e130b' }, lips: '#b8676a', eyes: { iris: '#4a3020' },
+      beard: { color: '#24160c' }, lips: '#b8676a', blush: false, eyes: { iris: '#4a3020' },
       aura: { color: '#e03a3e', alpha: 0.45, rings: true }, fx: { type: 'sparkles', count: 20, speed: 0.4 },
       drawBack: skDeniBack, drawFront: skDeniFront },
 
