@@ -4709,13 +4709,22 @@ const sfx = (() => {
     let ctx = null;
     let muted = store.get('kebab_muted') === '1';
     let noiseBuf = null;
+    let sfxBus = null, musicBus = null;
+    const SFX_VOL = 1.35;                         // עוצמת האפקטים (1 = המקור)
+    const MUSIC_VOL = 0.16;                       // עוצמת מוזיקת הרקע
 
     function ac() {
         if (muted) return null;
         if (!ctx) {
             try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+            // מדחס בסוף השרשרת מונע עיוות כשהכול מתנגן יחד
+            const comp = ctx.createDynamicsCompressor();
+            comp.threshold.value = -10; comp.ratio.value = 4;
+            comp.connect(ctx.destination);
+            sfxBus = ctx.createGain(); sfxBus.gain.value = SFX_VOL; sfxBus.connect(comp);
+            musicBus = ctx.createGain(); musicBus.gain.value = MUSIC_VOL; musicBus.connect(comp);
         }
-        if (ctx.state === 'suspended') ctx.resume();
+        if (ctx.state === 'suspended' && !document.hidden) ctx.resume();
         return ctx;
     }
     function tone(freq, dur, type, vol, delay, endFreq) {
@@ -4728,10 +4737,10 @@ const sfx = (() => {
         g.gain.setValueAtTime(0.0001, t0);
         g.gain.exponentialRampToValueAtTime(vol || 0.15, t0 + 0.012);
         g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-        o.connect(g); g.connect(c.destination);
+        o.connect(g); g.connect(sfxBus);
         o.start(t0); o.stop(t0 + dur + 0.03);
     }
-    function noise(dur, vol, f0, f1, delay) {
+    function noise(dur, vol, f0, f1, delay, bus, type) {
         const c = ac(); if (!c) return;
         if (!noiseBuf) {
             noiseBuf = c.createBuffer(1, c.sampleRate * 0.6, c.sampleRate);
@@ -4740,19 +4749,104 @@ const sfx = (() => {
         }
         const t0 = c.currentTime + (delay || 0);
         const s = c.createBufferSource(); s.buffer = noiseBuf;
-        const f = c.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.2;
+        const f = c.createBiquadFilter(); f.type = type || 'bandpass'; f.Q.value = 1.2;
         f.frequency.setValueAtTime(f0, t0);
         f.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
         const g = c.createGain();
         g.gain.setValueAtTime(vol, t0);
         g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-        s.connect(f); f.connect(g); g.connect(c.destination);
+        s.connect(f); f.connect(g); g.connect(bus || sfxBus);
         s.start(t0); s.stop(t0 + dur + 0.05);
     }
+
+    /* ---------- מוזיקת רקע: לופ בסגנון מזרחי (סולם חיג'אז על רה + קצב מקסום) ---------- */
+    const BPM = 104, STEP = 60 / BPM / 2;          // צעד = שמינית
+    const ROOT = 293.66;                           // רה
+    const _ = null;
+    const MELODY = [                               // חצאי טונים מעל רה: 0 1 4 5 7 8 10 12
+        7, _, 8, 7, 5, _, 4, 5,   7, _, _, _, 4, 1, 0, _,
+        0, 1, 4, 5, 7, 8, 7, 5,   4, _, 5, 4, 1, _, 0, _,
+        12, _, 10, 8, 7, _, 8, 7,  5, 4, 5, 7, 4, _, _, _,
+        7, 8, 10, 8, 7, 5, 4, 5,  4, 1, 0, _, 0, _, _, _
+    ];
+    const BASS = [0, 0, 0, 0, 5, 5, 0, 0];        // שורש לכל תיבה (שמונה תיבות)
+    const DRUM = 'D T.TD.T.';                     // מקסום: דום-תק-תק-דום-תק
+    let musicTimer = null, musicStep = 0, nextT = 0;
+    const hz = semi => ROOT * Math.pow(2, semi / 12);
+
+    function pluck(freq, t0, vol, dur) {           // צליל דמוי עוד
+        const o = ctx.createOscillator(), o2 = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+        o.type = 'sawtooth'; o.frequency.value = freq;
+        o2.type = 'triangle'; o2.frequency.value = freq / 2;
+        f.type = 'lowpass'; f.frequency.setValueAtTime(2400, t0); f.frequency.exponentialRampToValueAtTime(500, t0 + dur);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(vol, t0 + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(f); o2.connect(f); f.connect(g); g.connect(musicBus);
+        o.start(t0); o2.start(t0); o.stop(t0 + dur + 0.05); o2.stop(t0 + dur + 0.05);
+    }
+    function bass(freq, t0, dur) {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'triangle'; o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.5, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(g); g.connect(musicBus);
+        o.start(t0); o.stop(t0 + dur + 0.05);
+    }
+    function doum(t0) {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.frequency.setValueAtTime(120, t0); o.frequency.exponentialRampToValueAtTime(55, t0 + 0.18);
+        g.gain.setValueAtTime(0.9, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+        o.connect(g); g.connect(musicBus);
+        o.start(t0); o.stop(t0 + 0.25);
+    }
+    function scheduleMusic() {
+        if (!ctx || muted) return;
+        while (nextT < ctx.currentTime + 0.15) {
+            const i = musicStep % MELODY.length, beat = musicStep % 8, bar = Math.floor(musicStep / 8) % BASS.length;
+            const d = DRUM[beat];
+            if (d === 'D') doum(nextT);
+            else if (d === 'T') noise(0.06, 0.35, 5000, 3000, nextT - ctx.currentTime, musicBus, 'highpass');
+            if (beat === 0) bass(hz(BASS[bar] - 24), nextT, STEP * 3.6);
+            if (beat === 4) bass(hz(BASS[bar] - 17), nextT, STEP * 1.8);
+            // המנגינה נכנסת אחרי הקדמה של שתי תיבות תופים
+            if (musicStep >= 16 && MELODY[i] !== null) pluck(hz(MELODY[i]), nextT, 0.32, STEP * 2.2);
+            nextT += STEP;
+            musicStep++;
+        }
+    }
+    function startMusic() {
+        if (musicTimer || !ac()) return;
+        nextT = ctx.currentTime + 0.1;
+        musicStep = 0;
+        musicBus.gain.cancelScheduledValues(ctx.currentTime);
+        musicBus.gain.setValueAtTime(0.0001, ctx.currentTime);
+        musicBus.gain.exponentialRampToValueAtTime(MUSIC_VOL, ctx.currentTime + 2);   // כניסה הדרגתית
+        musicTimer = setInterval(scheduleMusic, 40);
+        scheduleMusic();
+    }
+    function stopMusic() {
+        clearInterval(musicTimer);
+        musicTimer = null;
+    }
+    // כשהלשונית ברקע - משתיקים הכול
+    document.addEventListener('visibilitychange', () => {
+        if (!ctx) return;
+        if (document.hidden) ctx.suspend();
+        else if (!muted) { ctx.resume(); nextT = Math.max(nextT, ctx.currentTime + 0.05); }
+    });
+
     return {
         isMuted: () => muted,
-        toggle() { muted = !muted; store.set('kebab_muted', muted ? '1' : '0'); if (!muted) this.tap(); return muted; },
-        unlock() { if (!muted) ac(); },
+        toggle() {
+            muted = !muted;
+            store.set('kebab_muted', muted ? '1' : '0');
+            if (muted) { stopMusic(); if (ctx) ctx.suspend(); }
+            else { this.tap(); startMusic(); }
+            return muted;
+        },
+        unlock() { if (!muted) { ac(); startMusic(); } },
         tap()   { tone(640, 0.06, 'triangle', 0.10); tone(960, 0.05, 'sine', 0.05, 0.02); },
         pop()   { tone(420, 0.09, 'sine', 0.16, 0, 760); },
         tick()  { tone(1100, 0.04, 'square', 0.05); },
