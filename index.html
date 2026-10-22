@@ -4297,6 +4297,92 @@ function skDeniFront(c, sk, st) {
     c.restore();
 }
 
+function skHedgehogBack(c, sk, st) {
+    const t = st.t, blue = '#1f5fd6', dk = '#123c94', peach = '#f3c99a', out = '#0a1a40';
+    const bg = (x0, y0, r) => {
+        const g = c.createRadialGradient(x0 - r * 0.3, y0 - r * 0.4, r * 0.1, x0, y0, r);
+        g.addColorStop(0, '#4a8cff'); g.addColorStop(0.6, blue); g.addColorStop(1, dk);
+        return g;
+    };
+    skAuraBack(c, sk, t);
+    // קווי מהירות
+    c.strokeStyle = 'rgba(160,210,255,0.45)'; c.lineCap = 'round';
+    for (let i = 0; i < 6; i++) {
+        const y = -160 + i * 64, ph = (t * 1.6 + i * 0.37) % 1;
+        c.lineWidth = 4; c.globalAlpha = 1 - ph;
+        c.beginPath(); c.moveTo(150 + ph * 60, y); c.lineTo(210 + ph * 60, y); c.stroke();
+        c.beginPath(); c.moveTo(-150 - ph * 60, y + 30); c.lineTo(-210 - ph * 60, y + 30); c.stroke();
+    }
+    c.globalAlpha = 1;
+    // קוצים לאחור
+    // קוצים שנסחפים לאחור ולצדדים, עם קצה מעוקל כלפי מטה
+    const quills = [[-1, 0.15, 190], [1, 0.15, 190], [-1, 0.55, 200], [1, 0.55, 200], [-1, 0.95, 180], [1, 0.95, 180], [-1, -0.25, 150], [1, -0.25, 150]];
+    for (const [sd, a, len] of quills) {
+        const cy = -60, ang = Math.PI / 2 + sd * (Math.PI / 2 + a);   // זווית מהמרכז החוצה
+        const bx = Math.cos(ang), by = Math.sin(ang);
+        const px = -by, py = bx;                                        // ניצב
+        const tipX = bx * len + sd * 10, tipY = cy + by * len + 24;
+        c.beginPath();
+        c.moveTo(px * 46, cy + py * 46);
+        c.quadraticCurveTo(bx * len * 0.7 + px * 20, cy + by * len * 0.7 + py * 20 - 10, tipX, tipY);
+        c.quadraticCurveTo(bx * len * 0.6 - px * 14, cy + by * len * 0.6 - py * 14 + 14, -px * 46, cy - py * 46);
+        c.closePath();
+        c.fillStyle = bg(bx * 100, cy + by * 100, 130); c.fill();
+        c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    }
+    // גוף, בטן וכפפות
+    skE(c, 0, 200, 96, 144, bg(0, 180, 150), out, 3);
+    skE(c, 0, 222, 54, 94, peach, skA(out, 0.4), 2);
+    for (const s of [-1, 1]) {
+        skR(c, s * 100 - 22, 196, 44, 22, 8, '#ffffff', out, 2.5);
+        skE(c, s * 100, 242, 32, 30, '#ffffff', out, 3);
+        c.strokeStyle = '#c9ccd4'; c.lineWidth = 2;
+        for (const d of [-10, 2, 14]) { c.beginPath(); c.moveTo(s * 100 + d, 220); c.lineTo(s * 100 + d, 236); c.stroke(); }
+    }
+    // אוזניים
+    for (const s of [-1, 1]) {
+        skP(c, [[s * 30, -110], [s * 76, -176], [s * 86, -96]], bg(s * 60, -140, 70), out, 3);
+        skP(c, [[s * 46, -112], [s * 74, -158], [s * 76, -106]], peach);
+    }
+    // ראש
+    skE(c, SK_HEAD.cx, SK_HEAD.cy, SK_HEAD.rx, SK_HEAD.ry, bg(0, -40, 120), out, 3);
+    // לוע בצבע אפרסק
+    const muzzle = new Path2D();
+    muzzle.ellipse(0, -4, 66, 54, 0, 0, Math.PI * 2);
+    muzzle.ellipse(-46, -30, 26, 22, 0, 0, Math.PI * 2);
+    muzzle.ellipse(46, -30, 26, 22, 0, 0, Math.PI * 2);
+    c.fillStyle = peach; c.fill(muzzle);
+    // עיניים גדולות מחוברות (קו מתאר חיצוני בלבד), אישונים ירוקים שעוקבים אחרי האוכל
+    c.lineWidth = 6; c.strokeStyle = out;
+    skE(c, -26, -66, 30, 38, null, out, 6, -0.12); skE(c, 26, -66, 30, 38, null, out, 6, 0.12);
+    skE(c, -26, -66, 30, 38, '#ffffff', null, 0, -0.12); skE(c, 26, -66, 30, 38, '#ffffff', null, 0, 0.12);
+    for (const o of [-24, 24]) {
+        if (st.chew > 0.25) {
+            c.strokeStyle = '#0a1a40'; c.lineWidth = 5; c.lineCap = 'round';
+            c.beginPath(); c.arc(o, -58, 14, Math.PI * 1.1, Math.PI * 1.9); c.stroke();
+            continue;
+        }
+        const ang = Math.atan2(st.ty - (st.my - 62), st.tx - (st.mx + o));
+        const d = Math.min(9, Math.hypot(st.tx - (st.mx + o), st.ty - (st.my - 62)) / 22);
+        const px = o + Math.cos(ang) * d, py = -62 + Math.sin(ang) * d;
+        skE(c, px, py, 13, 16, '#1f9a4a');
+        skE(c, px, py, 7, 9, '#0a0a0a');
+        skE(c, px - 3, py - 5, 3, 4, '#ffffff');
+    }
+    skE(c, 0, -30, 14, 10, '#111', out, 1.5);                              // אף
+    skE(c, -4, -33, 5, 3, 'rgba(255,255,255,0.7)');
+    // טבעות זהב מסתובבות
+    for (const [x, y, ph] of [[-150, -110, 0], [150, 10, 1.6], [-136, 150, 3.1]]) {
+        const sx = Math.abs(Math.cos(t * 3 + ph));
+        c.save(); c.translate(x, y + Math.sin(t * 2 + ph) * 6); c.scale(Math.max(0.12, sx), 1);
+        skGlow(c, 0, 0, 30, '#ffd23d', 0.5);
+        c.beginPath(); c.arc(0, 0, 16, 0, Math.PI * 2);
+        c.strokeStyle = '#a8760a'; c.lineWidth = 8; c.stroke();
+        c.strokeStyle = '#ffd54f'; c.lineWidth = 5; c.stroke();
+        c.restore();
+    }
+}
+
 /* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
@@ -4399,6 +4485,8 @@ const SV_SKINS = [
       aura: { color: '#ff8a1a', alpha: 0.5 }, fx: { type: 'embers', count: 18, speed: 0.45 }, drawBack: skKebabBack },
     { id: 'laffa', name: 'שווארמה בלאפה', rarity: 4, brow: '#5a3a1a', lips: '#8a4a1a', eyes: { iris: '#3a2410' },
       aura: { color: '#ffb02e', alpha: 0.45 }, fx: { type: 'sparkles', count: 14 }, drawBack: skLaffaBack },
+    { id: 'hedgehog', name: 'סוניק', rarity: 4, brow: '#123c94', lips: '#8a4a3a', eyes: { iris: '#1f9a4a' }, blush: false,
+      aura: { color: '#4a9cff', alpha: 0.45 }, fx: { type: 'sparkles', count: 14, speed: 0.6 }, drawBack: skHedgehogBack },
 
     /* ---------- מיתי ---------- */
     { id: 'cosmic', name: 'קיסר הגלקסיה', rarity: 5, tone: '#e6c6e8', hair: { style: 'galaxy', color: '#3b2a9c' }, eyes: { glow: '#35e0ff' }, brow: '#cfd8ff', hat: { type: 'cosmiccrown' },
