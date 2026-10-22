@@ -4191,7 +4191,8 @@ function claimCoins() {
     const btn = document.getElementById('claim-btn');
     btn.disabled = true;
     btn.textContent = 'נאסף ✓';
-    haptic(35);
+    // אי אפשר לשלוט בעוצמת הרטט בדפדפן - רק באורך; רטט ארוך מורגש חזק יותר
+    haptic([90, 40, 90]);
 
     const before = getCoins();
     store.set(COIN_KEY, before + amount);             // נשמר מיד; התצוגה מתעדכנת עם כל מטבע שמגיע
@@ -4225,7 +4226,7 @@ function claimCoins() {
             document.querySelectorAll('.coin-balance').forEach(e => { e.textContent = shown; });
             if (chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
             sfx.coin();
-            haptic(15);
+            haptic(landed === n ? 140 : 55);             // המטבע האחרון - רטט ארוך לסיום
             if (landed === n) renderCoinBadges();
         };
     }
