@@ -3894,6 +3894,72 @@ function skCapybaraBack(c, sk, st) {
     skEyes(c, sk, st);
 }
 
+function skVaderBack(c, sk, st) {
+    const t = st.t, blk = '#121216', out = '#000000';
+    const gloss = (x0, y0, r) => {
+        const g = c.createRadialGradient(x0 - r * 0.4, y0 - r * 0.5, r * 0.05, x0, y0, r);
+        g.addColorStop(0, '#5a5f6e'); g.addColorStop(0.3, '#23252e'); g.addColorStop(1, '#07070a');
+        return g;
+    };
+    skAuraBack(c, sk, t);
+    skCapeBack(c, sk, t);
+    // חרב אור אדומה
+    const pulse = 0.8 + 0.2 * Math.sin(t * 9);
+    c.save();
+    c.translate(132, 210); c.rotate(0.38);
+    c.lineCap = 'round';
+    c.strokeStyle = skA('#ff2a2a', 0.25 * pulse); c.lineWidth = 34; c.beginPath(); c.moveTo(0, -40); c.lineTo(0, -330); c.stroke();
+    c.strokeStyle = skA('#ff3030', 0.7); c.lineWidth = 16; c.beginPath(); c.moveTo(0, -40); c.lineTo(0, -330); c.stroke();
+    c.strokeStyle = '#ffe8e8'; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -40); c.lineTo(0, -326); c.stroke();
+    skR(c, -9, -44, 18, 70, 4, '#b8bfcc', out, 2);
+    c.fillStyle = '#14141a'; for (const y of [-30, -18, -6, 6]) c.fillRect(-9, y, 18, 5);
+    c.restore();
+    // שריון וחזה עם לוח בקרה
+    skOutfit(c, sk, t);
+    skR(c, -50, 118, 100, 66, 6, '#2a2c34', '#5a5f6e', 2.5);
+    const lights = ['#ff3030', '#30d158', '#3b9cff', '#ff3030', '#ffd23d', '#30d158'];
+    lights.forEach((col, i) => skR(c, -40 + (i % 3) * 28, 128 + Math.floor(i / 3) * 26, 18, 14, 2, (Math.sin(t * 3 + i * 1.7) > -0.3) ? col : skShade(col, -0.6), out, 1.5));
+    c.fillStyle = '#c9ccd4'; c.fillRect(-124, 286, 248, 22);
+    for (const x of [-70, -26, 18, 62]) skR(c, x, 282, 30, 30, 3, '#9aa1ae', out, 1.5);
+    // קסדה: כיפה ושוליים מתרחבים
+    c.beginPath();
+    c.moveTo(-98, -60);
+    c.bezierCurveTo(-110, -176, 110, -176, 98, -60);
+    c.quadraticCurveTo(104, 10, 132, 70);
+    c.lineTo(84, 76); c.lineTo(70, 30);
+    c.lineTo(-70, 30); c.lineTo(-84, 76); c.lineTo(-132, 70);
+    c.quadraticCurveTo(-104, 10, -98, -60);
+    c.closePath();
+    c.fillStyle = gloss(0, -70, 170); c.fill();
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,0.18)'; c.lineWidth = 4;
+    c.beginPath(); c.moveTo(-6, -158); c.quadraticCurveTo(-60, -150, -84, -96); c.stroke();
+    // מסכת פנים
+    c.beginPath();
+    c.moveTo(-74, -98); c.lineTo(74, -98); c.lineTo(80, -30); c.lineTo(56, 40); c.lineTo(-56, 40); c.lineTo(-80, -30);
+    c.closePath();
+    c.fillStyle = gloss(0, -40, 120); c.fill();
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = '#3a3d48'; c.lineWidth = 6;                         // גבה קשתית
+    c.beginPath(); c.moveTo(-76, -96); c.quadraticCurveTo(0, -78, 76, -96); c.stroke();
+    // עדשות העיניים
+    for (const s of [-1, 1]) {
+        c.save(); c.scale(s, 1);
+        c.beginPath(); c.moveTo(8, -84); c.lineTo(66, -90); c.lineTo(62, -54); c.lineTo(18, -40); c.closePath();
+        const lg = c.createLinearGradient(10, -90, 60, -40);
+        lg.addColorStop(0, '#2a0608'); lg.addColorStop(0.6, '#0a0204'); lg.addColorStop(1, '#3a0a0e');
+        c.fillStyle = lg; c.fill(); c.strokeStyle = '#4a4f5c'; c.lineWidth = 3; c.stroke();
+        skGlow(c, 38, -68, 22, '#ff2a2a', 0.35 * pulse);
+        skE(c, 30, -76, 7, 3.5, 'rgba(255,255,255,0.55)', null, 0, -0.2);
+        c.restore();
+    }
+    // אף ולוח הנשימה סביב הפה
+    skP(c, [[-12, -50], [12, -50], [6, -18], [-6, -18]], '#2a2c34', out, 2);
+    skP(c, [[-66, -14], [66, -14], [24, 70], [-24, 70]], '#5a5f6e', out, 2.5);
+    c.strokeStyle = '#2a2c34'; c.lineWidth = 3;
+    for (let i = -3; i <= 3; i++) { c.beginPath(); c.moveTo(i * 12, 20); c.lineTo(i * 8, 64); c.stroke(); }
+}
+
 /* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
@@ -4106,7 +4172,10 @@ const SV_SKINS = [
     { id: 'tapuzi', name: 'תפוזי', rarity: 6, brow: '#8a3a00', lips: '#a8400a', eyes: { iris: '#3a2410' },
       aura: { color: '#ffb347', alpha: 0.35 }, drawBack: skOrangeBack },
     { id: 'goldcapy', name: 'הקפיברה של שוורץ', rarity: 6, brow: '#7a4e06', lips: '#8a5a08', eyes: { iris: '#2a1a06' }, blush: false,
-      aura: { color: '#ffd23d', alpha: 0.5, rings: true }, fx: { type: 'sparkles', count: 16 }, drawBack: skCapybaraBack }
+      aura: { color: '#ffd23d', alpha: 0.5, rings: true }, fx: { type: 'sparkles', count: 16 }, drawBack: skCapybaraBack },
+    { id: 'vader', name: 'סטארוורס', rarity: 6, tone: '#2a2c34', lips: '#3a3d48', blush: false,
+      outfit: { base: '#141418', collar: 'high' }, cape: { color: '#16161c' },
+      aura: { color: '#ff2a2a', alpha: 0.3 }, drawBack: skVaderBack }
 ];
 
 function skinById(id) { return SV_SKINS.find(s => s.id === id) || SV_SKINS[0]; }
@@ -5018,7 +5087,8 @@ const REDEEM_CODES = {
     'DOSUS505':          { skin: 'dosus' },
     'SPRINGYDADOG3':     { skin: 'yuvaldog' },
     'TAPUZIYUVAL':       { skin: 'tapuzi' },
-    'GOLDCAPYSHVARTZ6':  { skin: 'goldcapy' }
+    'GOLDCAPYSHVARTZ6':  { skin: 'goldcapy' },
+    'DARKSIDEKEBAB57':   { skin: 'vader' }
 };
 function redeemCode(raw) {
     const code = String(raw || '').trim().toUpperCase();
