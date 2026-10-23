@@ -291,6 +291,15 @@
 			justify-content: center;
 			margin-bottom: 20px;
 		}
+		/* סרגל הטבלאות נשאר בראש המסך בזמן גלילה */
+		#screen-leaderboard .sub-tabs {
+			position: sticky; top: 0; z-index: 5;
+			margin: 0 -6px 14px; padding: 8px 6px;
+			background: linear-gradient(180deg, rgba(20, 10, 5, 0.97) 75%, rgba(20, 10, 5, 0.88));
+			backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+			border-radius: 0 0 16px 16px;
+			box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
+		}
 
 		.sub-tab-btn {
 			background-color: var(--card-bg);

@@ -199,17 +199,10 @@ function animateNumber(el, from, to, ms) {
 })();
 
 /* ---------- קודים ---------- */
-// כאן יתווספו הקודים בהמשך. דוגמה:
-//   'KEBAB100': { coins: 100 },
-//   'SHVARTZ':  { skin: 'king' },
-// שימו לב: קוד שנמצא בצד הלקוח גלוי לכל מי שפותח את הקובץ.
+// קודי הפיתוח (מטבעות / איפוס) נשמרים ב-Firestore, באוסף codes - מזהה המסמך הוא הקוד עצמו.
+// שדות אפשריים במסמך: coins (מספר), skin (מזהה סקין), wipe (true).
+// הקודים של הסקינים המיוחדים נשארים כאן.
 const REDEEM_CODES = {
-    'KC100KOLESKI':   { coins: 100 },
-    'KC1000KOLESKI':  { coins: 1000 },
-    'KC10000KOLESKI': { coins: 10000 },
-    // מוחק את כל המטבעות והסקינים של השחקן
-    'DESTRUCTION':    { wipe: true },
-    // סקינים של מהדורה מיוחדת - זמינים רק דרך קוד
     'ITAMARTHEAGADI455': { skin: 'banana' },
     'SHRAGONT888':       { skin: 'lizard' },
     'DOSUS505':          { skin: 'dosus' },
@@ -220,29 +213,40 @@ const REDEEM_CODES = {
     'WIZMICK6611':       { skin: 'wizmouse' },
     'NIRHANA7':          { skin: 'nir' }
 };
-function redeemCode(raw) {
-    const code = String(raw || '').trim().toUpperCase();
-    if (!code) return { ok: false, msg: 'הכניסו קוד' };
-    const reward = REDEEM_CODES[code];
-    if (!reward) return { ok: false, msg: 'הקוד לא נמצא' };
-    // קודי פיתוח: כל קוד אפשר להפעיל שוב ושוב, ללא הגבלה
-
-    if (reward.wipe) {                                // איפוס מלא של המלאי
+// קודי פיתוח: כל קוד אפשר להפעיל שוב ושוב, ללא הגבלה
+function applyReward(reward) {
+    if (reward.wipe === true) {                       // איפוס מלא של המלאי
         setCoins(0);
         saveOwnedSkins(new Set(['classic']));
         store.set(SKIN_EQ_KEY, 'classic');
         return { ok: true, wipe: true, msg: 'המלאי נמחק: כל המטבעות והסקינים אופסו' };
     }
     const parts = [];
-    if (reward.coins) { addCoins(reward.coins); parts.push('+' + reward.coins + ' 🪙'); }
-    if (reward.skin && SV_SKINS.some(s => s.id === reward.skin)) {
+    const coins = Math.floor(Number(reward.coins) || 0);
+    if (coins > 0 && coins <= 1000000) { addCoins(coins); parts.push('+' + coins + ' 🪙'); }
+    if (typeof reward.skin === 'string' && SV_SKINS.some(s => s.id === reward.skin)) {
         const owned = getOwnedSkins();
         owned.add(reward.skin);
         saveOwnedSkins(owned);
         store.set(SKIN_EQ_KEY, reward.skin);
         parts.push('סקין חדש: ' + skinById(reward.skin).name);
     }
+    if (!parts.length) return { ok: false, msg: 'הקוד לא תקין' };
     return { ok: true, msg: 'הקוד הופעל! ' + parts.join('  ·  ') };
+}
+// מחזיר תוצאה מיד לקודים שבמשחק, או Promise כשצריך לבדוק בשרת
+function redeemCode(raw) {
+    const code = String(raw || '').trim().toUpperCase();
+    if (!code) return { ok: false, msg: 'הכניסו קוד' };
+    if (REDEEM_CODES[code]) return applyReward(REDEEM_CODES[code]);
+    if (!db || !/^[A-Z0-9_-]{1,64}$/.test(code)) return { ok: false, msg: 'הקוד לא נמצא' };
+    return db.collection('codes').doc(code).get().then(doc => {
+        if (!doc.exists) return { ok: false, msg: 'הקוד לא נמצא' };
+        return applyReward(doc.data() || {});
+    }).catch(err => {
+        console.error('שגיאה בבדיקת קוד:', err.code || '', err.message || err);
+        return { ok: false, msg: 'לא הצלחנו לבדוק את הקוד. בדקו את החיבור ונסו שוב' };
+    });
 }
 
 function openCodeModal() {
@@ -254,9 +258,19 @@ function openCodeModal() {
     setTimeout(() => inp.focus(), 60);
 }
 function closeCodeModal() { document.getElementById('code-modal').classList.remove('open'); }
+let codeBusy = false;
 function submitCode() {
+    if (codeBusy) return;
     const msg = document.getElementById('code-msg');
-    const r = redeemCode(document.getElementById('code-input').value);
+    const res = redeemCode(document.getElementById('code-input').value);
+    if (res && typeof res.then === 'function') {
+        codeBusy = true;
+        msg.style.color = '#b9a38e'; msg.textContent = 'בודק את הקוד...';
+        res.then(showCodeResult).finally(() => { codeBusy = false; });
+    } else showCodeResult(res);
+}
+function showCodeResult(r) {
+    const msg = document.getElementById('code-msg');
     msg.style.color = r.ok ? '#4ad66d' : '#ff6a5c';
     msg.textContent = r.msg;
     if (r.ok) {
