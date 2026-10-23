@@ -1228,6 +1228,77 @@ function skEinsteinExtra(c, sk, st) {
 // ססיל רודז: שביל צד בשיער, פאות קצרות ושרשרת שעון זהב על הווסט
 // שני הרקדנית: שמלת פלמנקו אדומה עם נקודות ומלמלות, פרח אדום בשיער ומניפה
 // אלה הרקדנית: בגד גוף ורוד עם נצנצים, טוטו מטול, כתר קטן ופפיון סאטן בשיער
+// פרידה: צמה כתר עם פרחים, גבה מחוברת, עגילים תלויים, שרשרת ירקן, חולצה רקומה וצעיף רבוזו
+function skFridaExtra(c, sk, st) {
+    const t = st.t, hair = sk.hair.color;
+    // שיער אסוף לאחור עם שביל באמצע - המצח והגבות גלויים
+    for (const sd of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(sd * 2, -144);
+        c.bezierCurveTo(sd * 46, -146, sd * 98, -116, sd * 92, -44);
+        c.lineTo(sd * 80, -50);
+        c.bezierCurveTo(sd * 80, -92, sd * 52, -116, sd * 2, -122);
+        c.closePath();
+        c.fillStyle = hair; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+        c.strokeStyle = skShade(hair, 0.3); c.lineWidth = 2;
+        c.beginPath(); c.moveTo(sd * 16, -136); c.quadraticCurveTo(sd * 62, -124, sd * 84, -70); c.stroke();
+    }
+    // גבה מחוברת
+    c.strokeStyle = sk.brow; c.lineWidth = 6; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-21, -86); c.quadraticCurveTo(0, -80, 21, -86); c.stroke();
+    // רקמה פרחונית על החולצה
+    c.save(); skTorsoPath(c); c.clip();
+    c.fillStyle = '#1e2a6a'; c.fillRect(-124, 128, 248, 34);
+    for (let x = -112; x <= 112; x += 28) {
+        const col = ['#ffd23d', '#ff7ab0', '#4ad66d', '#ffffff'][((x + 112) / 28) % 4];
+        for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; skE(c, x + Math.cos(a) * 6, 145 + Math.sin(a) * 6, 4.5, 4.5, col); }
+        skE(c, x, 145, 3, 3, '#ff9f1c');
+    }
+    c.restore();
+    // צעיף רבוזו על הכתפיים, עם פרנזים
+    for (const s of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(s * 34, 52); c.quadraticCurveTo(s * 90, 64, s * 124, 110);
+        c.lineTo(s * 124, 230); c.quadraticCurveTo(s * 104, 150, s * 54, 96); c.closePath();
+        c.fillStyle = '#1f8a86'; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2.5; c.stroke();
+        c.strokeStyle = 'rgba(255,255,255,0.35)'; c.lineWidth = 2;
+        for (const k of [0.3, 0.6]) { c.beginPath(); c.moveTo(s * (40 + k * 60), 58 + k * 30); c.quadraticCurveTo(s * (90 + k * 20), 110 + k * 30, s * (120), 140 + k * 70); c.stroke(); }
+        c.strokeStyle = '#1f8a86'; c.lineWidth = 2;
+        for (let i = 0; i < 6; i++) { const y = 196 + i * 6; c.beginPath(); c.moveTo(s * 122, y); c.lineTo(s * 128, y + 10); c.stroke(); }
+    }
+    // שרשרת חרוזי ירקן
+    for (let i = 0; i < 11; i++) {
+        const a = Math.PI * 0.12 + i * (Math.PI * 0.76 / 10);
+        skE(c, Math.cos(a) * 44, 56 + Math.sin(a) * 30, 6.5, 6.5, i % 2 ? '#2e9a5a' : '#3fbf76', SK_OUT, 1.5);
+    }
+    // עגילים תלויים מזהב
+    for (const sd of [-1, 1]) {
+        const sw = Math.sin(t * 3 + sd) * 0.15;
+        c.save(); c.translate(sd * 92, -14); c.rotate(sw);
+        c.strokeStyle = '#b8860b'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 10); c.stroke();
+        skE(c, 0, 0, 4, 4, '#f1c40f', '#7a5a10', 1.5);
+        skP(c, [[0, 8], [8, 20], [0, 32], [-8, 20]], '#f1c40f', '#7a5a10', 1.5);
+        skE(c, 0, 20, 3, 3, '#e0283c');
+        c.restore();
+    }
+    // צמה כתר מעל הראש
+    const braid = [];
+    for (let i = 0; i <= 12; i++) { const a = Math.PI * 1.08 + i * (Math.PI * 0.84 / 12); braid.push([Math.cos(a) * 92, -78 + Math.sin(a) * 74]); }
+    braid.forEach(([x, y], i) => {
+        skE(c, x, y, 17, 12, i % 2 ? hair : skShade(hair, 0.18), SK_OUT, 2, Math.atan2(y + 78, x) + Math.PI / 2 + (i % 2 ? 0.5 : -0.5));
+    });
+    // פרחים בשיער
+    const flower = (x, y, r, col, mid) => {
+        for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + t * 0.2; skE(c, x + Math.cos(a) * r * 0.7, y + Math.sin(a) * r * 0.7, r * 0.6, r * 0.45, col, SK_OUT, 1.5, a); }
+        skE(c, x, y, r * 0.38, r * 0.38, mid, SK_OUT, 1.5);
+    };
+    skE(c, -40, -150, 12, 6, '#2e7d2a', SK_OUT, 1.5, -0.6); skE(c, 42, -150, 12, 6, '#2e7d2a', SK_OUT, 1.5, 0.6);
+    flower(-24, -160, 22, '#e0283c', '#ffd23d');
+    flower(18, -164, 19, '#ff7ab0', '#ffd23d');
+    flower(48, -146, 14, '#ffd23d', '#ff9f1c');
+    flower(-54, -140, 13, '#ff9f1c', '#e0283c');
+}
+
 function skEllaExtra(c, sk, st) {
     const t = st.t;
     // נצנצים על בגד הגוף
