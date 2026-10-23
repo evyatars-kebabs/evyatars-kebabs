@@ -488,6 +488,52 @@
         }
         .shop-more:active { transform: scale(0.98); }
         .shop-group-count { color: var(--muted); font-size: 0.8rem; font-family: 'Rubik', sans-serif; }
+        .shop-card .shop-preview { cursor: zoom-in; }
+        .shop-zoom {
+            position: absolute; top: 12px; left: 12px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0, 0, 0, 0.45); font-size: 0.8rem; cursor: pointer; z-index: 2; line-height: 1;
+        }
+        .shop-deal-badge {
+            position: absolute; top: 12px; right: 12px; z-index: 2; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 800;
+            background: linear-gradient(180deg, #ff4d6d, #d6291f); color: #fff; box-shadow: 0 2px 8px rgba(214, 41, 31, 0.5);
+            animation: claimPulse 1.4s ease-in-out infinite;
+        }
+        .shop-card.on-deal { border-color: #ff4d6d; }
+        .shop-was { margin-inline-start: 6px; opacity: 0.6; font-size: 0.8em; }
+        .shop-deal {
+            display: flex; gap: 10px; align-items: stretch; margin: 10px 0 6px; padding: 10px; border-radius: 18px;
+            border: 2px solid #ff4d6d; background: linear-gradient(135deg, rgba(255, 77, 109, 0.18), rgba(255, 159, 28, 0.1));
+            box-shadow: 0 0 22px rgba(255, 77, 109, 0.25);
+        }
+        .shop-deal-pv { width: 120px; height: 133px; border-radius: 12px; flex-shrink: 0; cursor: zoom-in; }
+        .shop-deal-info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .shop-deal-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--muted); }
+        .shop-deal-head b { color: #ff6a7d; font-family: 'Secular One', 'Rubik', sans-serif; font-weight: 400; font-size: 1rem; }
+        .shop-deal-name { font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1.05rem; color: var(--text-color); }
+        .shop-deal-info .shop-rarity { align-self: flex-start; margin: 0; }
+        .shop-deal-prices { font-size: 0.9rem; }
+        .shop-deal-prices s { color: var(--muted); }
+        .shop-deal-prices b { color: var(--accent-gold); font-size: 1.1rem; }
+        .shop-deal-prices em { font-style: normal; color: #ff6a7d; font-weight: 800; }
+        .shop-deal .shop-btn { margin-top: auto; }
+        #skin-modal { position: fixed; inset: 0; z-index: 9980; display: flex; align-items: center; justify-content: center; padding: 16px;
+            background: rgba(8, 3, 1, 0); transition: background .2s; }
+        #skin-modal.open { background: rgba(8, 3, 1, 0.8); }
+        .skin-modal-card {
+            position: relative; width: 100%; max-width: 340px; border-radius: 24px; padding: 14px; text-align: center;
+            background: linear-gradient(180deg, #2a160c, #160903); border: 2px solid var(--rc, #b9a38e);
+            box-shadow: 0 0 36px color-mix(in srgb, var(--rc, #b9a38e) 45%, transparent);
+            transform: scale(0.7); opacity: 0; transition: transform .3s cubic-bezier(.2, 1.6, .4, 1), opacity .2s;
+        }
+        #skin-modal.open .skin-modal-card { transform: none; opacity: 1; }
+        .skin-modal-cv { width: 100%; aspect-ratio: 360 / 400; border-radius: 16px; display: block; }
+        .skin-modal-x { position: absolute; top: 20px; left: 20px; z-index: 2; width: 32px; height: 32px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.5); color: #fff; font-size: 0.9rem; cursor: pointer; }
+        .skin-modal-body { padding-top: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .skin-modal-name { font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1.5rem; color: var(--accent-gold); }
+        .skin-modal-sub { font-size: 0.78rem; color: var(--muted); }
+        .skin-modal-body .skin-switch { width: 80%; }
+        .skin-modal-body .btn { width: 100%; margin-top: 6px; }
         .skin-switch { display: flex; gap: 3px; margin: 6px 4px 2px; padding: 3px; border-radius: 999px; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-color); }
         .skin-switch button {
             flex: 1; padding: 4px 2px; border: 0; border-radius: 999px; background: transparent; color: var(--muted);
@@ -1559,7 +1605,7 @@ const firebaseConfig = {
     const LB_ID_KEY = 'kebab_lbId';
     const PROGRESS_KEYS = ['kebab_lbId', 'kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
         'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
-        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant'];
+        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
     const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
     const LB_BEST = [['leaderboard', 'kebab_highScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
@@ -1848,6 +1894,7 @@ const firebaseConfig = {
 	/* --- ניווט בין מסכים ראשיים --- */
 	function switchTab(screenId) {
 			stopAllGames();
+		if (typeof closeSkinModal === 'function') closeSkinModal();
 		if (screenId !== 'result') creditPendingCoins();
 		if (window.kebabUpdateReady && ['home', 'shop', 'profile', 'leaderboard'].includes(screenId)) setTimeout(() => window.kebabTryUpdate(), 50);
 		document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -5578,6 +5625,30 @@ function skinGroupOf(id) {
 
 function skinPrice(s) { return s.rarity < 0 ? 0 : SK_RARITY[s.rarity].price; }
 
+/* ---------- מבצע יומי: סקין אחד בהנחה כל יום ----------
+   נבחר לפי התאריך והשחקן מבין הסקינים שעוד לא בבעלותו (לא נפוץ ומעלה),
+   ונשמר כדי שלא יתחלף באמצע היום (גם לא אחרי שקונים אותו). */
+const DEAL_KEY = 'kebab_deal';
+const DEAL_OFF = 0.4;                    // 40% הנחה
+function dealToday() {
+    const today = dailyDate();
+    let d = null;
+    try { d = JSON.parse(store.get(DEAL_KEY) || 'null'); } catch (e) { d = null; }
+    if (d && d.date === today && SV_SKINS.some(x => x.id === d.id)) return d;
+    const owned = getOwnedSkins();
+    const pool = SV_SKINS.filter(x => x.rarity >= 1 && !(SK_RARITY[x.rarity] || {}).codeOnly && !x.variantOf && !owned.has(x.id));
+    if (!pool.length) return null;
+    let h = 2166136261;
+    for (const ch of today + '|' + playerId) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+    d = { date: today, id: pool[h % pool.length].id };
+    store.set(DEAL_KEY, JSON.stringify(d));
+    return d;
+}
+function dealPrice(base) { return Math.max(5, Math.round(base * (1 - DEAL_OFF) / 5) * 5); }
+function skinOnDeal(sk) { const d = dealToday(); return !!d && d.id === (skinGroupOf(sk.id) || sk.id); }
+// המחיר להיום (עם המבצע אם יש)
+function skinPriceNow(sk) { const p = skinPrice(sk); return skinOnDeal(sk) ? dealPrice(p) : p; }
+
 /* ============================================================
    כלכלת המשחק: מטבעות קבב, קופונים וחנות סקינים
    ============================================================ */
@@ -6012,6 +6083,17 @@ function renderDaily() {
     box.appendChild(bonus);
 }
 
+// טיימר המבצע בחנות
+setInterval(() => {
+    const el = document.getElementById('deal-timer');
+    const shop = document.getElementById('screen-shop');
+    if (!el || !shop || !shop.classList.contains('active')) return;
+    let d = null;
+    try { d = JSON.parse(store.get(DEAL_KEY) || 'null'); } catch (e) { d = null; }
+    if (!d || d.date !== dailyDate()) { renderShop(); return; }      // יום חדש - מבצע חדש
+    el.textContent = '⏳ ' + dailyCountdown();
+}, 1000);
+
 // טיימר ההתחלפות + מעבר יום כשהמסך פתוח
 setInterval(() => {
     const home = document.getElementById('screen-home');
@@ -6103,7 +6185,7 @@ function buySkin(id) {
     const sk = skinById(id);
     const owned = getOwnedSkins();
     if (owned.has(id) || SK_RARITY[sk.rarity].codeOnly) return;
-    const price = skinPrice(sk);
+    const price = skinPriceNow(sk);
     if (!spendCoins(price)) {
         sfx.err();
         showToast('אין מספיק קבב קוינס 🪙', false);
@@ -6139,31 +6221,43 @@ function getPreview(sk) {
     return previewCache[sk.id];
 }
 
-function drawSkinPreview(cv, skin) {
+// opts.t = זמן (לאנימציה), opts.anim = פה שנפתח ולועס ועיניים שעוקבות, opts.k = רזולוציה (פיקסלים ליחידה)
+function drawSkinPreview(cv, skin, opts) {
+    opts = opts || {};
+    const k = opts.k || 1, W = cv.width / k, H = cv.height / k;
     const c = cv.getContext('2d');
-    c.clearRect(0, 0, cv.width, cv.height);
-    const bg = c.createLinearGradient(0, 0, 0, cv.height);
+    c.setTransform(k, 0, 0, k, 0, 0);
+    c.clearRect(0, 0, W, H);
+    const bg = c.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, '#1a0f0a');
     bg.addColorStop(1, '#3a2012');
     c.fillStyle = bg;
-    c.fillRect(0, 0, cv.width, cv.height);
+    c.fillRect(0, 0, W, H);
 
     c.save();
     c.beginPath();
-    c.rect(0, 0, cv.width, cv.height);
+    c.rect(0, 0, W, H);
     c.clip();
-    c.translate(cv.width / 2, cv.height * 0.6);
-    c.scale(0.85, 0.85);
-    const t = 1.3;
+    c.translate(W / 2, H * 0.6);
+    c.scale(0.85 * W / 360, 0.85 * W / 360);
+    const t = opts.t !== undefined ? opts.t : 1.3;
+    // מחזור "אכילה": פה נפתח לקראת האוכל, ואז לעיסה
+    let ry = 44 * 0.36, chew = 0, surprised = false;
+    if (opts.anim) {
+        const ph = t % 3;
+        if (ph < 0.7) { ry *= 1 + ph * 0.5; surprised = true; }
+        else if (ph < 1.6) { chew = 1; ry *= 1 + 0.25 * Math.sin(t * 30); }
+    }
     if (skin.kind === 'cone') {
         const saved = sv;                     // הציור של הקונוס משתמש במצב המשחק, אז מחליפים זמנית
-        sv = { mouth: { x: 0, y: 0, hw: 44, chew: 0 }, ball: null, t: t, aim: null };
+        sv = { mouth: { x: 0, y: 0, hw: 44, chew }, ball: null, t: t, aim: null };
         svDrawBody(c);
         svDrawMouthBack(c);
         svDrawLowerLip(c);
         sv = saved;
     } else {
-        const st = { x: 0, y: 0, hw: 44, ry: 44 * 0.36, chew: 0, t: t, tx: 120, ty: -200, surprised: false, mx: 0, my: 0 };
+        const tx = opts.anim ? Math.cos(t * 0.9) * 260 : 120, ty = opts.anim ? -120 + Math.sin(t * 1.3) * 160 : -200;
+        const st = { x: 0, y: 0, hw: 44, ry, chew, t: t, tx, ty, surprised, mx: 0, my: 0 };
         skDrawHumanBack(c, skin, st);
         skMouthBack(c, skin, st);
         skDrawHumanFront(c, skin, st);
@@ -6218,6 +6312,131 @@ function shopScrollTo(id) {
     if (head) head.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function renderDealBanner(grid, owned, eq, coins) {
+    const d = dealToday();
+    if (!d) return;
+    const base = skinById(d.id);
+    const sk = SKIN_GROUPS[base.id] ? skinById(shopVariantOf(base.id)) : base;
+    const rar = SK_RARITY[sk.rarity];
+    const box = document.createElement('div');
+    box.className = 'shop-deal';
+    box.style.setProperty('--rc', rar.color);
+    const pv = document.createElement('canvas');
+    pv.width = 240; pv.height = 266;
+    pv.className = 'shop-deal-pv';
+    drawSkinPreview(pv, sk, { k: 240 / 360 });
+    pv.onclick = () => openSkinModal(base.id);
+    const info = document.createElement('div');
+    info.className = 'shop-deal-info';
+    const head = document.createElement('div');
+    head.className = 'shop-deal-head';
+    head.innerHTML = '<b>🔥 מבצע היום</b><span id="deal-timer">⏳ ' + dailyCountdown() + '</span>';
+    const nm = document.createElement('div');
+    nm.className = 'shop-deal-name';
+    nm.textContent = sk.name;
+    const tag = document.createElement('span');
+    tag.className = 'shop-rarity';
+    tag.textContent = rar.name;
+    const prices = document.createElement('div');
+    prices.className = 'shop-deal-prices';
+    prices.innerHTML = '<s>🪙' + skinPrice(sk) + '</s> <b>🪙' + skinPriceNow(sk) + '</b> <em>-' + Math.round(DEAL_OFF * 100) + '%</em>';
+    const btn = document.createElement('button');
+    btn.className = 'btn shop-btn';
+    if (eq === sk.id) { btn.textContent = 'נבחר ✓'; btn.disabled = true; }
+    else if (owned.has(sk.id)) { btn.textContent = 'נרכש ✓ · בחר'; btn.onclick = () => equipSkin(sk.id); }
+    else {
+        btn.textContent = 'קנה עכשיו 🪙 ' + skinPriceNow(sk);
+        if (coins < skinPriceNow(sk)) btn.classList.add('cant');
+        btn.onclick = () => buySkin(sk.id);
+    }
+    info.appendChild(head); info.appendChild(nm); info.appendChild(tag); info.appendChild(prices); info.appendChild(btn);
+    box.appendChild(pv); box.appendChild(info);
+    grid.appendChild(box);
+}
+
+/* ---------- תצוגה מקדימה גדולה ומונפשת ---------- */
+let skinModal = null;
+function closeSkinModal() {
+    if (!skinModal) return;
+    cancelAnimationFrame(skinModal.raf);
+    const m = skinModal.el;
+    m.classList.remove('open');
+    setTimeout(() => m.remove(), 220);
+    skinModal = null;
+}
+function openSkinModal(base) {
+    closeSkinModal();
+    const el = document.createElement('div');
+    el.id = 'skin-modal';
+    const card = document.createElement('div');
+    card.className = 'skin-modal-card';
+    const x = document.createElement('button');
+    x.className = 'skin-modal-x';
+    x.textContent = '✕';
+    x.onclick = closeSkinModal;
+    const cv = document.createElement('canvas');
+    cv.className = 'skin-modal-cv';
+    const k = Math.min(3, (window.devicePixelRatio || 1)) * 300 / 360;
+    cv.width = Math.round(360 * k); cv.height = Math.round(400 * k);
+    const body = document.createElement('div');
+    body.className = 'skin-modal-body';
+    card.appendChild(x); card.appendChild(cv); card.appendChild(body);
+    el.appendChild(card);
+    el.addEventListener('click', e => { if (e.target === el) closeSkinModal(); });
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('open'));
+    skinModal = { el, cv, body, base, k, raf: 0, t0: performance.now() };
+    renderSkinModal();
+    const loop = ts => {
+        if (!skinModal || skinModal.el !== el) return;
+        drawSkinPreview(cv, skinById(skinModal.show), { t: 1 + (ts - skinModal.t0) / 1000, anim: true, k });
+        skinModal.raf = requestAnimationFrame(loop);
+    };
+    skinModal.raf = requestAnimationFrame(loop);
+}
+function renderSkinModal() {
+    if (!skinModal) return;
+    const base = skinModal.base, group = SKIN_GROUPS[base];
+    const sk = group ? skinById(shopVariantOf(base)) : skinById(base);
+    skinModal.show = sk.id;
+    const owned = getOwnedSkins(), eq = getEquippedSkinId(), coins = getCoins();
+    const rar = SK_RARITY[sk.rarity];
+    const b = skinModal.body;
+    b.innerHTML = '';
+    skinModal.el.style.setProperty('--rc', rar ? rar.color : '#b9a38e');
+    const tag = document.createElement('span'); tag.className = 'shop-rarity'; tag.textContent = rar ? rar.name : 'ברירת מחדל';
+    const nm = document.createElement('div'); nm.className = 'skin-modal-name'; nm.textContent = sk.name;
+    const cat = SHOP_CATEGORIES.find(c => c.ids.includes(base));
+    const sub = document.createElement('div'); sub.className = 'skin-modal-sub';
+    sub.textContent = (cat ? cat.icon + ' ' + cat.title : (rar && rar.codeOnly ? '🎟 מהדורה מיוחדת' : '')) + ' · יאכל ב"האכל את השוורץ"';
+    b.appendChild(tag); b.appendChild(nm); b.appendChild(sub);
+    if (group) {
+        const sw = document.createElement('div');
+        sw.className = 'skin-switch' + (group.length > 2 ? ' triple' : '');
+        group.forEach(opt => {
+            const o = document.createElement('button');
+            o.textContent = opt.label;
+            o.className = opt.id === sk.id ? 'on' : '';
+            o.onclick = () => { shopSetVariant(base, opt.id); renderSkinModal(); };
+            sw.appendChild(o);
+        });
+        b.appendChild(sw);
+    }
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    if (eq === sk.id) { btn.textContent = 'נבחר ✓'; btn.disabled = true; }
+    else if (owned.has(sk.id)) { btn.textContent = 'בחר את ' + sk.name; btn.onclick = () => { equipSkin(sk.id); renderSkinModal(); }; }
+    else {
+        const price = skinPriceNow(sk);
+        btn.textContent = 'קנה 🪙 ' + price;
+        if (price < skinPrice(sk)) { const was = document.createElement('s'); was.className = 'shop-was'; was.textContent = skinPrice(sk); btn.appendChild(was); }
+        if (coins < price) btn.classList.add('cant');
+        btn.onclick = () => { buySkin(sk.id); renderSkinModal(); };
+    }
+    b.appendChild(btn);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSkinModal(); });
+
 function renderShop() {
     const grid = document.getElementById('shop-grid');
     if (!grid) return;
@@ -6258,6 +6477,7 @@ function renderShop() {
         chips.appendChild(chip);
     });
     grid.appendChild(chips);
+    renderDealBanner(grid, owned, eq, coins);
 
     visible.forEach(g => {
         const head = document.createElement('div');
@@ -6289,7 +6509,15 @@ function renderShop() {
             card.className = 'shop-card r' + sk.rarity + (eq === sk.id ? ' equipped' : '');
             card.style.setProperty('--rc', rar ? rar.color : '#b9a38e');
 
-            card.appendChild(getPreview(sk));
+            const pv = getPreview(sk);
+            pv.onclick = () => openSkinModal(baseSk.id);
+            card.appendChild(pv);
+            const zoom = document.createElement('button');
+            zoom.className = 'shop-zoom';
+            zoom.textContent = '🔍';
+            zoom.title = 'תצוגה מקדימה';
+            zoom.onclick = () => openSkinModal(baseSk.id);
+            card.appendChild(zoom);
 
             const tag = document.createElement('div');
             tag.className = 'shop-rarity';
@@ -6323,10 +6551,21 @@ function renderShop() {
                 btn.textContent = 'בחר';
                 btn.onclick = () => equipSkin(sk.id);
             } else {
-                const price = skinPrice(sk);
+                const price = skinPriceNow(sk);
                 btn.textContent = 'קנה 🪙 ' + price;
+                if (price < skinPrice(sk)) {
+                    const was = document.createElement('s'); was.textContent = skinPrice(sk); was.className = 'shop-was';
+                    btn.appendChild(was);
+                }
                 if (coins < price) btn.classList.add('cant');
                 btn.onclick = () => buySkin(sk.id);
+            }
+            if (skinOnDeal(sk) && !owned.has(sk.id)) {
+                const badge = document.createElement('div');
+                badge.className = 'shop-deal-badge';
+                badge.textContent = '🔥 -' + Math.round(DEAL_OFF * 100) + '%';
+                card.appendChild(badge);
+                card.classList.add('on-deal');
             }
             card.appendChild(btn);
             wrap.appendChild(card);
@@ -7788,7 +8027,7 @@ document.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
 function haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* ignore */ } }
 
 /* ---------- אפקט לחיצה: ניצוצות + צליל + רטט ---------- */
-const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn, .shop-cat, .shop-more, .daily-act.ready, .skin-switch button';
+const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn, .shop-cat, .shop-more, .daily-act.ready, .skin-switch button, .shop-zoom';
 const BURST_COLORS = ['#ffd24a', '#ff9f1c', '#ff6a1a', '#fff2b0'];
 
 function burstAt(x, y, n, spread) {
