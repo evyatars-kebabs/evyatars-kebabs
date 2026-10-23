@@ -488,6 +488,13 @@
         }
         .shop-more:active { transform: scale(0.98); }
         .shop-group-count { color: var(--muted); font-size: 0.8rem; font-family: 'Rubik', sans-serif; }
+        .skin-switch { display: flex; gap: 3px; margin: 6px 4px 2px; padding: 3px; border-radius: 999px; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-color); }
+        .skin-switch button {
+            flex: 1; padding: 4px 2px; border: 0; border-radius: 999px; background: transparent; color: var(--muted);
+            font-family: 'Rubik', sans-serif; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: background .15s, color .15s;
+        }
+        .skin-switch button.on { background: linear-gradient(180deg, #ffd54f, #ff9f1c); color: #2a1204; box-shadow: 0 2px 0 #b3560a; }
+        .skin-switch.triple button { font-size: 0.68rem; }
         .shop-rarity {
             display: inline-block; margin: 4px auto 0; padding: 1px 8px; border-radius: 999px; font-size: 0.68rem; font-weight: 700;
             color: var(--rc); border: 1px solid var(--rc); background: color-mix(in srgb, var(--rc) 12%, transparent);
@@ -1552,7 +1559,7 @@ const firebaseConfig = {
     const LB_ID_KEY = 'kebab_lbId';
     const PROGRESS_KEYS = ['kebab_lbId', 'kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
         'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
-        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily'];
+        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
     const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
     const LB_BEST = [['leaderboard', 'kebab_highScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
@@ -3604,6 +3611,16 @@ function skHead(c, sk) {
     skE(c, -2, -33, 5, 3.5, skShade(tone, 0.22));
 }
 
+// ריסים מעל העין (לגרסאות הנשיות)
+function skLashes(c, cx, ey, side) {
+    c.strokeStyle = '#1a0d06'; c.lineWidth = 2.6; c.lineCap = 'round';
+    for (const [a, l] of [[-2.3, 7], [-1.9, 8], [-1.5, 7]]) {
+        const ang = side < 0 ? a : -Math.PI - a;
+        const sx = cx + Math.cos(ang) * 15, sy = ey + Math.sin(ang) * 16;
+        c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + Math.cos(ang) * l, sy + Math.sin(ang) * l); c.stroke();
+    }
+}
+
 function skEyes(c, sk, st) {
     const ey = -62;
     const eyeStyle = sk.eyes || {};
@@ -3623,6 +3640,7 @@ function skEyes(c, sk, st) {
                 skE(c, cx, ey, 12, 12, eyeStyle.glow, 'rgba(0,0,0,0.6)', 2);
                 if (eyeStyle.slit) skE(c, cx, ey, 2.6, 11, '#150500');
                 else skE(c, cx, ey, 5, 5, '#ffffff');
+                if (sk.lashes) skLashes(c, cx, ey - 2, o < 0 ? -1 : 1);
             } else {
                 skE(c, cx, ey, 15, 17, '#ffffff', 'rgba(30,15,8,0.85)', 2.5);
                 const ang = Math.atan2(st.ty - (st.my + ey), st.tx - (st.mx + cx));
@@ -3631,6 +3649,7 @@ function skEyes(c, sk, st) {
                 skE(c, px, py, 8.2, 8.2, eyeStyle.iris || '#3d2a1a');
                 skE(c, px, py, 4.2, 4.2, '#0d0604');
                 skE(c, px - 2.5, py - 2.6, 2.2, 2.2, '#ffffff');
+                if (sk.lashes) skLashes(c, cx, ey, o < 0 ? -1 : 1);
             }
         }
         // גבה
@@ -5401,6 +5420,109 @@ const SV_SKINS = [
 ];
 
 function skinById(id) { return SV_SKINS.find(s => s.id === id) || SV_SKINS[0]; }
+
+/* ============================================================
+   גרסאות של סקינים (מתג על כרטיס החנות)
+   - בן / בת לכל סקין בקטגוריות: אנשי השכונה, מקצועות, פנטזיה, גיבורים ועתיד
+   - שלושת הבקבוקים: קולה / זירו / פאנטה
+   גרסה היא סקין נפרד עם variantOf = הסקין הראשי. הוא לא מוצג בחנות בנפרד,
+   וקנייה של סקין פותחת את כל הגרסאות שלו.
+   ============================================================ */
+// g = המין של הסקין המקורי. name = שם הגרסה השנייה. ov = שינויים מיוחדים לגרסה
+const GENDER_FLIPS = {
+    // אנשי השכונה
+    danny: { g: 'm', name: 'דניאלה' },
+    noa: { g: 'f', name: 'נועם' },
+    yosi: { g: 'm', name: 'סבתא יוספה', ov: { hair: { style: 'bun', color: '#e8e8ee' } } },
+    roei: { g: 'm', name: 'רעות' },
+    michal: { g: 'f', name: 'מיכאל', ov: { beard: { style: 'stubble', color: '#1f130c' } } },
+    avi: { g: 'm', name: 'אביבה', ov: { hair: { style: 'afro', color: '#14110f' } } },
+    yuval: { g: 'f', name: 'יואב' },
+    shira: { g: 'f', name: 'שי' },
+    omer: { g: 'm', name: 'עומרית', ov: { hair: { style: 'long', color: '#2a1a12' } } },
+    tamar: { g: 'f', name: 'תומר', ov: { hair: { style: 'buzz', color: '#1a120c' } } },
+    itay: { g: 'm', name: 'איילת', ov: { hair: { style: 'long', color: '#d8b24a' } } },
+    dudu: { g: 'm', name: 'דורית', ov: { hair: { style: 'bun', color: '#3a2412' } } },
+    maya: { g: 'f', name: 'מאור' },
+    gili: { g: 'f', name: 'גיל' },
+    yacht: { g: 'm', name: 'בעלת היאכטה', ov: { hair: { style: 'long', color: '#14110f' } } },
+    // מקצועות
+    chef: { g: 'm', name: 'השפית', ov: { hair: { style: 'bun', color: '#3a2412' } } },
+    waiter: { g: 'm', name: 'המלצרית', ov: { hair: { style: 'bun', color: '#14110f' } } },
+    farmer: { g: 'm', name: 'האיכרה' },
+    beekeeper: { g: 'm', name: 'הכוורנית' },
+    builder: { g: 'm', name: 'הבנאית' },
+    mechanic: { g: 'm', name: 'המכונאית' },
+    fire: { g: 'm', name: 'הכבאית' },
+    police: { g: 'm', name: 'השוטרת', ov: { hair: { style: 'bun', color: '#14110f' } } },
+    lifeguard: { g: 'm', name: 'המצילה', ov: { hair: { style: 'long', color: '#e8c04a' } } },
+    sailor: { g: 'm', name: 'המלחית', ov: { hair: { style: 'bob', color: '#3a2a1a' } } },
+    pilot: { g: 'm', name: 'הטייסת', ov: { hair: { style: 'bob', color: '#3a2a1a' } } },
+    scientist: { g: 'f', name: 'המדען', ov: { hair: { style: 'short', color: '#4a2e18' } } },
+    detective: { g: 'm', name: 'הבלשית', ov: { hair: { style: 'wavy', color: '#3a2a1a' } } },
+    dj: { g: 'm', name: 'הדי-ג\'יית', ov: { hair: { style: 'long', color: '#14110f' } } },
+    boxer: { g: 'm', name: 'המתאגרפת' },
+    astronaut: { g: 'm', name: 'האסטרונאוטית', ov: { hair: { style: 'bob', color: '#2a1a12' } } },
+    // פנטזיה ומיתולוגיה
+    wizard: { g: 'm', name: 'הקוסמת' },
+    vampire: { g: 'm', name: 'הערפדית', ov: { lips: '#b0102a' } },
+    icequeen: { g: 'f', name: 'מלך הקרח', ov: { hair: { style: 'slick', color: '#dff3ff' }, beard: { style: 'goatee', color: '#dff3ff' } } },
+    angel: { g: 'm', name: 'המלאכית' },
+    firemage: { g: 'm', name: 'הלוחשת לאש' },
+    thunder: { g: 'm', name: 'אלת הרעם', ov: { hair: { style: 'wavy', color: '#f0cf6a' } } },
+    phoenix: { g: 'm', name: 'ציפור האש' },
+    shadow: { g: 'f', name: 'נינג\'ה הצללים', ov: { beard: { style: 'stubble', color: '#14110f' }, earring: false } },
+    dragon: { g: 'm', name: 'גבירת הדרקונים' },
+    cosmic: { g: 'm', name: 'קיסרית הגלקסיה' },
+    voidlord: { g: 'm', name: 'שליטת הריק' },
+    kebabgod: { g: 'm', name: 'אלת השווארמה', ov: { hair: { style: 'long', color: '#f0cf6a' } } },
+    // גיבורים ועתיד
+    hero: { g: 'm', name: 'גיבורת העל' },
+    cyborg: { g: 'm', name: 'הסייבורגית', ov: { hair: { style: 'wavy', color: '#aeb6c4' } } },
+    hacker: { g: 'm', name: 'ההאקרית', ov: { hair: { style: 'long', color: '#1a1410' } } }
+};
+const TO_FEMALE_HAIR = { short: 'ponytail', buzz: 'bob', slick: 'long', sidebald: 'bun', bald: 'bun', wild: 'wavy' };
+const TO_MALE_HAIR = { long: 'short', wavy: 'short', ponytail: 'short', bob: 'short', bun: 'short' };
+
+function genderFlip(base, to) {
+    const v = {};
+    if (base.hair) {
+        const map = to === 'f' ? TO_FEMALE_HAIR : TO_MALE_HAIR;
+        if (map[base.hair.style]) v.hair = Object.assign({}, base.hair, { style: map[base.hair.style] });
+    }
+    if (to === 'f') {
+        v.beard = null;
+        v.lashes = true;
+        v.earring = true;
+        if (!base.lips) v.lips = '#d9566f';
+    } else {
+        v.lashes = false;
+        v.lips = undefined;
+    }
+    return v;
+}
+
+const SKIN_GROUPS = {};          // מזהה ראשי -> [{ id, label }]
+Object.entries(GENDER_FLIPS).forEach(([id, f]) => {
+    const base = SV_SKINS.find(x => x.id === id);
+    if (!base) return;
+    const to = f.g === 'm' ? 'f' : 'm';
+    const vid = id + '_' + to;
+    SV_SKINS.push(Object.assign({}, base, genderFlip(base, to), f.ov || {}, { id: vid, name: f.name, variantOf: id }));
+    if (f.g === 'f') base.lashes = base.lashes !== false;    // לגרסאות הנשיות המקוריות מוסיפים ריסים
+    const male = f.g === 'm' ? id : vid, female = f.g === 'm' ? vid : id;
+    SKIN_GROUPS[id] = [{ id: male, label: '♂ בן' }, { id: female, label: '♀ בת' }];
+});
+// שלושת הבקבוקים הם כרטיס אחד
+['rolazero', 'albanta'].forEach(id => { const sk = SV_SKINS.find(x => x.id === id); if (sk) sk.variantOf = 'bubacola'; });
+SKIN_GROUPS.bubacola = [{ id: 'bubacola', label: 'קולה' }, { id: 'rolazero', label: 'זירו' }, { id: 'albanta', label: 'פאנטה' }];
+
+function skinGroupOf(id) {
+    const sk = SV_SKINS.find(x => x.id === id);
+    const base = sk && sk.variantOf ? sk.variantOf : id;
+    return SKIN_GROUPS[base] ? base : null;
+}
+
 function skinPrice(s) { return s.rarity < 0 ? 0 : SK_RARITY[s.rarity].price; }
 
 /* ============================================================
@@ -5894,10 +6016,16 @@ function showResultReward(gameKey, score) {
 
 /* ---------- סקינים: בעלות ובחירה ---------- */
 function getOwnedSkins() {
+    let set;
     try {
         const a = JSON.parse(store.get(SKINS_KEY) || '[]');
-        return new Set(['classic'].concat(Array.isArray(a) ? a : []));
-    } catch (e) { return new Set(['classic']); }
+        set = new Set(['classic'].concat(Array.isArray(a) ? a : []));
+    } catch (e) { set = new Set(['classic']); }
+    // מי שמחזיק גרסה אחת של סקין מחזיק את כולן
+    Object.entries(SKIN_GROUPS).forEach(([base, opts]) => {
+        if (set.has(base) || opts.some(o => set.has(o.id))) { set.add(base); opts.forEach(o => set.add(o.id)); }
+    });
+    return set;
 }
 function saveOwnedSkins(set) {
     store.set(SKINS_KEY, JSON.stringify(Array.from(set).filter(x => x !== 'classic')));
@@ -5929,6 +6057,8 @@ function buySkin(id) {
         return;
     }
     owned.add(id);
+    const grp = skinGroupOf(id);
+    if (grp) { owned.add(grp); SKIN_GROUPS[grp].forEach(o => owned.add(o.id)); }   // קנייה פותחת את כל הגרסאות
     saveOwnedSkins(owned);
     store.set(SKIN_EQ_KEY, id);               // סקין שנרכש נבחר אוטומטית
     sfx.buy();
@@ -6004,6 +6134,29 @@ const SHOP_CATEGORIES = [
     { id: 'stars',   title: 'כוכבים',             icon: '⭐', ids: ['rocker', 'punk', 'hedgehog', 'spidey', 'deni'] }
 ];
 
+const VARIANT_KEY = 'kebab_skin_variant';        // הגרסה שנבחרה במתג לכל כרטיס
+
+// הגרסה שמוצגת בכרטיס: זו שבשימוש אם הסקין נבחר, אחרת מה שנבחר במתג, אחרת הראשית
+function shopVariantOf(base) {
+    const eq = getEquippedSkinId();
+    if (skinGroupOf(eq) === base) return eq;
+    let pref = {};
+    try { pref = JSON.parse(store.get(VARIANT_KEY) || '{}') || {}; } catch (e) { pref = {}; }
+    const id = pref[base];
+    return SKIN_GROUPS[base] && SKIN_GROUPS[base].some(o => o.id === id) ? id : base;
+}
+function shopSetVariant(base, id) {
+    let pref = {};
+    try { pref = JSON.parse(store.get(VARIANT_KEY) || '{}') || {}; } catch (e) { pref = {}; }
+    pref[base] = id;
+    store.set(VARIANT_KEY, JSON.stringify(pref));
+    // אם הסקין הזה בשימוש - מחליפים מיד לגרסה שנבחרה
+    if (skinGroupOf(getEquippedSkinId()) === base && getOwnedSkins().has(id)) store.set(SKIN_EQ_KEY, id);
+    sfx.tap();
+    haptic(10);
+    renderShop();
+}
+
 const SHOP_PREVIEW = 4;                 // כמה סקינים מוצגים בכל קטגוריה לפני "הצג עוד"
 const shopExpanded = new Set();         // קטגוריות שנפתחו במלואן
 
@@ -6028,10 +6181,10 @@ function renderShop() {
     const groups = [{ id: 'default', title: 'ברירת מחדל', icon: '🥙', color: '#b9a38e', skins: SV_SKINS.filter(s => s.rarity < 0) }];
     SHOP_CATEGORIES.forEach(cat => groups.push({
         id: cat.id, title: cat.title, icon: cat.icon, color: '#ffc233',
-        skins: SV_SKINS.filter(s => cat.ids.includes(s.id) && !isSpecial(s)).sort(byRarity)
+        skins: SV_SKINS.filter(s => cat.ids.includes(s.id) && !isSpecial(s) && !s.variantOf).sort(byRarity)
     }));
     groups.push({ id: 'more', title: 'עוד סקינים', icon: '🎨', color: '#ffc233',
-                  skins: SV_SKINS.filter(s => s.rarity >= 0 && !isSpecial(s) && !placed.has(s.id)).sort(byRarity) });
+                  skins: SV_SKINS.filter(s => s.rarity >= 0 && !isSpecial(s) && !placed.has(s.id) && !s.variantOf).sort(byRarity) });
     // סקינים של מהדורה מיוחדת מופיעים רק אחרי שהושגו עם קוד
     groups.push({ id: 'special', title: 'מהדורה מיוחדת', icon: '🎟', color: SK_RARITY[6].color,
                   skins: SV_SKINS.filter(s => isSpecial(s) && owned.has(s.id)) });
@@ -6063,7 +6216,7 @@ function renderShop() {
         l.textContent = g.icon + ' ' + g.title;
         const r = document.createElement('span');
         r.className = 'shop-group-count';
-        const have = g.skins.filter(s => owned.has(s.id)).length;
+        const have = g.skins.filter(s => owned.has(s.id)).length;      // כרטיס עם גרסאות נספר פעם אחת
         r.textContent = g.id === 'default' ? 'חינם' : have + '/' + g.skins.length;
         head.appendChild(l);
         head.appendChild(r);
@@ -6074,7 +6227,10 @@ function renderShop() {
         const long = g.skins.length > SHOP_PREVIEW;
         const open = shopExpanded.has(g.id);
         const shown = long && !open ? g.skins.slice(0, SHOP_PREVIEW) : g.skins;
-        shown.forEach(sk => {
+        shown.forEach(baseSk => {
+            // בכרטיס עם גרסאות מוצגת הגרסה שנבחרה במתג (או זו שבשימוש)
+            const group = SKIN_GROUPS[baseSk.id];
+            const sk = group ? skinById(shopVariantOf(baseSk.id)) : baseSk;
             const rar = SK_RARITY[sk.rarity];
             const card = document.createElement('div');
             card.className = 'shop-card r' + sk.rarity + (eq === sk.id ? ' equipped' : '');
@@ -6091,6 +6247,19 @@ function renderShop() {
             nm.className = 'shop-name';
             nm.textContent = sk.name;
             card.appendChild(nm);
+
+            if (group) {
+                const sw = document.createElement('div');
+                sw.className = 'skin-switch' + (group.length > 2 ? ' triple' : '');
+                group.forEach(opt => {
+                    const b = document.createElement('button');
+                    b.textContent = opt.label;
+                    b.className = opt.id === sk.id ? 'on' : '';
+                    b.onclick = () => shopSetVariant(baseSk.id, opt.id);
+                    sw.appendChild(b);
+                });
+                card.appendChild(sw);
+            }
 
             const btn = document.createElement('button');
             btn.className = 'btn shop-btn';
@@ -7566,7 +7735,7 @@ document.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
 function haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* ignore */ } }
 
 /* ---------- אפקט לחיצה: ניצוצות + צליל + רטט ---------- */
-const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn, .shop-cat, .shop-more, .daily-act.ready';
+const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn, .shop-cat, .shop-more, .daily-act.ready, .skin-switch button';
 const BURST_COLORS = ['#ffd24a', '#ff9f1c', '#ff6a1a', '#fff2b0'];
 
 function burstAt(x, y, n, spread) {
