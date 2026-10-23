@@ -2809,6 +2809,22 @@ function skHairBack(c, sk, t) {
             const a = (i / 14) * Math.PI * 2;
             skE(c, Math.cos(a) * 118, -76 + Math.sin(a) * 106, 14, 14, col);
         }
+    } else if (h.style === 'frizz') {                // ענן שיער פרוע (איינשטיין)
+        const puffs = [];
+        for (let i = 0; i <= 12; i++) {
+            const a = Math.PI * 0.92 + (i / 12) * Math.PI * 1.16;
+            const r = 96 + (i % 3) * 10 + (i % 2 ? 8 : 0);
+            puffs.push([Math.cos(a) * r * 1.12, -52 + Math.sin(a) * r * 0.9, 34 + (i % 3) * 6]);
+        }
+        for (const s of [-1, 1]) puffs.push([s * 126, -8, 32], [s * 136, -44, 30]);
+        for (const [x, y, r] of puffs) skE(c, x, y, r, r * 0.86, skShade(col, -0.18), SK_OUT, 2.5);
+        for (const [x, y, r] of puffs) skE(c, x - r * 0.15, y - r * 0.15, r * 0.82, r * 0.7, col);
+        c.strokeStyle = skA(skShade(col, -0.3), 0.8); c.lineWidth = 2; c.lineCap = 'round';
+        for (let i = 0; i < 18; i++) {                // שערות סוררות
+            const a = Math.PI * 0.95 + (i / 17) * Math.PI * 1.1, r = 128 + (i % 4) * 8;
+            const x = Math.cos(a) * r * 1.1, y = -52 + Math.sin(a) * r * 0.88;
+            c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + Math.cos(a) * 14 + 6, y + Math.sin(a) * 14 - 6, x + Math.cos(a) * 24, y + Math.sin(a) * 22); c.stroke();
+        }
     } else if (h.style === 'galaxy') {
         const g = c.createRadialGradient(0, -80, 20, 0, -60, 150);
         g.addColorStop(0, '#7a4bff'); g.addColorStop(0.5, '#3b2a9c'); g.addColorStop(1, '#120a3d');
@@ -2922,6 +2938,26 @@ function skHairFront(c, sk, t) {
             c.strokeStyle = hl; c.lineWidth = 3;
             for (let i = 0; i < 4; i++) { c.beginPath(); c.moveTo(-60 + i * 30, -128); c.quadraticCurveTo(-30 + i * 30, -118, -20 + i * 30, -96); c.stroke(); }
             break;
+        case 'frizz': {
+            for (const s of [-1, 1]) {                // ציציות פרועות שבורחות לצדדים
+                skP(c, [[s * 78, -96], [s * 124, -118], [s * 98, -84], [s * 138, -74], [s * 100, -58], [s * 132, -30],
+                        [s * 96, -34], [s * 116, -6], [s * 86, -18], [s * 80, -50]].map(([x, y]) => [x, y]), col, SK_OUT, 2.2);
+                c.strokeStyle = skA(skShade(col, -0.3), 0.7); c.lineWidth = 1.6;
+                c.beginPath(); c.moveTo(s * 86, -80); c.lineTo(s * 114, -96); c.moveTo(s * 90, -56); c.lineTo(s * 124, -64); c.moveTo(s * 88, -30); c.lineTo(s * 110, -18); c.stroke();
+            }
+            c.lineCap = 'round';
+            for (const [x0, y0, x1, y1, cx, cy] of [[-40, -126, -10, -150, -36, -152], [-8, -132, 22, -158, 0, -160], [20, -128, 52, -146, 44, -152], [-58, -112, -76, -140, -74, -124]]) {
+                c.strokeStyle = SK_OUT; c.lineWidth = 6.5;
+                c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(cx, cy, x1, y1); c.stroke();
+                c.strokeStyle = col; c.lineWidth = 4;
+                c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(cx, cy, x1, y1); c.stroke();
+            }
+            c.strokeStyle = col; c.lineWidth = 4; c.lineCap = 'round';
+            for (const [x0, y0, x1, y1, cx, cy] of [[-40, -126, -10, -150, -36, -152], [-8, -132, 22, -158, 0, -160], [20, -128, 52, -146, 44, -152], [-58, -112, -76, -140, -74, -124]]) {
+                c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(cx, cy, x1, y1); c.stroke();
+            }
+            break;
+        }
         case 'flame':
             skFlameHair(c, t);
             break;
@@ -4714,7 +4750,7 @@ const SV_SKINS = [
     { id: 'detective', name: 'הבלש', rarity: 2, tone: '#f0c08f', hair: { style: 'short', color: '#3a2a1a' },
       glasses: { type: 'monocle' }, beard: { style: 'mustache', color: '#3a2a1a' }, hat: { type: 'fedora' },
       outfit: { base: '#d9d4c5', coat: '#a8875a', collar: 'tie', tie: '#6a1d12' } },
-    { id: 'einstein', name: 'אלברט', rarity: 2, tone: '#f0c8a0', hair: { style: 'wild', color: '#ececf2' }, brow: '#b8b8c0',
+    { id: 'einstein', name: 'אלברט', rarity: 2, tone: '#f0c8a0', hair: { style: 'frizz', color: '#f1f1f5' }, brow: '#b8b8c0',
       beard: { color: '#e4e4ea' }, lips: '#b8676a', eyes: { iris: '#4a3020' },
       outfit: { base: '#e8e4da', cardigan: '#7a6a58', collar: 'tie', tie: '#3a3a46' }, extra: skEinsteinExtra },
     { id: 'newton', name: 'אייזק', rarity: 2, tone: '#f3d2b0', hair: { style: 'wavy', color: '#d6cebe' }, brow: '#7a6a50',
