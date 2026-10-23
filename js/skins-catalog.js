@@ -208,7 +208,7 @@ const SV_SKINS = [
     { id: 'phoenix', name: 'עוף החול', rarity: 4, tone: '#e8b88a', hair: { style: 'flame' }, eyes: { glow: '#ffd33d' }, brow: '#a8401a', lips: '#c2401a',
       outfit: { base: '#c2401a', pattern: 'scales', collar: 'high' }, wings: { type: 'feather' },
       aura: { color: '#ff8a1a', alpha: 0.5 }, fx: { type: 'flames', count: 18, speed: 0.5 } },
-    { id: 'shadow', name: 'נינג\'ת הצללים', rarity: 4, tone: '#d9a98a', hat: { type: 'ninja' }, eyes: { glow: '#b66bff' }, brow: '#14110f',
+    { id: 'shadow', name: 'נינג\'ת הצללים', rarity: 4, tone: '#d9a98a', hat: { type: 'ninja' }, hair: { style: 'ponytail', color: '#14110f' }, eyes: { glow: '#b66bff' }, brow: '#14110f',
       outfit: { base: '#15121e', straps: '#6a3fb5', sash: '#6a3fb5', collar: 'high' }, cape: { color: '#2a1a40' },
       aura: { color: '#7a3fff', alpha: 0.42, runes: true }, fx: { type: 'stars', count: 14, speed: 0.4 } },
 
@@ -292,7 +292,7 @@ const GENDER_FLIPS = {
     wizard: { g: 'm', name: 'הקוסמת' },
     vampire: { g: 'm', name: 'הערפדית', ov: { lips: '#b0102a' } },
     icequeen: { g: 'f', name: 'מלך הקרח', ov: { hair: { style: 'slick', color: '#dff3ff' }, beard: { style: 'goatee', color: '#dff3ff' } } },
-    angel: { g: 'm', name: 'המלאכית' },
+    angel: { g: 'm', name: 'המלאכית', ov: { hair: { style: 'long', color: '#f0cf6a' } } },
     firemage: { g: 'm', name: 'הלוחשת לאש' },
     thunder: { g: 'm', name: 'אלת הרעם', ov: { hair: { style: 'wavy', color: '#f0cf6a' } } },
     phoenix: { g: 'm', name: 'ציפור האש' },
@@ -306,8 +306,8 @@ const GENDER_FLIPS = {
     cyborg: { g: 'm', name: 'הסייבורגית', ov: { hair: { style: 'wavy', color: '#aeb6c4' } } },
     hacker: { g: 'm', name: 'ההאקרית', ov: { hair: { style: 'long', color: '#1a1410' } } }
 };
-const TO_FEMALE_HAIR = { short: 'ponytail', buzz: 'bob', slick: 'long', sidebald: 'bun', bald: 'bun', wild: 'wavy' };
-const TO_MALE_HAIR = { long: 'short', wavy: 'short', ponytail: 'short', bob: 'short', bun: 'short' };
+const TO_FEMALE_HAIR = { short: 'ponytail', buzz: 'long', slick: 'long', sidebald: 'bun', bald: 'bun', wild: 'wavy' };
+const TO_MALE_HAIR = { long: 'short', wavy: 'short', ponytail: 'short', bob: 'short', bun: 'short', curly: 'short' };
 
 function genderFlip(base, to) {
     const v = {};
@@ -315,14 +315,18 @@ function genderFlip(base, to) {
         const map = to === 'f' ? TO_FEMALE_HAIR : TO_MALE_HAIR;
         if (map[base.hair.style]) v.hair = Object.assign({}, base.hair, { style: map[base.hair.style] });
     }
+    v.look = to;
     if (to === 'f') {
         v.beard = null;
         v.lashes = true;
         v.earring = true;
+        v.jaw = false;
         if (!base.lips) v.lips = '#d9566f';
     } else {
         v.lashes = false;
         v.lips = undefined;
+        v.earring = false;
+        v.jaw = true;
     }
     return v;
 }
@@ -334,7 +338,11 @@ Object.entries(GENDER_FLIPS).forEach(([id, f]) => {
     const to = f.g === 'm' ? 'f' : 'm';
     const vid = id + '_' + to;
     SV_SKINS.push(Object.assign({}, base, genderFlip(base, to), f.ov || {}, { id: vid, name: f.name, variantOf: id }));
-    if (f.g === 'f') base.lashes = base.lashes !== false;    // לגרסאות הנשיות המקוריות מוסיפים ריסים
+    base.look = base.look || f.g;
+    if (f.g === 'f') {                                   // לגרסאות הנשיות המקוריות מוסיפים ריסים ועגילים
+        base.lashes = base.lashes !== false;
+        if (base.earring === undefined) base.earring = true;
+    }
     const male = f.g === 'm' ? id : vid, female = f.g === 'm' ? vid : id;
     SKIN_GROUPS[id] = [{ id: male, label: '♂ בן' }, { id: female, label: '♀ בת' }];
 });

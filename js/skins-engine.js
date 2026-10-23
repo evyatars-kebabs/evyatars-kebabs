@@ -166,8 +166,21 @@ function skHairBack(c, sk, t) {
     const h = sk.hair;
     if (!h) return;
     const col = h.color || '#222222', dk = skShade(col, -0.35);
-    if (h.style === 'long' || h.style === 'bob' || h.style === 'wavy') {
-        const len = h.style === 'bob' ? 40 : (h.style === 'wavy' ? 120 : 110);
+    // בגרסאות נשיות שיער ארוך מציץ מתחת לכובע (ולהבות ארוכות לשיער אש)
+    const flow = sk.look === 'f' && (h.style === 'flame' || sk.hat && ['bun', 'ponytail', 'short', 'buzz', 'curly', 'bob'].includes(h.style));
+    if (h.style === 'flame' && flow) {
+        const g = c.createLinearGradient(0, -90, 0, 150);
+        g.addColorStop(0, '#ffd33d'); g.addColorStop(0.45, '#ff8a1a'); g.addColorStop(1, 'rgba(255,59,15,0)');
+        const w = Math.sin(t * 4) * 6;
+        c.beginPath();
+        c.moveTo(-96, -90);
+        c.bezierCurveTo(-140 + w, -30, -126 - w, 90, -104 + w, 150);
+        c.quadraticCurveTo(-80, 120, -60 - w, 160); c.lineTo(60 + w, 160); c.quadraticCurveTo(80, 120, 104 - w, 150);
+        c.bezierCurveTo(126 + w, 90, 140 - w, -30, 96, -90);
+        c.closePath();
+        c.fillStyle = g; c.fill();
+    } else if (h.style === 'long' || h.style === 'bob' || h.style === 'wavy' || flow) {
+        const len = flow ? 70 : (h.style === 'bob' ? 40 : (h.style === 'wavy' ? 120 : 110));
         c.beginPath();
         c.moveTo(-96, -90);
         c.bezierCurveTo(-130, -40, -118, len, -100, len + 24);
@@ -575,11 +588,15 @@ function skHead(c, sk) {
 // ריסים מעל העין (לגרסאות הנשיות)
 function skLashes(c, cx, ey, side) {
     c.strokeStyle = '#1a0d06'; c.lineWidth = 2.6; c.lineCap = 'round';
-    for (const [a, l] of [[-2.3, 7], [-1.9, 8], [-1.5, 7]]) {
+    for (const [a, l] of [[-2.55, 9], [-2.15, 10], [-1.8, 9], [-1.45, 7]]) {
         const ang = side < 0 ? a : -Math.PI - a;
         const sx = cx + Math.cos(ang) * 15, sy = ey + Math.sin(ang) * 16;
-        c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + Math.cos(ang) * l, sy + Math.sin(ang) * l); c.stroke();
+        c.beginPath(); c.moveTo(sx, sy); c.quadraticCurveTo(sx + Math.cos(ang) * l * 0.6, sy + Math.sin(ang) * l * 0.6 - 2, sx + Math.cos(ang) * l, sy + Math.sin(ang) * l - 1); c.stroke();
     }
+    // קו איילינר קטן בקצה החיצוני
+    const ox = cx + side * 15;
+    c.lineWidth = 3;
+    c.beginPath(); c.moveTo(ox - side * 2, ey - 4); c.lineTo(ox + side * 7, ey - 9); c.stroke();
 }
 
 function skEyes(c, sk, st) {
@@ -615,16 +632,19 @@ function skEyes(c, sk, st) {
         }
         // גבה
         const lift = st.surprised ? 6 : 0;
-        c.strokeStyle = brow; c.lineWidth = 6; c.lineCap = 'round';
+        const fem = sk.look === 'f', masc = sk.look === 'm';
+        const arch = fem ? 40 : (masc ? 31 : 34), bw = fem ? 4.2 : (masc ? 8 : 6);
+        c.strokeStyle = brow; c.lineWidth = bw; c.lineCap = 'round';
         c.beginPath();
-        c.moveTo(cx - 15, ey - 26 - lift + (o < 0 ? 3 : 0));
-        c.quadraticCurveTo(cx, ey - 34 - lift, cx + 15, ey - 26 - lift + (o < 0 ? 0 : 3));
+        c.moveTo(cx - 15, ey - 26 - lift + (o < 0 ? 3 : 0) - (fem ? 2 : 0));
+        c.quadraticCurveTo(cx + (fem ? (o < 0 ? 3 : -3) : 0), ey - arch - lift, cx + 15, ey - 26 - lift + (o < 0 ? 0 : 3) - (fem ? 2 : 0));
         c.stroke();
     }
     // לחיים
     if (sk.blush !== false) {
-        c.fillStyle = 'rgba(255, 90, 100, 0.22)';
-        for (const o of [-60, 60]) { c.beginPath(); c.ellipse(o, -16, 12, 7, 0, 0, Math.PI * 2); c.fill(); }
+        const fem = sk.look === 'f';
+        c.fillStyle = fem ? 'rgba(255, 80, 120, 0.32)' : 'rgba(255, 90, 100, 0.22)';
+        for (const o of [-60, 60]) { c.beginPath(); c.ellipse(o, -16, fem ? 15 : 12, fem ? 9 : 7, 0, 0, Math.PI * 2); c.fill(); }
     }
 }
 
@@ -1041,7 +1061,29 @@ function skHatOver(c, sk, t) {
 }
 
 function skEarring(c, sk) {
-    if (sk.earring) { skE(c, 88, -8, 6, 7, null, '#e9c46a', 3); skE(c, -88, -8, 4, 4, '#e9c46a'); }
+    if (!sk.earring) return;
+    if (sk.look === 'f') {                            // עגילי חישוק תלויים בשתי האוזניים
+        for (const s of [-1, 1]) {
+            skE(c, s * 94, -14, 3.2, 3.2, '#e9c46a', 'rgba(90,60,10,0.8)', 1);
+            skE(c, s * 95, -1, 7, 9, null, 'rgba(90,60,10,0.8)', 4.6);
+            skE(c, s * 95, -1, 7, 9, null, '#f2d16b', 3);
+        }
+        return;
+    }
+    skE(c, 88, -8, 6, 7, null, '#e9c46a', 3); skE(c, -88, -8, 4, 4, '#e9c46a');
+}
+
+// צל זיפים עדין על הלסת (לגרסאות הגבריות)
+function skJawShadow(c, sk) {
+    if (!sk.jaw || sk.beard) return;
+    const col = (sk.hair && sk.hair.color) || sk.brow || '#2b1a0e';
+    c.save();
+    c.beginPath(); c.ellipse(SK_HEAD.cx, SK_HEAD.cy, SK_HEAD.rx - 1.5, SK_HEAD.ry - 1.5, 0, 0, Math.PI * 2); c.clip();
+    c.beginPath();
+    c.moveTo(-84, -28); c.quadraticCurveTo(-80, 54, 0, 62); c.quadraticCurveTo(80, 54, 84, -28);
+    c.quadraticCurveTo(60, 24, 0, 28); c.quadraticCurveTo(-60, 24, -84, -28); c.closePath();
+    c.fillStyle = skA(col, 0.24); c.fill();
+    c.restore();
 }
 
 /* ---------------- אפקטים קדמיים ---------------- */
@@ -1080,6 +1122,7 @@ function skDrawHumanBack(c, sk, st) {
     skOutfit(c, sk, t);
     skHatUnder(c, sk, t);
     skHead(c, sk);
+    skJawShadow(c, sk);
     skHatMid(c, sk);
     skFaceMarks(c, sk, t);
     skEyes(c, sk, st);
