@@ -5271,6 +5271,10 @@ function njCut(it, ang) {
     }
     njBurst(it.x, it.y, NJ_JUICE[it.emoji] || '#e9c46a', it.golden ? 18 : 11, 240);
     nj.fx.push({ x: it.x, y: it.y - 24, text: '+' + pts, color: it.golden ? '#ffd700' : '#ffffff', size: it.golden ? 30 : 22, t: 0, life: 0.8 });
+    // כל חיתוך מוסיף קצת זמן (0.3-0.5 שניות)
+    const bonus = 0.3 + Math.random() * 0.2;
+    nj.time += bonus;
+    nj.fx.push({ x: it.x, y: it.y + 6, text: '+' + bonus.toFixed(1) + 's ⏱', color: '#7ee08a', size: 14, t: 0, life: 0.7 });
     if (nj.strokeSlices >= 3) {
         nj.fx.push({ x: NJ_W / 2, y: 120, text: 'קומבו x' + nj.strokeSlices + '!', color: '#ff9f1c', size: 26, t: 0, life: 0.9 });
     }
