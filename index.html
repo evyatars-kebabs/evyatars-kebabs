@@ -13,6 +13,7 @@
 	
 	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -193,7 +194,7 @@
         }
 
         /* שדות קלט */
-        input[type="text"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border-color);
@@ -206,7 +207,7 @@
             border-radius: 0;
         }
 
-        input[type="text"]:focus {
+        input[type="text"]:focus, input[type="password"]:focus {
             border-color: var(--accent-gold);
         }
 
@@ -795,11 +796,11 @@
         #shvartz-canvas, #ninja-canvas, #kvk-canvas { border-radius: 16px; }
 
         /* שדות */
-        input[type="text"] {
+        input[type="text"], input[type="password"] {
             background: #0f0805; border: 2px solid var(--border-color); border-radius: 14px; padding: 13px;
             transition: border-color .2s, box-shadow .2s;
         }
-        input[type="text"]:focus { border-color: var(--accent-gold); box-shadow: 0 0 0 4px rgba(255, 194, 51, 0.15); }
+        input[type="text"]:focus, input[type="password"]:focus { border-color: var(--accent-gold); box-shadow: 0 0 0 4px rgba(255, 194, 51, 0.15); }
 
         /* חידון */
         .trivia-option {
@@ -850,6 +851,22 @@
 
         /* פרופיל */
         .profile-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 5px; display: block; }
+        .account-box {
+            border: 1px solid var(--border-color); border-radius: 16px; padding: 12px; margin-bottom: 16px;
+            background: linear-gradient(180deg, rgba(255, 194, 51, 0.07), rgba(255, 255, 255, 0.02));
+        }
+        .account-title { font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1rem; color: var(--accent-gold); margin-bottom: 4px; }
+        .account-text { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
+        .account-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+        .account-tabs button {
+            flex: 1; padding: 8px; border-radius: 10px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.25);
+            color: var(--muted); font-family: 'Rubik', sans-serif; font-size: 0.85rem; cursor: pointer;
+        }
+        .account-tabs button.active { color: var(--accent-gold); border-color: var(--accent-gold); background: rgba(255, 194, 51, 0.1); }
+        .account-box input { margin-bottom: 8px; }
+        .account-msg { min-height: 1.2em; font-size: 0.8rem; text-align: center; margin-top: 6px; }
+        .account-hint { font-size: 0.72rem; color: var(--muted); margin: -4px 0 8px; }
+        .account-sync { font-size: 0.75rem; color: var(--muted); margin: 4px 0 10px; }
         #player-stats .leaderboard-item { margin-bottom: 7px; }
 
         /* תוצאה */
@@ -1071,6 +1088,8 @@
 
     <div id="screen-profile" class="screen active">
         <h2 style="font-weight: 400; text-align: center; margin-bottom: 12px; font-size: 1.1rem;">פרופיל שחקן</h2>
+
+        <div id="account-box" class="account-box"></div>
         
         <label class="profile-label">שם השחקן:</label>
         <input type="text" id="player-name-input" maxlength="20" placeholder="הכנס את שמך כאן...">
@@ -1163,6 +1182,7 @@ const firebaseConfig = {
 };
 
     let db = null;
+    let auth = null;      // Firebase Authentication - חשבונות שחקנים
     let dbProblem = '';   // config | sdk | init - למה אין חיבור לענן
     try {
         if (typeof firebase === 'undefined') {
@@ -1174,6 +1194,7 @@ const firebaseConfig = {
         } else {
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
+            if (typeof firebase.auth === 'function') auth = firebase.auth();
         }
     } catch (err) {
         dbProblem = 'init';
@@ -1191,6 +1212,11 @@ const firebaseConfig = {
         set(k, v) {
             this.mem[k] = String(v);
             try { window.localStorage.setItem(k, v); } catch (e) { /* ignore */ }
+            if (window.kebabSync) window.kebabSync(k);        // שמירה לחשבון בענן (מוגדר בהמשך)
+        },
+        remove(k) {
+            delete this.mem[k];
+            try { window.localStorage.removeItem(k); } catch (e) { /* ignore */ }
         }
     };
 
@@ -1418,6 +1444,266 @@ const firebaseConfig = {
 
     document.getElementById('player-name-input').value = playerName;
     renderProfileStats();
+
+    /* ============================================================
+       חשבון שחקן: שם משתמש + סיסמה
+       מאחורי הקלעים זה Firebase Authentication (אימייל + סיסמה): שם המשתמש
+       מקודד לכתובת פנימית שהשחקן לא רואה, והמזהה של החשבון (uid) הוא מזהה השחקן.
+       ההתקדמות (מטבעות, סקינים, שיאים) נשמרת במסמך players/{uid}.
+       ============================================================ */
+    const ACCOUNT_KEY = 'kebab_account';           // שם המשתמש שמחובר במכשיר הזה
+    const SYNC_DIRTY_KEY = 'kebab_sync_dirty';     // יש שינויים שעוד לא נשמרו בענן
+    const PROGRESS_KEYS = ['kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
+        'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
+        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_kvk_tutorial_done'];
+    const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
+    const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
+    const LB_BEST = [['leaderboard', 'kebab_highScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
+        ['leaderboard_shvartz', 'kebab_shvartzHighScore'], ['leaderboard_ninja', 'kebab_ninjaHighScore'], ['leaderboard_kvk', 'kebab_kvkHighScore']];
+
+    let accountUser = null;         // משתמש Firebase מחובר
+    let cloudReady = false;         // ההתקדמות מהענן כבר נטענה
+    let cloudTimer = null;
+    let applyingCloud = false;      // בזמן טעינה מהענן לא מסמנים שינויים
+    let accountMode = 'signup';     // לשונית פעילה: signup / login
+    let syncState = '';
+
+    // שם משתמש -> כתובת פנימית (ASCII בלבד, כדי שגם שמות בעברית יעבדו)
+    function usernameToEmail(username) {
+        const bytes = new TextEncoder().encode(username.trim().toLowerCase());
+        let hex = '';
+        bytes.forEach(b => { hex += b.toString(16).padStart(2, '0'); });
+        return 'u' + hex + '@players.evyatars-kebabs.app';
+    }
+
+    function collectProgress() {
+        const data = {};
+        PROGRESS_KEYS.forEach(k => { const v = store.get(k); if (v !== null) data[k] = v; });
+        return data;
+    }
+
+    function refreshAfterProgress() {
+        playerName = store.get('kebab_playerName') || 'אורח';
+        document.getElementById('player-name-input').value = playerName;
+        renderProfileStats();
+        renderCoinBadges();
+        const shop = document.getElementById('screen-shop');
+        if (shop && shop.classList.contains('active')) renderShop();
+        Object.keys(lbCache).forEach(k => { delete lbCache[k]; });
+    }
+
+    function applyProgress(data) {
+        applyingCloud = true;
+        PROGRESS_KEYS.forEach(k => { if (data && Object.prototype.hasOwnProperty.call(data, k)) store.set(k, data[k]); else store.remove(k); });
+        applyingCloud = false;
+        refreshAfterProgress();
+    }
+
+    // נקרא מכל store.set: שינוי בהתקדמות של שחקן מחובר נשמר לענן אחרי רגע
+    window.kebabSync = function (k) {
+        if (applyingCloud || !PROGRESS_KEYS.includes(k) || !store.get(ACCOUNT_KEY)) return;
+        store.mem[SYNC_DIRTY_KEY] = '1';
+        try { window.localStorage.setItem(SYNC_DIRTY_KEY, '1'); } catch (e) { /* ignore */ }
+        if (!accountUser || !cloudReady) return;
+        clearTimeout(cloudTimer);
+        cloudTimer = setTimeout(saveCloudNow, 1500);
+        setSyncState('saving');
+    };
+
+    function saveCloudNow() {
+        clearTimeout(cloudTimer);
+        cloudTimer = null;
+        if (!accountUser || !cloudReady || !db) return Promise.resolve();
+        const uid = accountUser.uid;
+        return db.collection('players').doc(uid).set({
+            username: store.get(ACCOUNT_KEY) || '',
+            data: collectProgress(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            if (accountUser && accountUser.uid === uid) { store.remove(SYNC_DIRTY_KEY); setSyncState('saved'); }
+        }).catch(err => {
+            console.error('שגיאה בשמירת החשבון:', err.code || '', err.message || err);
+            setSyncState('error');
+        });
+    }
+    document.addEventListener('visibilitychange', () => { if (document.hidden && cloudTimer) saveCloudNow(); });
+    window.addEventListener('pagehide', () => { if (cloudTimer) saveCloudNow(); });
+
+    // שיאים מקומיים עוברים לטבלאות תחת מזהה החשבון
+    function pushBestScores() {
+        LB_BEST.forEach(([col, key]) => {
+            const best = parseInt(store.get(key)) || 0;
+            if (best > 0) saveBestScore(col, best, key);
+        });
+    }
+
+    function onAccountSignedIn(user) {
+        accountUser = user;
+        playerId = user.uid;
+        store.set('kebab_playerId', user.uid);
+        cloudReady = false;
+        setSyncState('loading');
+        renderAccountUI();
+        db.collection('players').doc(user.uid).get().then(doc => {
+            if (!accountUser || accountUser.uid !== user.uid) return;
+            const savedHere = store.get(ACCOUNT_KEY);
+            const cloud = doc.exists ? doc.data() : null;
+            if (cloud && cloud.username && !savedHere) store.set(ACCOUNT_KEY, cloud.username);
+            // יש שינויים מקומיים שלא נשמרו (למשל שיחקו בלי אינטרנט) - הם עולים לענן במקום להידרס
+            const localNewer = store.get(SYNC_DIRTY_KEY) === '1' && savedHere && cloud && cloud.username === savedHere;
+            if (cloud && cloud.data && !localNewer) applyProgress(cloud.data);
+            cloudReady = true;
+            if (!cloud || !cloud.data || localNewer) saveCloudNow(); else setSyncState('saved');
+            pushBestScores();
+            renderAccountUI();
+        }).catch(err => {
+            console.error('שגיאה בטעינת החשבון:', err.code || '', err.message || err);
+            setSyncState('error');
+            renderAccountUI();
+        });
+    }
+
+    function resetToGuest() {
+        applyingCloud = true;
+        PROGRESS_KEYS.forEach(k => store.remove(k));
+        store.remove(ACCOUNT_KEY);
+        store.remove(SYNC_DIRTY_KEY);
+        applyingCloud = false;
+        playerId = 'player_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+        store.set('kebab_playerId', playerId);
+        refreshAfterProgress();
+    }
+
+    if (auth) {
+        auth.onAuthStateChanged(user => {
+            if (user) onAccountSignedIn(user);
+            else {
+                accountUser = null;
+                cloudReady = false;
+                // החשבון נותק מבחוץ (למשל נמחק) - המכשיר חוזר להיות אורח
+                if (store.get(ACCOUNT_KEY)) resetToGuest();
+                renderAccountUI();
+            }
+        });
+    }
+
+    function accountError(err) {
+        const code = (err && err.code) || '';
+        if (code === 'auth/email-already-in-use') return 'שם המשתמש הזה כבר תפוס';
+        if (['auth/wrong-password', 'auth/user-not-found', 'auth/invalid-credential', 'auth/invalid-login-credentials', 'auth/invalid-email'].includes(code))
+            return 'שם משתמש או סיסמה שגויים';
+        if (code === 'auth/weak-password') return 'הסיסמה חלשה מדי (לפחות 6 תווים)';
+        if (code === 'auth/too-many-requests') return 'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות';
+        if (code === 'auth/network-request-failed') return 'אין חיבור לאינטרנט';
+        if (code === 'auth/operation-not-allowed') return 'החשבונות עדיין לא הופעלו (צריך להפעיל Email/Password ב-Firebase)';
+        return 'משהו השתבש. נסו שוב';
+    }
+
+    function setAccountMsg(text, ok) {
+        const m = document.getElementById('account-msg');
+        if (!m) return;
+        m.textContent = text;
+        m.style.color = ok ? '#4ad66d' : '#ff6a5c';
+    }
+
+    function readAccountForm() {
+        const username = document.getElementById('acc-user').value.trim();
+        const password = document.getElementById('acc-pass').value;
+        if (!USERNAME_RE.test(username)) { setAccountMsg('שם משתמש: 3-15 אותיות, מספרים או _'); return null; }
+        if (!PASSWORD_RE.test(password)) { setAccountMsg('סיסמה: לפחות 6 אותיות או מספרים'); return null; }
+        return { username, password };
+    }
+
+    function submitAccount() {
+        if (!auth || !db) { setAccountMsg('החשבונות לא זמינים כרגע (אין חיבור לשרת)'); return; }
+        const f = readAccountForm();
+        if (!f) { sfx.err(); return; }
+        const btn = document.getElementById('acc-submit');
+        btn.disabled = true;
+        setAccountMsg('רגע...', true);
+        if (accountMode === 'signup') {
+            // החשבון החדש מקבל את ההתקדמות שכבר יש במכשיר
+            store.set(ACCOUNT_KEY, f.username);
+            auth.createUserWithEmailAndPassword(usernameToEmail(f.username), f.password).then(() => {
+                // שחקן שעדיין "אורח" מקבל את שם המשתמש כשם בטבלאות
+                if (!store.get('kebab_playerName') || playerName === 'אורח') {
+                    playerName = f.username;
+                    store.set('kebab_playerName', f.username);
+                    document.getElementById('player-name-input').value = playerName;
+                }
+                sfx.buy(); confettiBurst(30);
+            }).catch(err => {
+                store.remove(ACCOUNT_KEY);
+                btn.disabled = false;
+                setAccountMsg(accountError(err));
+                sfx.err();
+            });
+        } else {
+            const guestHasProgress = getCoins() > 0 || getOwnedSkins().size > 1;
+            if (guestHasProgress && !confirm('ההתקדמות של האורח במכשיר הזה תוחלף בהתקדמות של החשבון. להמשיך?')) { btn.disabled = false; setAccountMsg(''); return; }
+            auth.signInWithEmailAndPassword(usernameToEmail(f.username), f.password).then(() => {
+                store.set(ACCOUNT_KEY, f.username);
+                store.remove(SYNC_DIRTY_KEY);
+                sfx.good();
+            }).catch(err => {
+                btn.disabled = false;
+                setAccountMsg(accountError(err));
+                sfx.err();
+            });
+        }
+    }
+
+    function accountLogout() {
+        if (!accountUser) return;
+        if (!confirm('להתנתק? ההתקדמות שמורה בחשבון ותחזור כשתתחברו שוב.')) return;
+        const done = () => auth.signOut().then(() => { resetToGuest(); renderAccountUI(); });
+        (cloudTimer || store.get(SYNC_DIRTY_KEY) === '1' ? saveCloudNow() : Promise.resolve()).then(done, done);
+    }
+
+    function setSyncState(s) {
+        syncState = s;
+        const el = document.getElementById('account-sync');
+        if (!el) return;
+        el.textContent = { loading: '⏳ טוען את ההתקדמות...', saving: '⏳ שומר...', saved: '☁️ ההתקדמות שמורה בחשבון', error: '⚠️ השמירה נכשלה - ננסה שוב בשינוי הבא' }[s] || '';
+    }
+
+    function renderAccountUI() {
+        const box = document.getElementById('account-box');
+        if (!box) return;
+        box.innerHTML = '';
+        const add = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; box.appendChild(e); return e; };
+        if (accountUser) {
+            add('div', 'account-title', '🔐 מחובר בתור ' + (store.get(ACCOUNT_KEY) || ''));
+            const sync = add('div', 'account-sync'); sync.id = 'account-sync';
+            setSyncState(syncState);
+            add('div', 'account-text', 'המטבעות, הסקינים והשיאים שלך נשמרים בחשבון. אפשר להתחבר איתו מכל מכשיר.');
+            const out = add('button', 'btn secondary', 'התנתקות');
+            out.onclick = accountLogout;
+            return;
+        }
+        add('div', 'account-title', '🔐 חשבון שחקן');
+        add('div', 'account-text', 'צרו חשבון כדי לשמור מטבעות, סקינים ושיאים - ולהמשיך לשחק מכל מכשיר.');
+        if (!auth) { add('div', 'account-msg', 'החשבונות לא זמינים כרגע (אין חיבור לשרת).').style.color = '#ff6a5c'; return; }
+        const tabs = add('div', 'account-tabs');
+        [['signup', 'הרשמה'], ['login', 'התחברות']].forEach(([mode, label]) => {
+            const b = document.createElement('button');
+            b.textContent = label;
+            b.className = accountMode === mode ? 'active' : '';
+            b.onclick = () => { accountMode = mode; renderAccountUI(); };
+            tabs.appendChild(b);
+        });
+        const u = add('input'); u.type = 'text'; u.id = 'acc-user'; u.maxLength = 15; u.placeholder = 'שם משתמש'; u.autocomplete = 'username';
+        u.setAttribute('autocapitalize', 'none');
+        const pw = add('input'); pw.type = 'password'; pw.id = 'acc-pass'; pw.maxLength = 30; pw.placeholder = 'סיסמה';
+        pw.autocomplete = accountMode === 'signup' ? 'new-password' : 'current-password';
+        if (accountMode === 'signup') add('div', 'account-hint', 'שם משתמש: 3-15 תווים · סיסמה: לפחות 6 אותיות או מספרים');
+        pw.addEventListener('keydown', e => { if (e.key === 'Enter') submitAccount(); });
+        const go = add('button', 'btn', accountMode === 'signup' ? 'יצירת חשבון' : 'התחברות');
+        go.id = 'acc-submit';
+        go.onclick = submitAccount;
+        add('div', 'account-msg').id = 'account-msg';
+    }
+    renderAccountUI();
 
 
 	/* --- החלפה בין טבלאות השיאים בתוך המסך --- */
