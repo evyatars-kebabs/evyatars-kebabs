@@ -621,8 +621,23 @@ function skMouseFront(c, sk, st) {
     c.restore();
 }
 
+const DENI_PORTLAND = { base: '#121216', stripes: [[30, '#e03a3e'], [10, '#ffffff']], trim: ['#ffffff', '#e03a3e'],
+    text: 'PORTLAND', textCol: '#ffffff', numFill: '#e03a3e', numStroke: '#ffffff' };
+const DENI_ISRAEL = { base: '#f7f8fc', stripes: [[30, '#0038b8'], [10, '#7fa6ff']], trim: ['#0038b8', '#ffffff'],
+    text: 'ISRAEL', textCol: '#0038b8', numFill: '#0038b8', numStroke: '#ffffff', star: true };
+
+// מגן דוד קטן (שני משולשים חופפים)
+function skStarOfDavid(c, x, y, r, col, lw) {
+    c.strokeStyle = col; c.lineWidth = lw; c.lineJoin = 'round';
+    for (const rot of [-Math.PI / 2, Math.PI / 2]) {
+        c.beginPath();
+        for (let i = 0; i < 3; i++) { const a = rot + i * Math.PI * 2 / 3; c[i ? 'lineTo' : 'moveTo'](x + Math.cos(a) * r, y + Math.sin(a) * r); }
+        c.closePath(); c.stroke();
+    }
+}
+
 function skDeniBack(c, sk, st) {
-    const t = st.t, tone = sk.tone, out = SK_OUT;
+    const t = st.t, tone = sk.tone, out = SK_OUT, J = sk.jersey || DENI_PORTLAND;
     skAuraBack(c, sk, t);
     // צוואר, כתפיים וזרועות חשופות (גופייה)
     skR(c, -28, 26, 56, 56, 12, skShade(tone, -0.12), null);
@@ -650,16 +665,16 @@ function skDeniBack(c, sk, st) {
     jersey.closePath();
     c.save();
     skTorsoPath(c); c.clip();
-    c.fillStyle = '#121216'; c.fill(jersey);
+    c.fillStyle = J.base; c.fill(jersey);
     c.save(); c.clip(jersey);
-    // פסים אלכסוניים בצד (אדום-לבן-שחור)
-    for (const [w, col] of [[30, '#e03a3e'], [10, '#ffffff']]) {
+    // פסים אלכסוניים בצד
+    for (const [w, col] of J.stripes) {
         c.strokeStyle = col; c.lineWidth = w;
         c.beginPath(); c.moveTo(-130, 250); c.quadraticCurveTo(-70, 300, -40, 360); c.stroke();
     }
     c.restore();
     // שוליים אדומים-לבנים בצוואר ובבתי השרוול
-    for (const [w, col] of [[11, SK_OUT], [9, '#ffffff'], [5, '#e03a3e']]) {
+    for (const [w, col] of [[11, SK_OUT], [9, J.trim[0]], [5, J.trim[1]]]) {
         c.strokeStyle = col; c.lineWidth = w;
         c.beginPath(); c.moveTo(-30, 20); c.lineTo(-30, 62); c.quadraticCurveTo(0, 150, 30, 62); c.lineTo(30, 20); c.stroke();
         c.beginPath(); c.moveTo(76, 20); c.lineTo(70, 76); c.bezierCurveTo(74, 126, 82, 160, 100, 176); c.stroke();
@@ -674,13 +689,14 @@ function skDeniBack(c, sk, st) {
     c.save();
     c.textAlign = 'center'; c.textBaseline = 'middle';
     c.font = 'bold 30px "Arial Black", Arial, sans-serif';
-    c.fillStyle = '#ffffff';
-    c.fillText('PORTLAND', 0, 178);
+    c.fillStyle = J.textCol;
+    c.fillText(J.text, 0, 178);
     c.font = 'bold 74px "Arial Black", Arial, sans-serif';
-    c.lineWidth = 7; c.strokeStyle = '#ffffff'; c.lineJoin = 'round';
+    c.lineWidth = 7; c.strokeStyle = J.numStroke; c.lineJoin = 'round';
     c.strokeText('8', 0, 246);
-    c.fillStyle = '#e03a3e'; c.fillText('8', 0, 246);
+    c.fillStyle = J.numFill; c.fillText('8', 0, 246);
     c.restore();
+    if (J.star) skStarOfDavid(c, 54, 128, 13, J.textCol, 3.5);
     // ראש ופנים
     skHead(c, sk);
     // לחיים מגולחות - צל זיפים עדין בלבד

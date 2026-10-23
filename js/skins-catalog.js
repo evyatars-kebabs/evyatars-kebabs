@@ -352,6 +352,14 @@ const CHEDDAR_VARIANTS = {
     yuvaldog: { name: 'הכלב של יובל צ\'דר', pal: DOG_CHEDDAR, tone: '#ffd877', brow: '#8a4a04', lips: '#7a3e02',
                 eyes: { iris: '#7a3e02' }, outfit: { base: '#e8961c', collar: 'crew' }, aura: { color: '#ffc83d', alpha: 0.35 } }
 };
+// דני בגופיית נבחרת ישראל
+(() => {
+    const base = SV_SKINS.find(x => x.id === 'deni');
+    SV_SKINS.push(Object.assign({}, base, { id: 'deni_israel', name: 'דני - נבחרת ישראל', variantOf: 'deni', jersey: DENI_ISRAEL,
+        aura: { color: '#3a7bff', alpha: 0.45, rings: true } }));
+    SKIN_GROUPS.deni = [{ id: 'deni', label: 'פורטלנד' }, { id: 'deni_israel', label: '🇮🇱 נבחרת' }];
+})();
+
 Object.entries(CHEDDAR_VARIANTS).forEach(([id, ov]) => {
     const base = SV_SKINS.find(x => x.id === id);
     if (!base) return;
