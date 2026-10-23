@@ -239,6 +239,10 @@ const SV_SKINS = [
     { id: 'vader', name: 'סטארוורס', rarity: 6, tone: '#2a2c34', lips: '#3a3d48', blush: false,
       outfit: { base: '#141418', collar: 'high' }, cape: { color: '#16161c' },
       aura: { color: '#ff2a2a', alpha: 0.3 }, drawBack: skVaderBack },
+    { id: 'nir', name: 'ניר', rarity: 6, tone: '#f2c9a8', hair: { style: 'custom', color: '#6b4526' }, brow: '#3a2412',
+      lips: '#d58a86', eyes: { iris: '#6f8796' }, look: 'm',
+      jersey: Object.assign({}, DENI_ISRAEL, { num: '7' }), aura: { color: '#3a7bff', alpha: 0.4, rings: true },
+      fx: { type: 'sparkles', count: 14, speed: 0.4 }, drawBack: skNirBack, drawFront: skNirFront },
     { id: 'wizmouse', name: 'מיקי המכשף', rarity: 6, tone: '#f6c9a0', brow: '#15151a', lips: '#7a1a1a', eyes: { iris: '#15151a' },
       hat: { type: 'wizard', c1: '#2a4fb8', c2: '#2a4fb8' }, outfit: { base: '#c42b2b', belt: '#d9b25a', collar: 'v', inner: '#e8a878' },
       aura: { color: '#6ea8ff', alpha: 0.4 }, fx: { type: 'stars', count: 14, speed: 0.3 }, drawBack: skMouseBack, drawFront: skMouseFront }

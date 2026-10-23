@@ -695,8 +695,9 @@ function skStarOfDavid(c, x, y, r, col, lw) {
     }
 }
 
-function skDeniBack(c, sk, st) {
-    const t = st.t, tone = sk.tone, out = SK_OUT, J = sk.jersey || DENI_PORTLAND;
+// גופייה, צוואר וזרועות חשופות (משותף לדני ולסקינים בגופיית כדורסל)
+function skJerseyBody(c, sk, t, J) {
+    const tone = sk.tone, out = SK_OUT;
     skAuraBack(c, sk, t);
     // צוואר, כתפיים וזרועות חשופות (גופייה)
     skR(c, -28, 26, 56, 56, 12, skShade(tone, -0.12), null);
@@ -752,10 +753,54 @@ function skDeniBack(c, sk, st) {
     c.fillText(J.text, 0, 178);
     c.font = 'bold 74px "Arial Black", Arial, sans-serif';
     c.lineWidth = 7; c.strokeStyle = J.numStroke; c.lineJoin = 'round';
-    c.strokeText('8', 0, 246);
-    c.fillStyle = J.numFill; c.fillText('8', 0, 246);
+    c.strokeText(J.num || '8', 0, 246);
+    c.fillStyle = J.numFill; c.fillText(J.num || '8', 0, 246);
     c.restore();
     if (J.star) skStarOfDavid(c, 54, 128, 13, J.textCol, 3.5);
+}
+
+// ניר - שיער חום פרוע עם פוני על המצח, בגופיית נבחרת ישראל מספר 7
+function skNirBack(c, sk, st) {
+    skJerseyBody(c, sk, st.t, sk.jersey);
+    skHead(c, sk);
+    for (const [x, y] of [[-56, -30], [-46, -38], [-40, -24], [52, -32], [44, -22], [60, -40], [-8, -44], [8, -46]])
+        skE(c, x, y, 1.8, 1.8, 'rgba(160, 90, 50, 0.45)');                 // נמשים עדינים
+    skEyes(c, sk, st);
+}
+function skNirFront(c, sk, st) {
+    const t = st.t, col = sk.hair.color, dk = skShade(col, -0.3), hl = skShade(col, 0.28);
+    const hair = new Path2D();
+    hair.moveTo(-94, -36);
+    hair.bezierCurveTo(-104, -110, -70, -152, -10, -154);
+    hair.bezierCurveTo(56, -158, 104, -118, 94, -36);
+    hair.lineTo(88, -60);                                     // צדדים מכסים את קצה האוזן
+    hair.lineTo(80, -96);
+    // פוני פרוע שנופל על המצח, ארוך יותר בצד שמאל
+    for (const [x, y] of [[70, -104], [60, -98], [50, -112], [38, -102], [26, -116], [12, -104], [0, -118], [-12, -104],
+                           [-22, -114], [-36, -100], [-44, -110], [-58, -96], [-66, -106], [-78, -92]]) hair.lineTo(x, y);
+    hair.lineTo(-86, -62);
+    hair.closePath();
+    const g = c.createLinearGradient(0, -156, 0, -80);
+    g.addColorStop(0, hl); g.addColorStop(1, col);
+    c.fillStyle = g; c.fill(hair);
+    c.strokeStyle = SK_OUT; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(hair);
+    c.save(); c.clip(hair);
+    c.strokeStyle = skA(dk, 0.75); c.lineWidth = 2.5; c.lineCap = 'round';
+    for (const [x0, y0, x1, y1] of [[-56, -140, -62, -100], [-30, -150, -38, -104], [-2, -152, -10, -108], [26, -148, 18, -108], [56, -134, 48, -104]]) {
+        c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(x0 + 6, (y0 + y1) / 2, x1, y1); c.stroke();
+    }
+    c.restore();
+    // שערות סוררות למעלה
+    c.strokeStyle = col; c.lineWidth = 2.2; c.lineCap = 'round';
+    const w = Math.sin(t * 3) * 2;
+    for (const [x, y, dx, dy] of [[-14, -153, -8, -16], [6, -155, 10, -18], [26, -150, 16, -10], [-40, -146, -14, -8]]) {
+        c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + dx * 0.5 + w, y + dy, x + dx + w, y + dy * 0.8); c.stroke();
+    }
+}
+
+function skDeniBack(c, sk, st) {
+    const t = st.t, J = sk.jersey || DENI_PORTLAND;
+    skJerseyBody(c, sk, t, J);
     // ראש ופנים
     skHead(c, sk);
     // לחיים מגולחות - צל זיפים עדין בלבד

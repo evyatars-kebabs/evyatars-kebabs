@@ -217,7 +217,8 @@ const REDEEM_CODES = {
     'TAPUZIYUVAL':       { skin: 'tapuzi' },
     'GOLDCAPYSHVARTZ6':  { skin: 'goldcapy' },
     'DARKSIDEKEBAB57':   { skin: 'vader' },
-    'WIZMICK6611':       { skin: 'wizmouse' }
+    'WIZMICK6611':       { skin: 'wizmouse' },
+    'NIRHANA7':          { skin: 'nir' }
 };
 function redeemCode(raw) {
     const code = String(raw || '').trim().toUpperCase();
