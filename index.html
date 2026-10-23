@@ -6389,7 +6389,7 @@ function kvNewState() {
         bank: KV_START_BANK, bankBump: 0, score: 0, kills: 0,
         wave: 0, waveState: 'grace', waveTimer: 25, queue: [], spawnIn: 0, waveTotal: 0, waveDone: 0, lastLane: -1,
         kebabs: [], kols: [], shots: [], pickups: [], flying: [], fx: [], knifeRuns: [],
-        knives: [true, true, true, true], cds, selected: null, shovel: false, drag: null, hover: null,
+        knives: [true, true, true, true], cds, selected: null, shovel: false, drag: null, hover: null, premoves: [],
         skyIn: 7, guide: false, banner: null, shake: 0, tut: null, pool: [], shownWave: -1, shownScore: -1
     };
 }
@@ -6528,18 +6528,64 @@ function kvTileAt(p) {
 function kvKebabAt(lane, col) { return kv.kebabs.find(k => k.lane === lane && k.col === col && !k.gone); }
 function kvCanAfford(type) { return kv.bank >= KV_KEBABS[type].cost && kv.cds[type] <= 0; }
 
-function kvPlace(type, tile) {
+/* ---------- תכנון מראש (premoves) ----------
+   בוחרים קבב גם כשאין מספיק גחלים או שהכרטיס עוד נטען, ומניחים אותו על משבצת:
+   הוא מסומן כרוח רפאים ומוצב לבד ברגע שאפשר. תכנונים מתבצעים לפי הסדר -
+   גחלים נשמרות לתכנון הקודם, כך שתכנון זול לא "עוקף" אותו. נגיעה בתכנון מבטלת אותו. */
+const KV_MAX_PREMOVES = 6;
+function kvPremoveAt(lane, col) { return kv.premoves.find(m => m.lane === lane && m.col === col); }
+function kvAddPremove(type, tile) {
+    if (!tile || kvKebabAt(tile.lane, tile.col) || kv.premoves.length >= KV_MAX_PREMOVES) { sfx.err(); return false; }
+    const old = kvPremoveAt(tile.lane, tile.col);
+    if (old) kv.premoves.splice(kv.premoves.indexOf(old), 1);
+    kv.premoves.push({ type, lane: tile.lane, col: tile.col, t: 0 });
+    kv.selected = null;
+    kv.drag = null;
+    sfx.tap();
+    haptic(10);
+    kvTutEvent('premove-' + type);
+    return true;
+}
+function kvCancelPremove(m) {
+    kv.premoves.splice(kv.premoves.indexOf(m), 1);
+    sfx.whoosh();
+    haptic(10);
+}
+// מציב קבב אם אפשר עכשיו, ואחרת מתכנן אותו מראש
+function kvPlaceOrPlan(type, tile) {
+    if (!tile || kvKebabAt(tile.lane, tile.col)) { sfx.err(); return false; }
+    if (kvCanAfford(type)) return kvPlace(type, tile);
+    return kvAddPremove(type, tile);
+}
+function kvRunPremoves() {
+    let budget = kv.bank;
+    for (const m of kv.premoves.slice()) {
+        if (kvKebabAt(m.lane, m.col)) { kv.premoves.splice(kv.premoves.indexOf(m), 1); continue; }   // המשבצת נתפסה
+        const cost = KV_KEBABS[m.type].cost;
+        if (budget >= cost && kv.cds[m.type] <= 0) {
+            kv.premoves.splice(kv.premoves.indexOf(m), 1);
+            kvPlace(m.type, { lane: m.lane, col: m.col }, true);
+            budget = kv.bank;
+        } else if (budget < cost) {
+            budget -= cost;                                 // הגחלים שמורות לתכנון הזה
+        }
+    }
+}
+
+function kvPlace(type, tile, fromPlan) {
     if (!tile || kvKebabAt(tile.lane, tile.col) || !kvCanAfford(type)) return false;
+    const plan = kvPremoveAt(tile.lane, tile.col);
+    if (plan) kv.premoves.splice(kv.premoves.indexOf(plan), 1);
     const def = KV_KEBABS[type];
     kv.bank -= def.cost;
     kv.cds[type] = def.cd;
     kv.kebabs.push({ type, lane: tile.lane, col: tile.col, x: kvColX(tile.col), hp: def.hp, max: def.hp,
                      t: type === 'grill' ? 4 : 0, fuse: type === 'onion' ? 0.9 : 0, recoil: 0, glow: 0, pop: 0 });
-    kv.selected = null;
-    kv.drag = null;
+    if (!fromPlan) { kv.selected = null; kv.drag = null; }
     sfx.pop();
     haptic(15);
     kvTutEvent('place-' + type);
+    kvTutEvent('premove-' + type);        // אם בהדרכה הספיקו הגחלים להצבה מיידית - לא נתקעים
     return true;
 }
 
@@ -6585,6 +6631,9 @@ function kvStep(dt) {
             kv.skyIn = 6 + Math.random() * 3;
         }
     }
+
+    for (const m of kv.premoves) m.t += dt;
+    if (live && kv.premoves.length) kvRunPremoves();
 
     // קבבים
     for (const k of kv.kebabs) {
@@ -6705,6 +6754,7 @@ function kvExplode(k) {
 
 function kvGameOver() {
     kv.over = true;
+    kv.premoves = [];
     kv.endT = 0;
     kv.selected = null;
     kv.banner = { text: 'הקולסקים אכלו את הקבביה!', sub: '', t: 0, life: 9 };
@@ -6751,6 +6801,8 @@ const KV_TUT = [
     { lines: ['הקישו על הגחלים כדי לאסוף אותן'], wait: 'collect' },
     { lines: ['עכשיו בחרו שיפוד', 'הוא יורה קציצות בקולסקים.'], wait: 'select-skewer' },
     { lines: ['הניחו את השיפוד על משבצת פנויה'], wait: 'place-skewer' },
+    { lines: ['תכנון מראש: בחרו את הפלאפל', 'אין מספיק גחלים? לא נורא!'], wait: 'select-falafel' },
+    { lines: ['הניחו אותו על משבצת. הוא יחכה שם כרוח רפאים', 'ויוצב לבד ברגע שיהיו מספיק גחלים.', 'נגיעה בקבב מתוכנן מבטלת אותו.'], wait: 'premove-falafel' },
     { guide: true, tap: true },
     { lines: ['אם קולסקי מגיע לסוף השורה, הסכין חותכת', 'את כל השורה – אבל רק פעם אחת.', 'את המדריך אפשר לפתוח שוב בכפתור (?) למטה.', 'בהצלחה!'], tap: true }
 ];
@@ -6784,7 +6836,8 @@ function kvTutTarget() {
     const s = kv.tut.step;
     if (s === 1) return kvCardRect(0);
     if (s === 4) return kvCardRect(1);
-    if (s === 2 || s === 5) return { x: KV_GX, y: KV_BAR, w: KV_W - KV_GX, h: kvH - KV_BAR - KV_FOOT };
+    if (s === 6) return kvCardRect(2);
+    if (s === 2 || s === 5 || s === 7) return { x: KV_GX, y: KV_BAR, w: KV_W - KV_GX, h: kvH - KV_BAR - KV_FOOT };
     if (s === 3 && kv.pickups.length) { const c = kv.pickups[0]; return { x: c.x - 22, y: c.y - 22, w: 44, h: 44 }; }
     return null;
 }
@@ -6819,7 +6872,6 @@ function kvPointerDown(p) {
         if (!kvIn(p, kvCardRect(i))) continue;
         const type = KV_ORDER[i];
         if (kv.tut && KV_TUT[kv.tut.step].wait !== 'select-' + type) return;
-        if (!kvCanAfford(type)) { sfx.err(); return; }
         kv.shovel = false;
         kv.selected = kv.selected === type ? null : type;
         kv.drag = kv.selected ? { type } : null;
@@ -6835,13 +6887,16 @@ function kvPointerDown(p) {
     // לוח
     const tile = kvTileAt(p);
     if (!tile) return;
+    const plan = kvPremoveAt(tile.lane, tile.col);
     if (kv.shovel) {
         const k = kvKebabAt(tile.lane, tile.col);
         if (k) { k.gone = true; sfx.whoosh(); }
+        else if (plan) kvCancelPremove(plan);
         kv.shovel = false;
         return;
     }
-    if (kv.selected) kvPlace(kv.selected, tile);
+    if (kv.selected) { kvPlaceOrPlan(kv.selected, tile); return; }
+    if (plan && !kv.tut) kvCancelPremove(plan);            // נגיעה בתכנון מבטלת אותו
 }
 function kvPointerMove(p) {
     if (!kv) return;
@@ -6850,7 +6905,7 @@ function kvPointerMove(p) {
 function kvPointerUp(p) {
     if (!kv || !kv.drag) return;
     const tile = kvTileAt(p);                              // גרירה מהכרטיס אל הלוח
-    if (tile && kv.selected === kv.drag.type) kvPlace(kv.drag.type, tile);
+    if (tile && kv.selected === kv.drag.type) kvPlaceOrPlan(kv.drag.type, tile);
     kv.drag = null;
 }
 
@@ -7017,6 +7072,25 @@ function kvDraw() {
             kvDrawKebabShape(c, kv.selected, null); c.restore();
         }
     }
+
+    // תכנונים מראש: רוח רפאים של הקבב + טבעת התקדמות (גחלים / טעינה)
+    kv.premoves.forEach((m, i) => {
+        const hx = KV_GX + m.col * KV_TILE, hy = kvLaneTop(m.lane), def = KV_KEBABS[m.type];
+        c.save();
+        c.strokeStyle = 'rgba(120,200,255,' + (0.55 + 0.25 * Math.sin(kv.t * 4 + i)) + ')'; c.setLineDash([4, 4]); c.lineWidth = 2;
+        c.strokeRect(hx + 3, hy + 3, KV_TILE - 6, LH - 6); c.setLineDash([]);
+        c.globalAlpha = 0.38; c.translate(hx + KV_TILE / 2, kvGround(m.lane)); c.scale(s, s);
+        kvDrawKebabShape(c, m.type, null);
+        c.restore();
+        const prog = Math.min(1, kv.bank / def.cost) * (kv.cds[m.type] > 0 ? 1 - kv.cds[m.type] / def.cd : 1);
+        const cx = hx + KV_TILE - 12, cy = hy + 13;
+        skE(c, cx, cy, 9, 9, 'rgba(10,20,40,0.85)', 'rgba(120,200,255,0.8)', 1.2);
+        c.strokeStyle = '#7ec8ff'; c.lineWidth = 2.5;
+        c.beginPath(); c.arc(cx, cy, 6.5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * prog); c.stroke();
+        c.fillStyle = '#dff1ff'; c.font = 'bold 8px Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText(i + 1, cx, cy + 0.5);
+        kvNameTag(c, 'מתוכנן', hx + KV_TILE / 2, kvGround(m.lane) + 9 * s);
+    });
 
     // קבבים וקולסקים - שורה אחרי שורה כדי שהשורה התחתונה תסתיר את העליונה
     for (let l = 0; l < KV_LANES; l++) {
@@ -7204,9 +7278,9 @@ function kvWrapLines(c, lines, x, y, lh) {
 function kvDrawGuide(c, hint) {
     c.save();
     c.fillStyle = 'rgba(0,0,0,0.62)'; c.fillRect(0, 0, KV_W, kvH);
-    const rowH = Math.max(40, Math.min(54, (kvH - KV_BAR - 164) / KV_ORDER.length));       // מתכווץ במסכים נמוכים
-    const top = Math.max(KV_BAR + 6, kvH / 2 - (KV_ORDER.length * rowH + 74) / 2);
-    const h = KV_ORDER.length * rowH + 74;
+    const rowH = Math.max(40, Math.min(54, (kvH - KV_BAR - 182) / KV_ORDER.length));       // מתכווץ במסכים נמוכים
+    const top = Math.max(KV_BAR + 6, kvH / 2 - (KV_ORDER.length * rowH + 92) / 2);
+    const h = KV_ORDER.length * rowH + 92;
     skR(c, 14, top, KV_W - 28, h, 16, 'rgba(26,12,6,0.96)', '#ffc233', 2);
     c.fillStyle = '#ffd54f'; c.font = 'bold 18px "Secular One", Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillText('הכירו את הקבבים', KV_W / 2, top + 22);
@@ -7227,6 +7301,8 @@ function kvDrawGuide(c, hint) {
         c.fillStyle = '#ffd08a'; c.font = 'bold 12px Rubik, sans-serif';
         c.fillText(def.cost, 96, y + 34);
     });
+    c.fillStyle = '#9fd4ff'; c.font = 'bold 10px Rubik, sans-serif'; c.textAlign = 'center';
+    c.fillText('💡 אין מספיק גחלים? בחרו קבב והניחו – הוא יוצב לבד כשאפשר', KV_W / 2, top + h - 32);
     if (hint) {
         c.fillStyle = 'rgba(255,215,0,' + (0.55 + 0.45 * Math.sin(kv.t * 4)) + ')'; c.font = 'bold 11px Rubik, sans-serif'; c.textAlign = 'center';
         c.fillText(hint, KV_W / 2, top + h - 14);
