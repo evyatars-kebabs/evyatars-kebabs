@@ -1401,6 +1401,14 @@ const firebaseConfig = {
                     const ts = d.timestamp && typeof d.timestamp.toMillis === 'function' ? d.timestamp.toMillis() : Infinity;
                     rows.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score, ts });
                 });
+                // חשבונות שנוצרו לפני התיקון נשארו גם עם רשומת האורח הישנה.
+                // מסתירים רשומת אורח (player_...) כשיש חשבון באותו שם עם ניקוד זהה או גבוה יותר.
+                const accountBest = {};
+                rows.forEach(r => { if (!r.id.startsWith('player_')) accountBest[r.name] = Math.max(accountBest[r.name] || 0, r.score); });
+                for (let i = rows.length - 1; i >= 0; i--) {
+                    const r = rows[i];
+                    if (r.id.startsWith('player_') && r.id !== playerId && accountBest[r.name] !== undefined && accountBest[r.name] >= r.score) rows.splice(i, 1);
+                }
                 // סדר יציב: ניקוד יורד, ובשוויון - מי שהגיע ראשון, ואז לפי שם
                 rows.sort((a, b) => b.score - a.score || a.ts - b.ts || a.name.localeCompare(b.name));
                 // שחקנים עם אותו ניקוד חולקים את אותו מקום
@@ -1453,7 +1461,10 @@ const firebaseConfig = {
        ============================================================ */
     const ACCOUNT_KEY = 'kebab_account';           // שם המשתמש שמחובר במכשיר הזה
     const SYNC_DIRTY_KEY = 'kebab_sync_dirty';     // יש שינויים שעוד לא נשמרו בענן
-    const PROGRESS_KEYS = ['kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
+    // kebab_lbId = מזהה השחקן בטבלאות השיאים. חשבון חדש שומר את המזהה שהיה לו כאורח,
+    // כך שהשיאים שלו ממשיכים באותה רשומה ולא נוצרת רשומה כפולה.
+    const LB_ID_KEY = 'kebab_lbId';
+    const PROGRESS_KEYS = ['kebab_lbId', 'kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
         'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
         'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_kvk_tutorial_done'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
@@ -1537,10 +1548,16 @@ const firebaseConfig = {
         });
     }
 
+    // מזהה הטבלאות של החשבון: מה שנשמר בחשבון, ואם אין (חשבונות ישנים) - מזהה החשבון
+    function adoptLeaderboardId(user) {
+        if (!store.get(LB_ID_KEY)) store.set(LB_ID_KEY, user.uid);
+        playerId = store.get(LB_ID_KEY);
+        store.set('kebab_playerId', playerId);
+        Object.keys(lbCache).forEach(k => { delete lbCache[k]; });
+    }
+
     function onAccountSignedIn(user) {
         accountUser = user;
-        playerId = user.uid;
-        store.set('kebab_playerId', user.uid);
         cloudReady = false;
         setSyncState('loading');
         renderAccountUI();
@@ -1552,6 +1569,7 @@ const firebaseConfig = {
             // יש שינויים מקומיים שלא נשמרו (למשל שיחקו בלי אינטרנט) - הם עולים לענן במקום להידרס
             const localNewer = store.get(SYNC_DIRTY_KEY) === '1' && savedHere && cloud && cloud.username === savedHere;
             if (cloud && cloud.data && !localNewer) applyProgress(cloud.data);
+            adoptLeaderboardId(user);
             cloudReady = true;
             if (!cloud || !cloud.data || localNewer) saveCloudNow(); else setSyncState('saved');
             pushBestScores();
@@ -1628,6 +1646,7 @@ const firebaseConfig = {
         if (accountMode === 'signup') {
             // החשבון החדש מקבל את ההתקדמות שכבר יש במכשיר
             store.set(ACCOUNT_KEY, f.username);
+            store.set(LB_ID_KEY, playerId);                // השיאים ממשיכים ברשומה של האורח
             auth.createUserWithEmailAndPassword(usernameToEmail(f.username), f.password).then(() => {
                 // שחקן שעדיין "אורח" מקבל את שם המשתמש כשם בטבלאות
                 if (!store.get('kebab_playerName') || playerName === 'אורח') {
@@ -1639,6 +1658,7 @@ const firebaseConfig = {
             }).catch(err => {
                 console.error('הרשמה נכשלה:', err.code || '', err.message || err);
                 store.remove(ACCOUNT_KEY);
+                store.remove(LB_ID_KEY);
                 btn.disabled = false;
                 setAccountMsg(accountError(err));
                 sfx.err();
