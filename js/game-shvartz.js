@@ -211,6 +211,7 @@ function svStep(dt) {
     svUpdateHud();
 }
 
+const SV_SWISH = ['מושלם!', 'אדיר!', 'מעולה!'];          // הודעה לזריקה נקייה בלי לגעת בשפה
 function svScoreShot() {
     const b = sv.ball, m = sv.mouth;
     sv.streak++;
@@ -228,7 +229,7 @@ function svScoreShot() {
     sfx.score(clean);
 
     sv.fx.push({ x: m.x, y: m.y - 70, text: '+' + pts, color: '#ffd700', size: 30, t: 0, life: 0.9 });
-    if (clean) sv.fx.push({ x: m.x, y: m.y - 100, text: 'נקי!', color: '#7ee787', size: 20, t: 0, life: 0.9 });
+    if (clean) sv.fx.push({ x: m.x, y: m.y - 100, text: SV_SWISH[Math.floor(Math.random() * SV_SWISH.length)], color: '#7ee787', size: 20, t: 0, life: 0.9 });
     if (mult > 1) sv.fx.push({ x: m.x, y: m.y - 128, text: '🔥 x' + mult, color: '#ff7b3d', size: 20, t: 0, life: 0.9 });
     try { if (navigator.vibrate) navigator.vibrate(clean ? 18 : 10); } catch (e) { /* ignore */ }
 }
