@@ -179,7 +179,7 @@ function skHairBack(c, sk, t) {
         c.bezierCurveTo(126 + w, 90, 140 - w, -30, 96, -90);
         c.closePath();
         c.fillStyle = g; c.fill();
-    } else if (h.style === 'long' || h.style === 'bob' || h.style === 'wavy' || flow) {
+    } else if (h.style === 'long' || h.style === 'bob' || h.style === 'wavy' || h.style === 'parted' || flow) {
         const len = flow ? 70 : (h.style === 'bob' ? 40 : (h.style === 'wavy' ? 120 : 110));
         c.beginPath();
         c.moveTo(-96, -90);
@@ -284,6 +284,21 @@ function skHairFront(c, sk, t) {
         case 'buzz':
             cap(); c.fillStyle = skA(col, 0.78); c.fill();
             break;
+        case 'parted': {                              // שיער ארוך עם שביל באמצע, בלי פוני
+            for (const sd of [-1, 1]) {
+                c.beginPath();
+                c.moveTo(sd * 2, -142);
+                c.bezierCurveTo(sd * 40, -146, sd * 100, -120, sd * 96, -40);
+                c.lineTo(sd * 98, 10);
+                c.lineTo(sd * 84, 6);
+                c.bezierCurveTo(sd * 84, -50, sd * 70, -96, sd * 2, -126);
+                c.closePath();
+                c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+                c.strokeStyle = hl; c.lineWidth = 2.5;
+                c.beginPath(); c.moveTo(sd * 18, -136); c.quadraticCurveTo(sd * 64, -122, sd * 82, -70); c.stroke();
+            }
+            break;
+        }
         case 'sidebald':
             skE(c, -88, -46, 12, 30, col, SK_OUT, 2); skE(c, 88, -46, 12, 30, col, SK_OUT, 2);
             skE(c, -80, -72, 14, 16, col); skE(c, 80, -72, 14, 16, col);
@@ -758,6 +773,17 @@ function skGlasses(c, sk) {
         for (const o of [-34, 34]) { skE(c, o, ey, 21, 21, 'rgba(190,225,255,0.16)', g.color || '#3a2a1a', 4); }
         c.beginPath(); c.moveTo(-13, ey); c.quadraticCurveTo(0, ey - 8, 13, ey); c.stroke();
         c.beginPath(); c.moveTo(-55, ey - 2); c.lineTo(-86, ey - 8); c.moveTo(55, ey - 2); c.lineTo(86, ey - 8); c.stroke();
+    } else if (g.type === 'bold') {                    // מסגרת עבה ומעוגלת (כהה, עם ניטים קטנים)
+        const col = g.color || '#2a1810';
+        for (const o of [-34, 34]) {
+            skR(c, o - 25, ey - 21, 50, 42, 15, 'rgba(190,225,255,0.14)', col, 6);
+            skE(c, o + (o < 0 ? -21 : 21), ey - 15, 1.8, 1.8, '#d8dce4');
+            skE(c, o + (o < 0 ? -16 : 16), ey - 15, 1.8, 1.8, '#d8dce4');
+        }
+        c.strokeStyle = col; c.lineWidth = 5;
+        c.beginPath(); c.moveTo(-9, ey - 4); c.quadraticCurveTo(0, ey - 10, 9, ey - 4); c.stroke();
+        c.lineWidth = 4;
+        c.beginPath(); c.moveTo(-59, ey - 8); c.lineTo(-86, ey - 10); c.moveTo(59, ey - 8); c.lineTo(86, ey - 10); c.stroke();
     } else if (g.type === 'shades') {
         for (const o of [-34, 34]) skR(c, o - 24, ey - 15, 48, 30, 11, '#0e0e12', '#000', 2.5);
         c.fillStyle = '#0e0e12'; c.fillRect(-12, ey - 8, 24, 5);
@@ -1200,6 +1226,62 @@ function skEinsteinExtra(c, sk, st) {
     c.restore();
 }
 // ססיל רודז: שביל צד בשיער, פאות קצרות ושרשרת שעון זהב על הווסט
+// שני הרקדנית: שמלת פלמנקו אדומה עם נקודות ומלמלות, פרח אדום בשיער ומניפה
+function skShanyExtra(c, sk, st) {
+    const t = st.t, red = '#c8102e', dk = '#8a0a1e';
+    // נקודות לבנות על השמלה (לא על המחשוף)
+    c.save(); skTorsoPath(c); c.clip();
+    for (let y = 100; y < 340; y += 34) for (let x = -116 + ((y / 34) % 2) * 17; x < 124; x += 34) {
+        if (y < 128 && Math.abs(x) < 44) continue;
+        skE(c, x, y, 5.5, 5.5, 'rgba(255,255,255,0.9)');
+    }
+    c.restore();
+    // מלמלות על הכתפיים - שלוש שכבות מסולסלות
+    for (const s of [-1, 1]) {
+        for (let layer = 0; layer < 3; layer++) {
+            const y0 = 84 + layer * 15, sway = Math.sin(t * 3 + layer + s) * 2;
+            c.beginPath();
+            for (let i = 0; i <= 5; i++) {
+                const x = s * (40 + i * 16), y = y0 + i * 4 + (layer ? 0 : -4);
+                if (i === 0) c.moveTo(x, y); else c.quadraticCurveTo(x - s * 8, y + 14 + sway, x, y);
+            }
+            c.lineTo(s * 124, y0 + 34); c.lineTo(s * 40, y0 + 10); c.closePath();
+            c.fillStyle = layer % 2 ? dk : red; c.fill();
+            c.strokeStyle = SK_OUT; c.lineWidth = 2; c.stroke();
+        }
+    }
+    // פרח אדום בשיער
+    c.save(); c.translate(-74, -112); c.rotate(-0.3 + Math.sin(t * 1.5) * 0.04);
+    skE(c, -16, 10, 16, 8, '#2e7d2a', SK_OUT, 2, 0.5);                    // עלים
+    skE(c, 18, 12, 14, 7, '#2e7d2a', SK_OUT, 2, -0.5);
+    for (let i = 0; i < 7; i++) {
+        const a = i / 7 * Math.PI * 2;
+        skE(c, Math.cos(a) * 13, Math.sin(a) * 13, 14, 11, i % 2 ? '#e0283c' : '#c8102e', SK_OUT, 2, a);
+    }
+    skE(c, 0, 0, 12, 12, '#a00a1e', SK_OUT, 2);
+    c.strokeStyle = '#ff7a8a'; c.lineWidth = 2;
+    c.beginPath(); c.arc(0, 0, 6, 0.4, Math.PI * 1.6); c.stroke();
+    c.restore();
+    // מניפת תחרה שחורה-אדומה ביד
+    c.save(); c.translate(88, 196); c.rotate(-0.35 + Math.sin(t * 4) * 0.12);
+    for (let i = 0; i < 9; i++) {
+        const a = -Math.PI * 0.9 + i * (Math.PI * 0.8 / 8);
+        c.strokeStyle = '#3a0a10'; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a) * 62, Math.sin(a) * 62); c.stroke();
+    }
+    c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, 62, -Math.PI * 0.9, -Math.PI * 0.1); c.closePath();
+    c.fillStyle = 'rgba(200,16,46,0.88)'; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2.5; c.stroke();
+    c.strokeStyle = '#1a0508'; c.lineWidth = 3;
+    c.beginPath(); c.arc(0, 0, 54, -Math.PI * 0.88, -Math.PI * 0.12); c.stroke();
+    for (let i = 0; i < 8; i++) {                                          // תחרה בקצה
+        const a = -Math.PI * 0.86 + i * (Math.PI * 0.72 / 7);
+        skE(c, Math.cos(a) * 60, Math.sin(a) * 60, 5, 5, '#1a0508');
+    }
+    skE(c, 0, 0, 6, 6, '#d9b25a', SK_OUT, 1.5);
+    skE(c, 4, 10, 14, 11, '#e0b48c', SK_OUT, 2);                         // יד
+    c.restore();
+}
+
 function skRhodesExtra(c, sk, st) {
     const col = sk.hair.color;
     c.strokeStyle = skShade(col, -0.45); c.lineWidth = 4.5; c.lineCap = 'round';
