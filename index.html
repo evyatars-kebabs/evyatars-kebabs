@@ -6356,16 +6356,16 @@ function renderDealBanner(grid, owned, eq, coins) {
 
 /* ---------- תצוגה מקדימה גדולה ומונפשת ---------- */
 let skinModal = null;
-function closeSkinModal() {
+function closeSkinModal(now) {
     if (!skinModal) return;
     cancelAnimationFrame(skinModal.raf);
     const m = skinModal.el;
-    m.classList.remove('open');
-    setTimeout(() => m.remove(), 220);
+    if (now) m.remove();                                  // נפתחת תצוגה אחרת - מסירים מיד
+    else { m.classList.remove('open'); setTimeout(() => m.remove(), 220); }
     skinModal = null;
 }
 function openSkinModal(base) {
-    closeSkinModal();
+    closeSkinModal(true);
     const el = document.createElement('div');
     el.id = 'skin-modal';
     const card = document.createElement('div');
