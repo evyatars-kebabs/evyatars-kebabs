@@ -1229,6 +1229,63 @@ function skEinsteinExtra(c, sk, st) {
 // שני הרקדנית: שמלת פלמנקו אדומה עם נקודות ומלמלות, פרח אדום בשיער ומניפה
 // אלה הרקדנית: בגד גוף ורוד עם נצנצים, טוטו מטול, כתר קטן ופפיון סאטן בשיער
 // פרידה: צמה כתר עם פרחים, גבה מחוברת, עגילים תלויים, שרשרת ירקן, חולצה רקומה וצעיף רבוזו
+// מונה ליזה: מסגרת זהב עם הנוף המעורפל מהציור, צעיף שקוף ושמלה כהה
+function skMonaBack(c, sk, st) {
+    const t = st.t;
+    // הנוף: שמיים ירקרקים, הרים כחולים מעורפלים ושביל מתפתל
+    const X = -150, Y = -226, W = 300, H = 600;
+    c.save();
+    c.beginPath(); c.rect(X, Y, W, H); c.clip();
+    const sky = c.createLinearGradient(0, Y, 0, 120);
+    sky.addColorStop(0, '#7f9a86'); sky.addColorStop(0.55, '#b9c49a'); sky.addColorStop(1, '#8a7a4a');
+    c.fillStyle = sky; c.fillRect(X, Y, W, H);
+    c.fillStyle = 'rgba(80,110,110,0.55)';
+    c.beginPath(); c.moveTo(X, -40); c.lineTo(-120, -110); c.lineTo(-90, -70); c.lineTo(-60, -130); c.lineTo(-20, -60); c.lineTo(X + W, -60); c.lineTo(X + W, 40); c.lineTo(X, 40); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(70,95,90,0.6)';
+    c.beginPath(); c.moveTo(20, -50); c.lineTo(70, -140); c.lineTo(110, -90); c.lineTo(150, -120); c.lineTo(150, 40); c.lineTo(20, 40); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(170,140,90,0.75)'; c.lineWidth = 6;
+    c.beginPath(); c.moveTo(-140, 20); c.bezierCurveTo(-110, -10, -130, -40, -100, -60); c.stroke();
+    c.beginPath(); c.moveTo(146, -10); c.bezierCurveTo(120, -30, 140, -60, 112, -80); c.stroke();
+    c.fillStyle = 'rgba(200,210,190,' + (0.18 + 0.06 * Math.sin(t)) + ')'; c.fillRect(X, -150, W, 120);   // ערפל
+    c.restore();
+    // מסגרת זהב מעוטרת
+    const fg = c.createLinearGradient(X, Y, X + W, Y + H);
+    fg.addColorStop(0, '#fff0a0'); fg.addColorStop(0.3, '#c9962a'); fg.addColorStop(0.6, '#f1c40f'); fg.addColorStop(1, '#8a5a10');
+    c.strokeStyle = SK_OUT; c.lineWidth = 22; c.strokeRect(X, Y, W, H);
+    c.strokeStyle = fg; c.lineWidth = 17; c.strokeRect(X, Y, W, H);
+    c.strokeStyle = 'rgba(90,50,0,0.6)'; c.lineWidth = 2; c.strokeRect(X - 4, Y - 4, W + 8, H + 8); c.strokeRect(X + 4, Y + 4, W - 8, H - 8);
+    for (const [x, y] of [[X, Y], [X + W, Y]]) skE(c, x, y, 13, 13, '#f1c40f', SK_OUT, 2.5);
+    // הדמות
+    skHairBack(c, sk, t);
+    skOutfit(c, sk, t);
+    skHead(c, sk);
+    skEyes(c, sk, st);
+}
+function skMonaFront(c, sk, st) {
+    skHairFront(c, sk, st.t);
+    // צעיף דק ושקוף על השיער (רק על השיער, לא על הפנים)
+    c.save();
+    c.strokeStyle = 'rgba(20,16,12,0.4)'; c.lineWidth = 7; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-92, -40); c.bezierCurveTo(-104, -150, 104, -150, 92, -40); c.stroke();
+    c.strokeStyle = 'rgba(20,16,12,0.55)'; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(-90, -96); c.quadraticCurveTo(0, -150, 90, -96); c.stroke();
+    for (const sd of [-1, 1]) {
+        c.fillStyle = 'rgba(20,16,12,0.28)';
+        c.beginPath(); c.moveTo(sd * 92, -40); c.lineTo(sd * 104, 60); c.lineTo(sd * 92, 62); c.lineTo(sd * 84, -30); c.closePath(); c.fill();
+    }
+    c.restore();
+    // מחשוף מקומט עם רקמה זהובה
+    c.strokeStyle = '#c9962a'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(-62, 78); c.quadraticCurveTo(0, 124, 62, 78); c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,0.15)'; c.lineWidth = 2;
+    for (let i = -5; i <= 5; i++) { c.beginPath(); c.moveTo(i * 11, 92 + Math.abs(i) * 0.5); c.lineTo(i * 13, 132); c.stroke(); }
+    c.strokeStyle = 'rgba(201,150,42,0.8)'; c.lineWidth = 1.6;
+    for (let i = -4; i <= 4; i++) { const x = i * 12, y = 84 + 26 * (1 - (i / 5) * (i / 5)); c.beginPath(); c.arc(x, y, 3, 0, Math.PI); c.stroke(); }
+    // צעיף כהה על הכתף השמאלית
+    c.beginPath(); c.moveTo(-124, 120); c.quadraticCurveTo(-90, 80, -40, 86); c.lineTo(-30, 110); c.quadraticCurveTo(-80, 120, -110, 220); c.closePath();
+    c.fillStyle = 'rgba(40,46,30,0.85)'; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2; c.stroke();
+}
+
 function skFridaExtra(c, sk, st) {
     const t = st.t, hair = sk.hair.color;
     // שיער אסוף לאחור עם שביל באמצע - המצח והגבות גלויים

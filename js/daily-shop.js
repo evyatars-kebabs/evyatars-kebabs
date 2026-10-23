@@ -500,7 +500,7 @@ const SHOP_CATEGORIES = [
     { id: 'food',    title: 'אוכל ושתייה',        icon: '🍢', ids: ['kebab', 'laffa', 'bubacola', 'rolazero', 'albanta'] },
     { id: 'hood',    title: 'אנשי השכונה',        icon: '🏘️', ids: ['danny', 'noa', 'yosi', 'roei', 'michal', 'avi', 'yuval', 'shira', 'omer', 'tamar', 'itay', 'dudu', 'maya', 'gili', 'yacht'] },
     { id: 'jobs',    title: 'מקצועות',            icon: '👷', ids: ['chef', 'waiter', 'farmer', 'beekeeper', 'builder', 'mechanic', 'fire', 'police', 'lifeguard', 'sailor', 'pilot', 'scientist', 'detective', 'dj', 'boxer', 'astronaut'] },
-    { id: 'history', title: 'דמויות היסטוריות',   icon: '🏛️', ids: ['pharaoh', 'gladiator', 'samurai', 'knight', 'viking', 'ninja', 'pirate', 'sultan', 'king', 'cowboy', 'hunter', 'gangster', 'einstein', 'newton', 'rhodes', 'frida'] },
+    { id: 'history', title: 'דמויות היסטוריות',   icon: '🏛️', ids: ['pharaoh', 'gladiator', 'samurai', 'knight', 'viking', 'ninja', 'pirate', 'sultan', 'king', 'cowboy', 'hunter', 'gangster', 'einstein', 'newton', 'rhodes', 'frida', 'monalisa'] },
     { id: 'fantasy', title: 'פנטזיה ומיתולוגיה',  icon: '🧙', ids: ['wizard', 'vampire', 'icequeen', 'angel', 'firemage', 'thunder', 'phoenix', 'shadow', 'dragon', 'cosmic', 'voidlord', 'kebabgod'] },
     { id: 'future',  title: 'גיבורים ועתיד',      icon: '🚀', ids: ['hero', 'cyborg', 'hacker'] },
     { id: 'stars',   title: 'כוכבים',             icon: '⭐', ids: ['rocker', 'punk', 'hedgehog', 'spidey', 'voldy', 'deni'] }
