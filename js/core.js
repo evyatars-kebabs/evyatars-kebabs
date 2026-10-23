@@ -236,7 +236,7 @@ const firebaseConfig = {
                     left.appendChild(img);
                 }
                 // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
-                left.appendChild(document.createTextNode(' ' + row.name + (row.id === playerId ? ' (אתה)' : '')));
+                left.appendChild(document.createTextNode(' ' + safeName(row.name) + (row.id === playerId ? ' (אתה)' : '')));
 
                 const right = document.createElement('span');
                 right.style.cssText = 'color: var(--accent-gold); font-weight: bold;';
@@ -331,6 +331,7 @@ const firebaseConfig = {
     }
 
     let playerName = store.get('kebab_playerName') || 'אורח';
+    if (isRudeName(playerName)) { playerName = 'אורח'; store.set('kebab_playerName', playerName); }
 
     document.getElementById('player-name-input').value = playerName;
     renderProfileStats();
@@ -378,6 +379,7 @@ const firebaseConfig = {
     function refreshAfterProgress() {
         if (typeof renderDaily === 'function') renderDaily();
         playerName = store.get('kebab_playerName') || 'אורח';
+        if (isRudeName(playerName)) { playerName = 'אורח'; store.set('kebab_playerName', playerName); }
         document.getElementById('player-name-input').value = playerName;
         renderProfileStats();
         renderCoinBadges();
@@ -516,6 +518,7 @@ const firebaseConfig = {
         const username = document.getElementById('acc-user').value.trim();
         const password = document.getElementById('acc-pass').value;
         if (!USERNAME_RE.test(username)) { setAccountMsg('שם משתמש: 3-15 אותיות, מספרים או _'); return null; }
+        if (accountMode === 'signup' && isRudeName(username)) { setAccountMsg('שם המשתמש הזה לא מתאים. בחרו שם אחר'); return null; }
         if (!PASSWORD_RE.test(password)) { setAccountMsg('סיסמה: לפחות 6 אותיות או מספרים'); return null; }
         return { username, password };
     }
@@ -584,7 +587,7 @@ const firebaseConfig = {
         box.innerHTML = '';
         const add = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; box.appendChild(e); return e; };
         if (accountUser) {
-            add('div', 'account-title', '🔐 מחובר בתור ' + (store.get(ACCOUNT_KEY) || ''));
+            add('div', 'account-title', '🔐 מחובר בתור ' + safeName(store.get(ACCOUNT_KEY) || ''));
             const sync = add('div', 'account-sync'); sync.id = 'account-sync';
             setSyncState(syncState);
             add('div', 'account-text', 'המטבעות, הסקינים והשיאים שלך נשמרים בחשבון. אפשר להתחבר איתו מכל מכשיר.');
@@ -665,6 +668,16 @@ const firebaseConfig = {
     /* --- שמירת שם שחקן --- */
     function savePlayerName() {
         const inputVal = document.getElementById('player-name-input').value.trim().slice(0, 20);
+        const msg = document.getElementById('name-save-msg');
+        if (isRudeName(inputVal)) {
+            msg.textContent = '❌ השם הזה לא מתאים. בחרו שם אחר';
+            msg.style.color = '#ff6a5c';
+            msg.style.display = 'block';
+            clearTimeout(msg._t);
+            msg._t = setTimeout(() => { msg.style.display = 'none'; }, 2500);
+            if (typeof sfx !== 'undefined') sfx.err();
+            return;
+        }
         playerName = inputVal !== '' ? inputVal : 'אורח';
         document.getElementById('player-name-input').value = playerName;
         store.set('kebab_playerName', playerName);
@@ -681,9 +694,11 @@ const firebaseConfig = {
 
         Object.keys(lbCache).forEach(k => { delete lbCache[k]; });
 
-        const msg = document.getElementById('name-save-msg');
+        msg.textContent = '✓ השם עודכן בהצלחה!';
+        msg.style.color = '#2ea043';
         msg.style.display = 'block';
-        setTimeout(() => { msg.style.display = 'none'; }, 2000);
+        clearTimeout(msg._t);
+        msg._t = setTimeout(() => { msg.style.display = 'none'; }, 2000);
     }
 
     /* --- שיא "תפוס את הקבב" --- */
