@@ -525,6 +525,16 @@
         .skin-modal-sub { font-size: 0.78rem; color: var(--muted); }
         .skin-modal-body .skin-switch { width: 80%; }
         .skin-modal-body .btn { width: 100%; margin-top: 6px; }
+        .leaderboard-list .leaderboard-item { cursor: pointer; }
+        .leaderboard-list .leaderboard-item:active { transform: scale(0.98); }
+        .player-modal .skin-modal-cv { width: 62%; margin: 0 auto; }
+        .player-bests { list-style: none; width: 100%; margin: 6px 0 2px; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+        .player-bests li { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); font-size: 0.85rem; }
+        .player-bests li b { color: var(--accent-gold); }
+        .player-bests li b small { color: var(--muted); font-weight: 400; margin-right: 4px; }
+        .player-bests li.none b { color: var(--muted); font-weight: 400; }
+        .player-bests .player-bests-wait { justify-content: center; color: var(--muted); }
         .skin-switch { display: flex; gap: 3px; margin: 6px 4px 2px; padding: 3px; border-radius: 999px; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-color); }
         .skin-switch button {
             flex: 1; padding: 4px 2px; border: 0; border-radius: 999px; background: transparent; color: var(--muted);

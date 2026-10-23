@@ -662,6 +662,64 @@ function renderSkinModal() {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSkinModal(); });
 
+/* ---------- פרופיל שחקן (נפתח בלחיצה על שורה בטבלת השיאים) ---------- */
+function openPlayerModal(p) {
+    closeSkinModal(true);
+    const sk = SV_SKINS.some(x => x.id === p.skin) ? skinById(p.skin) : skinById('classic');
+    const rar = SK_RARITY[sk.rarity];
+    const el = document.createElement('div');
+    el.id = 'skin-modal';
+    el.className = 'player-modal';
+    el.style.setProperty('--rc', rar ? rar.color : '#b9a38e');
+    const card = document.createElement('div');
+    card.className = 'skin-modal-card';
+    const x = document.createElement('button');
+    x.className = 'skin-modal-x'; x.textContent = '✕'; x.onclick = closeSkinModal;
+    const cv = document.createElement('canvas');
+    cv.className = 'skin-modal-cv';
+    const k = Math.min(3, (window.devicePixelRatio || 1)) * 300 / 360;
+    cv.width = Math.round(360 * k); cv.height = Math.round(400 * k);
+    const body = document.createElement('div');
+    body.className = 'skin-modal-body';
+    const nm = document.createElement('div'); nm.className = 'skin-modal-name'; nm.textContent = p.name + (p.id === playerId ? ' (אתה)' : '');
+    const skl = document.createElement('div'); skl.className = 'skin-modal-sub';
+    const tag = document.createElement('span'); tag.className = 'shop-rarity'; tag.textContent = rar ? rar.name : 'ברירת מחדל';
+    skl.appendChild(document.createTextNode('הסקין: ' + sk.name + ' '));
+    skl.appendChild(tag);
+    const list = document.createElement('ul'); list.className = 'player-bests';
+    const li = document.createElement('li'); li.className = 'player-bests-wait'; li.textContent = 'טוען שיאים...';
+    list.appendChild(li);
+    body.appendChild(nm); body.appendChild(skl); body.appendChild(list);
+    card.appendChild(x); card.appendChild(cv); card.appendChild(body);
+    el.appendChild(card);
+    el.addEventListener('click', e => { if (e.target === el) closeSkinModal(); });
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('open'));
+    skinModal = { el, cv, body, k, raf: 0, t0: performance.now(), show: sk.id };
+    const loop = ts => {
+        if (!skinModal || skinModal.el !== el) return;
+        drawSkinPreview(cv, sk, { t: 1 + (ts - skinModal.t0) / 1000, anim: true, k });
+        skinModal.raf = requestAnimationFrame(loop);
+    };
+    skinModal.raf = requestAnimationFrame(loop);
+
+    getPlayerBests(p.id, p.known).then(rows => {
+        if (!skinModal || skinModal.el !== el) return;
+        list.innerHTML = '';
+        rows.forEach(r => {
+            const row = document.createElement('li');
+            const a = document.createElement('span'); a.textContent = r.label;
+            const v = document.createElement('b');
+            v.textContent = r.score === null ? '—' : (r.score > 0 ? r.score + " נק'" : 'עוד לא שיחק');
+            if (r.score > 0 && r.rank) { const m = document.createElement('small'); m.textContent = ' #' + r.rank; v.appendChild(m); }
+            if (!(r.score > 0)) row.className = 'none';
+            row.appendChild(a); row.appendChild(v);
+            list.appendChild(row);
+        });
+        if (rows.every(r => r.score === null)) list.innerHTML = '<li class="player-bests-wait">אין חיבור לשרת כרגע</li>';
+    });
+}
+
 function renderShop() {
     const grid = document.getElementById('shop-grid');
     if (!grid) return;

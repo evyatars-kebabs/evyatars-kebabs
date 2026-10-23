@@ -170,6 +170,34 @@ const firebaseConfig = {
         return lbAvatarCache[id];
     }
 
+    /* --- פרופיל שחקן: השיאים שלו בכל המשחקים --- */
+    const PROFILE_BOARDS = [
+        ['leaderboard', '🍢 תפוס את הקבב'], ['leaderboard_ninja', '🥷 קבב נינג\'ה'], ['leaderboard_shvartz', '🥙 האכל את השוורץ'],
+        ['leaderboard_goods', '🥫 סידור המדפים'], ['leaderboard_kvk', '🍢 קבבים מול קולסקים']
+    ];
+    const profileCache = {};
+    // מחזיר [{ label, score, rank }] - מהטבלאות שכבר נטענו כשאפשר, אחרת קריאה אחת לכל משחק
+    // known = השורה שעליה לחצו ({ col, score, rank }) - לא צריך לקרוא אותה שוב
+    function getPlayerBests(id, known) {
+        const cached = profileCache[id];
+        if (cached && Date.now() - cached.t < LB_CACHE_MS) return Promise.resolve(cached.list);
+        const jobs = PROFILE_BOARDS.map(([col, label]) => {
+            if (known && known.col === col) return Promise.resolve({ label, score: known.score, rank: known.rank });
+            const lb = lbCache[col];
+            const row = lb && Date.now() - lb.t < LB_CACHE_MS ? lb.rows.find(r => r.id === id) : null;
+            if (row) return Promise.resolve({ label, score: row.score, rank: row.rank });
+            if (id === playerId) return Promise.resolve({ label, score: parseInt(store.get(LB_LOCAL_KEY[col])) || 0, rank: null });
+            if (!db) return Promise.resolve({ label, score: null, rank: null });
+            return db.collection(col).doc(id).get()
+                .then(doc => ({ label, score: doc.exists && typeof doc.data().score === 'number' ? doc.data().score : 0, rank: null }))
+                .catch(() => ({ label, score: null, rank: null }));
+        });
+        return Promise.all(jobs).then(list => {
+            if (list.every(x => x.score !== null)) profileCache[id] = { t: Date.now(), list };
+            return list;
+        });
+    }
+
     const LB_LIMIT = 100;                 // כמה שחקנים מוצגים בכל טבלה
     const LB_CACHE_MS = 300000;           // שומרים תשובה 5 דקות כדי לא לקרוא את כל הטבלה בכל מעבר בין לשוניות
     const lbCache = {};
@@ -224,6 +252,8 @@ const firebaseConfig = {
             rows.forEach((row, i) => {
                 const li = document.createElement('li');
                 li.className = 'leaderboard-item' + (row.rank <= 3 ? ' r' + row.rank : '') + (row.id === playerId ? ' me' : '');
+                li.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
+                                                     known: { col: collectionName, score: row.score, rank: row.rank } });
 
                 const left = document.createElement('span');
                 const strong = document.createElement('strong');
