@@ -529,7 +529,7 @@ function shopSetVariant(base, id) {
     renderShop();
 }
 
-const SHOP_PREVIEW = 4;                 // כמה סקינים מוצגים בכל קטגוריה לפני "הצג עוד"
+const SHOP_PREVIEW = 8;                 // כמה סקינים מוצגים בכל קטגוריה לפני "הצג עוד"
 const shopExpanded = new Set();         // קטגוריות שנפתחו במלואן
 
 function copyPreview(sk) {

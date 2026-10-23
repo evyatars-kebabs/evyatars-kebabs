@@ -1110,3 +1110,18 @@
         /* אפקטי לחיצה */
         .burst-dot { position: fixed; z-index: 9999; width: 7px; height: 7px; border-radius: 50%; pointer-events: none; }
         .confetti-bit { position: fixed; z-index: 9999; top: -14px; width: 9px; height: 14px; pointer-events: none; border-radius: 2px; }
+
+        /* ===== חנות: 4 סקינים בשורה ===== */
+        .shop-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+        .shop-card { padding: 4px 4px 5px; border-radius: 12px; border-top-width: 3px; display: flex; flex-direction: column; }
+        .shop-preview { border-radius: 8px; }
+        .shop-zoom { display: none; }                      /* לחיצה על התמונה פותחת את התצוגה המקדימה */
+        .shop-rarity { font-size: 0.5rem; padding: 0 5px; margin-top: 3px; }
+        .shop-name { font-size: 0.68rem; line-height: 1.15; margin: 3px 0; min-height: 2.3em; display: flex; align-items: center; justify-content: center; overflow-wrap: anywhere; }
+        .shop-card .skin-switch { margin: 0 0 4px; padding: 2px; gap: 2px; }
+        .shop-card .skin-switch button { font-size: 0.56rem; padding: 3px 0; }
+        .shop-card .skin-switch.triple button { font-size: 0.48rem; }
+        .shop-btn { font-size: 0.6rem !important; padding: 5px 2px !important; border-radius: 8px !important; margin-top: auto !important; line-height: 1.2;
+            box-shadow: 0 3px 0 #b3560a, inset 0 1px 0 rgba(255, 255, 255, 0.5) !important; }
+        .shop-btn .shop-was { display: block; margin: 0; }
+        .shop-deal-badge { top: 5px; right: 5px; font-size: 0.5rem; padding: 1px 4px; }
