@@ -4494,7 +4494,7 @@ function skHedgehogBack(c, sk, st) {
 }
 
 // בקבוק זכוכית של משקה מוגז (צורת "מותניים" קלאסית).
-// sk.bottle: { label, labelDark, ribbon, text, textColor, sub, cap }
+// sk.bottle: { label, labelDark, ribbon, text, textColor, sub, cap, liquid: [ארבעה צבעים, משמאל לימין] }
 function skBottleBack(c, sk, st) {
     const t = st.t, bt = sk.bottle, out = '#140806';
     // קו המתאר של הבקבוק: צוואר צר, כתפיים, בטן, מותניים ובסיס
@@ -4516,7 +4516,8 @@ function skBottleBack(c, sk, st) {
     c.fillStyle = 'rgba(200,230,215,0.35)'; c.fill(glass);
     c.save(); c.clip(glass);
     const lq = c.createLinearGradient(-86, 0, 86, 0);
-    lq.addColorStop(0, '#1a0804'); lq.addColorStop(0.3, '#4a1a0a'); lq.addColorStop(0.5, '#5e2410'); lq.addColorStop(1, '#140604');
+    const lc = bt.liquid || ['#1a0804', '#4a1a0a', '#5e2410', '#140604'];
+    lq.addColorStop(0, lc[0]); lq.addColorStop(0.3, lc[1]); lq.addColorStop(0.5, lc[2]); lq.addColorStop(1, lc[3]);
     c.fillStyle = lq;
     const level = -150 + Math.sin(t * 2) * 2;                            // פני הנוזל בצוואר
     c.fillRect(-100, level, 200, 520);
@@ -4626,6 +4627,9 @@ const SV_SKINS = [
       bottle: { label: '#d8161e', labelDark: '#7a0a0e', ribbon: '#ffffff', text: 'בובה בולה', textColor: '#ffffff', cap: '#d8161e' }, drawBack: skBottleBack },
     { id: 'rolazero', name: 'רולה זירו', rarity: 1, brow: '#000000', lips: '#d8161e', eyes: { iris: '#2a2a2a' }, blush: false,
       bottle: { label: '#1a1a1e', labelDark: '#050506', ribbon: '#d8161e', text: 'רולה זירו', textColor: '#d8161e', sub: 'אפס סוכר', cap: '#1a1a1e' }, drawBack: skBottleBack },
+    { id: 'albanta', name: 'אל-באנטה', rarity: 1, brow: '#7a2a04', lips: '#1f4fb4', eyes: { iris: '#3a1a06' }, blush: false,
+      bottle: { label: '#1f4fb4', labelDark: '#0f2a6a', ribbon: '#3fa33a', text: 'אל-באנטה', textColor: '#ff8a1a', sub: 'בטעם תפוז', cap: '#ff7a00',
+                liquid: ['#a8400a', '#f07a10', '#ff9a2a', '#8a3004'] }, drawBack: skBottleBack },
 
     /* ---------- נדיר ---------- */
     { id: 'pirate', name: 'הפיראט', rarity: 2, tone: '#d9a066', hair: { style: 'long', color: '#1a1410' }, eyepatch: 'left', earring: true,
