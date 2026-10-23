@@ -1286,6 +1286,14 @@ function skMonaFront(c, sk, st) {
     c.fillStyle = 'rgba(40,46,30,0.85)'; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2; c.stroke();
 }
 
+// כתר זהב קטן ומוטה על הראש
+function skSmallCrown(c, sk, st) {
+    c.save();
+    c.translate(14, -84); c.rotate(0.14); c.scale(0.55, 0.55);      // בסיס הכתר (y≈-100) יושב על השיער
+    skHatOver(c, { hat: { type: 'crown' } }, st.t);
+    c.restore();
+}
+
 function skFridaExtra(c, sk, st) {
     const t = st.t, hair = sk.hair.color;
     // שיער אסוף לאחור עם שביל באמצע - המצח והגבות גלויים

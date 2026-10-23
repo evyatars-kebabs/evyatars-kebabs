@@ -30,7 +30,7 @@ const SV_SKINS = [
     { id: 'avi', name: 'אבי', rarity: 0, tone: '#8d5524', hair: { style: 'buzz', color: '#14110f' }, lips: '#7a3a32',
       beard: { style: 'stubble', color: '#14110f' }, outfit: { base: '#7d8590', collar: 'crew' } },
     { id: 'yuval', name: 'יובל', rarity: 0, tone: '#f6d3b8', hair: { style: 'long', color: '#1b1f3a' }, lips: '#d9566f',
-      outfit: { base: '#2ea043', collar: 'crew' } },
+      outfit: { base: '#2ea043', collar: 'crew' }, extra: skSmallCrown },
 
     /* ---------- לא נפוץ ---------- */
     { id: 'chef', name: 'השף', rarity: 1, tone: '#e8b88a', hair: { style: 'sidebald', color: '#3a2412' },
@@ -286,7 +286,7 @@ const GENDER_FLIPS = {
     roei: { g: 'm', name: 'רעות' },
     michal: { g: 'f', name: 'מיכאל', ov: { beard: { style: 'stubble', color: '#1f130c' } } },
     avi: { g: 'm', name: 'אביבה', ov: { hair: { style: 'afro', color: '#14110f' } } },
-    yuval: { g: 'f', name: 'יואב' },
+    yuval: { g: 'f', name: 'יואב', ov: { extra: undefined } },
     shira: { g: 'f', name: 'שי' },
     omer: { g: 'm', name: 'עומרית', ov: { hair: { style: 'long', color: '#2a1a12' } } },
     tamar: { g: 'f', name: 'תומר', ov: { hair: { style: 'buzz', color: '#1a120c' } } },
