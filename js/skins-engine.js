@@ -1308,14 +1308,26 @@ function skCoachPolo(c, sk, st) {
     c.strokeStyle = '#ffffff'; c.lineWidth = 3; c.lineCap = 'round';
     c.beginPath(); c.moveTo(-64, 128); c.quadraticCurveTo(-56, 116, -46, 122); c.quadraticCurveTo(-40, 128, -48, 132); c.stroke();
     c.beginPath(); c.moveTo(-64, 138); c.lineTo(-44, 138); c.stroke();
-    // סמל הקבוצה: מגן כחול-כתום עם כדורסל
+    // סמל הקבוצה (אליצור יבנה): טבעת כחולה, כדורסל כתום וספר פתוח עם פסים כחולים וכתומים
     c.save(); c.translate(56, 132);
-    skP(c, [[-15, -16], [15, -16], [15, 4], [0, 18], [-15, 4]], '#f4f6fb', SK_OUT, 2);
-    skP(c, [[-11, -12], [11, -12], [11, 3], [0, 13], [-11, 3]], '#2c58c8', null, 0);
-    skE(c, 0, -1, 8, 8, '#ff8a1a', '#7a3a08', 1.5);
-    c.strokeStyle = '#7a3a08'; c.lineWidth = 1.2;
-    c.beginPath(); c.moveTo(-8, -1); c.lineTo(8, -1); c.moveTo(0, -9); c.lineTo(0, 7);
-    c.moveTo(-5, -7); c.quadraticCurveTo(-1, -1, -5, 5); c.moveTo(5, -7); c.quadraticCurveTo(1, -1, 5, 5); c.stroke();
+    const blue = '#1f4fa8', orange = '#f39219';
+    skE(c, 0, 0, 19, 19, blue, SK_OUT, 2);
+    c.strokeStyle = 'rgba(255,255,255,0.8)'; c.lineWidth = 1.2;
+    c.beginPath(); c.arc(0, 0, 16, Math.PI * 1.1, Math.PI * 1.9); c.stroke();          // הכיתוב בטבעת
+    skE(c, 0, 0, 13, 13, '#ffffff');
+    c.save(); c.beginPath(); c.arc(0, 0, 13, 0, Math.PI * 2); c.clip();
+    skE(c, 0, -4, 9, 9, orange, '#8a4a08', 1);                                            // הכדור
+    c.strokeStyle = '#8a4a08'; c.lineWidth = 0.9;
+    c.beginPath(); c.moveTo(-9, -4); c.lineTo(9, -4); c.moveTo(0, -13); c.lineTo(0, 5);
+    c.moveTo(-6, -11); c.quadraticCurveTo(-2, -4, -6, 3); c.moveTo(6, -11); c.quadraticCurveTo(2, -4, 6, 3); c.stroke();
+    for (let i = 0; i < 4; i++) {                                                           // הספר הפתוח
+        const y = 2 + i * 3.2;
+        c.strokeStyle = blue; c.lineWidth = 1.8;
+        c.beginPath(); c.moveTo(-14, y); c.quadraticCurveTo(-6, y - 1, 0, y + 4); c.stroke();
+        c.strokeStyle = orange;
+        c.beginPath(); c.moveTo(14, y); c.quadraticCurveTo(6, y - 1, 0, y + 4); c.stroke();
+    }
+    c.restore();
     c.restore();
 }
 
