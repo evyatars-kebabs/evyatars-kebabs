@@ -1849,6 +1849,7 @@ const firebaseConfig = {
 	function switchTab(screenId) {
 			stopAllGames();
 		if (screenId !== 'result') creditPendingCoins();
+		if (window.kebabUpdateReady && ['home', 'shop', 'profile', 'leaderboard'].includes(screenId)) setTimeout(() => window.kebabTryUpdate(), 50);
 		document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
 		document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
 
@@ -7963,11 +7964,47 @@ renderDaily();
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(err => {
+      // updateViaCache: 'none' - גם קובץ ה-service worker עצמו תמיד נבדק מול השרת
+      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+      }).catch(err => {
         console.log('Service Worker registration failed: ', err);
       });
     });
   }
+
+  /* ---------- עדכון אוטומטי כשהאפליקציה פתוחה ----------
+     בודקים מדי פעם (ובכל חזרה לאפליקציה) אם index.html בשרת השתנה. אם כן - שומרים
+     את ההתקדמות ומרעננים, אבל אף פעם לא באמצע משחק: מחכים לחזרה למסך הבית. */
+  (function watchForUpdates() {
+    if (location.protocol === 'file:' || !window.fetch) return;
+    let known = null, reloading = false;
+    const inGame = () => {
+      const res = document.getElementById('screen-result');
+      return document.body.classList.contains('in-game') || !!(res && res.classList.contains('active'));
+    };
+    const reloadNow = () => {
+      if (reloading) return;
+      reloading = true;
+      showToast('🔄 יש גרסה חדשה - מעדכנים...');
+      const save = typeof saveCloudNow === 'function' ? saveCloudNow() : Promise.resolve();
+      Promise.race([save, new Promise(r => setTimeout(r, 2500))]).then(() => setTimeout(() => location.reload(), 900));
+    };
+    window.kebabUpdateReady = false;
+    window.kebabTryUpdate = () => { if (window.kebabUpdateReady && !inGame()) reloadNow(); };
+    const check = () => {
+      if (reloading) return;
+      fetch(location.pathname, { method: 'HEAD', cache: 'no-store' }).then(r => {
+        const tag = r.headers.get('etag') || r.headers.get('last-modified');
+        if (!r.ok || !tag) return;
+        if (known === null) { known = tag; return; }
+        if (tag !== known) { window.kebabUpdateReady = true; window.kebabTryUpdate(); }
+      }).catch(() => {});
+    };
+    check();
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+    setInterval(check, 5 * 60 * 1000);
+  })();
 </script>
 </body>
 </html>
