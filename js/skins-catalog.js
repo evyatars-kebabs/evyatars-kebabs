@@ -115,6 +115,9 @@ const SV_SKINS = [
       aura: { color: '#ffb02e', alpha: 0.45 }, fx: { type: 'sparkles', count: 14 }, drawBack: skLaffaBack },
     { id: 'hedgehog', name: 'סוניק', rarity: 4, brow: '#123c94', lips: '#8a4a3a', eyes: { iris: '#1f9a4a' }, blush: false,
       aura: { color: '#4a9cff', alpha: 0.45 }, fx: { type: 'sparkles', count: 14, speed: 0.6 }, drawBack: skHedgehogBack },
+    { id: 'voldy', name: 'וולדמורט', rarity: 3, tone: '#e6e4dc', brow: '#cfccc2', lips: '#a8969a', blush: false,
+      eyes: { glow: '#ff2a2a', slit: true }, outfit: { base: '#121216', collar: 'high' }, cape: { color: '#16141c' },
+      aura: { color: '#2aff7a', alpha: 0.35, runes: true }, drawBack: skVoldBack },
     { id: 'spidey', name: 'ספיידי', rarity: 4, tone: '#f0c8a0', lips: '#b8576a', blush: false,
       aura: { color: '#ff3040', alpha: 0.4 }, fx: { type: 'sparkles', count: 12, speed: 0.5 }, drawBack: skSpideyBack },
 

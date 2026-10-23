@@ -503,7 +503,7 @@ const SHOP_CATEGORIES = [
     { id: 'history', title: 'דמויות היסטוריות',   icon: '🏛️', ids: ['pharaoh', 'gladiator', 'samurai', 'knight', 'viking', 'ninja', 'pirate', 'sultan', 'king', 'cowboy', 'hunter', 'gangster', 'einstein', 'newton'] },
     { id: 'fantasy', title: 'פנטזיה ומיתולוגיה',  icon: '🧙', ids: ['wizard', 'vampire', 'icequeen', 'angel', 'firemage', 'thunder', 'phoenix', 'shadow', 'dragon', 'cosmic', 'voidlord', 'kebabgod'] },
     { id: 'future',  title: 'גיבורים ועתיד',      icon: '🚀', ids: ['hero', 'cyborg', 'hacker'] },
-    { id: 'stars',   title: 'כוכבים',             icon: '⭐', ids: ['rocker', 'punk', 'hedgehog', 'spidey', 'deni'] }
+    { id: 'stars',   title: 'כוכבים',             icon: '⭐', ids: ['rocker', 'punk', 'hedgehog', 'spidey', 'voldy', 'deni'] }
 ];
 
 const VARIANT_KEY = 'kebab_skin_variant';        // הגרסה שנבחרה במתג לכל כרטיס

@@ -899,6 +899,74 @@ function skDeniFront(c, sk, st) {
     c.restore();
 }
 
+// וולדמורט - קרחת, פנים חיוורות, אף נחש, עיניים אדומות, גלימה שחורה, שרביט ונחש על הכתפיים
+function skVoldBack(c, sk, st) {
+    const t = st.t, tone = sk.tone;
+    skAuraBack(c, sk, t);
+    skCapeBack(c, sk, t);
+    // שרביט עצם עם ניצוצות ירוקים
+    c.save(); c.translate(118, 232); c.rotate(0.5 + Math.sin(t * 1.8) * 0.07);
+    c.strokeStyle = '#3a3226'; c.lineWidth = 11; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, 6); c.quadraticCurveTo(-6, -70, 2, -150); c.stroke();
+    c.strokeStyle = '#e8e2d0'; c.lineWidth = 7.5;
+    c.beginPath(); c.moveTo(0, 6); c.quadraticCurveTo(-6, -70, 2, -150); c.stroke();
+    for (const y of [-6, -22, -38]) skE(c, -1, y, 7, 4.5, '#d8d0b8', '#3a3226', 2);   // ידית מפרקים
+    skE(c, 2, -150, 4, 4, '#f4f0e2', '#3a3226', 2);
+    const pulse = 0.6 + 0.4 * Math.sin(t * 6);
+    skGlow(c, 2, -156, 40, '#2aff7a', 0.55 * pulse);
+    for (let i = 0; i < 5; i++) {
+        const a = t * 3 + i * 1.26, r = 14 + 10 * ((t * 1.5 + i * 0.37) % 1);
+        skStar(c, 2 + Math.cos(a) * r, -156 + Math.sin(a) * r, 3 + (i % 2) * 2, 'rgba(160,255,190,' + (0.5 + 0.5 * pulse) + ')', a);
+    }
+    skE(c, 0, 8, 22, 18, '#e6e4dc', SK_OUT, 2.5);                   // יד חיוורת
+    c.restore();
+    skOutfit(c, sk, t);
+    // קפלי הגלימה
+    c.save(); skTorsoPath(c); c.clip();
+    c.strokeStyle = 'rgba(255,255,255,0.06)'; c.lineWidth = 6;
+    for (const x of [-80, -40, 30, 72]) { c.beginPath(); c.moveTo(x, 110); c.quadraticCurveTo(x + 12, 220, x - 6, 340); c.stroke(); }
+    c.restore();
+    // הנחש: כרוך סביב הכתפיים, הראש מורם ליד הכתף הימנית
+    const sw = Math.sin(t * 2.2) * 4;
+    const body = new Path2D();
+    body.moveTo(-56, 200); body.bezierCurveTo(-120, 170, -116, 96, -64, 76);
+    body.bezierCurveTo(-30, 62, 30, 62, 66, 76);
+    body.bezierCurveTo(100, 90, 104, 116, 92 + sw, 132);
+    c.lineCap = 'round';
+    c.strokeStyle = SK_OUT; c.lineWidth = 33; c.stroke(body);
+    const sg = c.createLinearGradient(0, 60, 0, 200);
+    sg.addColorStop(0, '#5a8f3e'); sg.addColorStop(1, '#2f5a22');
+    c.strokeStyle = sg; c.lineWidth = 28; c.stroke(body);
+    c.save(); c.setLineDash([6, 8]); c.strokeStyle = 'rgba(20,50,14,0.7)'; c.lineWidth = 14; c.stroke(body); c.restore();
+    c.strokeStyle = 'rgba(210,240,150,0.35)'; c.lineWidth = 4; c.stroke(body);
+    // ראש הנחש
+    c.save(); c.translate(98 + sw, 138); c.rotate(-0.5 + Math.sin(t * 1.5) * 0.08);
+    c.beginPath(); c.moveTo(0, -22); c.bezierCurveTo(22, -20, 26, 14, 8, 26); c.quadraticCurveTo(0, 30, -8, 26);
+    c.bezierCurveTo(-26, 14, -22, -20, 0, -22); c.closePath();
+    c.fillStyle = '#4a7a34'; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+    skE(c, -8, -2, 4.5, 5.5, '#ffd23d', SK_OUT, 1.5); skE(c, 8, -2, 4.5, 5.5, '#ffd23d', SK_OUT, 1.5);
+    skE(c, -8, -2, 1.2, 4.5, '#111'); skE(c, 8, -2, 1.2, 4.5, '#111');
+    skE(c, -3, 18, 1.4, 1.4, '#16300e'); skE(c, 3, 18, 1.4, 1.4, '#16300e');
+    if (Math.sin(t * 5) > 0.2) {                                         // לשון מפוצלת
+        c.strokeStyle = '#d6291f'; c.lineWidth = 2.4;
+        c.beginPath(); c.moveTo(0, 28); c.lineTo(0, 40); c.lineTo(-5, 47); c.moveTo(0, 40); c.lineTo(5, 47); c.stroke();
+    }
+    c.restore();
+    // ראש קירח וחיוור
+    skHead(c, sk);
+    // אף נחש: מכסים את האף ומציירים שני חריצים
+    skE(c, 0, -30, 14, 12, tone);
+    c.strokeStyle = '#3a3030'; c.lineWidth = 3; c.lineCap = 'round';
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 4, -36); c.quadraticCurveTo(s * 9, -30, s * 6, -24); c.stroke(); }
+    // ורידים כהים ברקות וצל מתחת לעיניים
+    c.strokeStyle = 'rgba(90, 110, 120, 0.4)'; c.lineWidth = 1.8;
+    for (const s of [-1, 1]) {
+        c.beginPath(); c.moveTo(s * 70, -110); c.quadraticCurveTo(s * 62, -96, s * 74, -84); c.quadraticCurveTo(s * 80, -76, s * 72, -66); c.stroke();
+        skE(c, s * 34, -44, 16, 5, 'rgba(110, 90, 110, 0.25)');
+    }
+    skEyes(c, sk, st);
+}
+
 function skHedgehogBack(c, sk, st) {
     const t = st.t, blue = '#1f5fd6', dk = '#123c94', peach = '#f3c99a', out = '#0a1a40';
     const bg = (x0, y0, r) => {
