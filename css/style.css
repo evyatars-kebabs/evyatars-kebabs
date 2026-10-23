@@ -466,12 +466,19 @@
         .shop-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .shop-cats { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 6px; scrollbar-width: none; }
         .shop-cats::-webkit-scrollbar { display: none; }
+        /* סרגל הקטגוריות נשאר בראש החנות בזמן גלילה */
+        #shop-grid .shop-cats {
+            position: sticky; top: 0; z-index: 5; margin: 0 -6px 4px; padding: 8px 6px;
+            background: linear-gradient(180deg, rgba(20, 10, 5, 0.97) 75%, rgba(20, 10, 5, 0.88));
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            border-radius: 0 0 16px 16px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
+        }
         .shop-cat {
             flex: 0 0 auto; background: rgba(0, 0, 0, 0.3); color: var(--text-color); border: 1px solid var(--border-color);
             border-radius: 999px; padding: 6px 11px; font-family: 'Rubik', sans-serif; font-size: 0.78rem; cursor: pointer; white-space: nowrap;
         }
         .shop-cat:active { transform: scale(0.94); border-color: var(--accent-gold); }
-        .shop-group-head { scroll-margin-top: 8px; }
+        .shop-group-head { scroll-margin-top: 62px; }      /* לא להסתתר מתחת לסרגל הקטגוריות */
         .shop-more {
             display: block; width: 100%; margin: 10px 0 4px; padding: 9px 12px; border-radius: 12px; cursor: pointer;
             background: rgba(255, 194, 51, 0.08); color: var(--accent-gold); border: 1px dashed rgba(255, 194, 51, 0.5);

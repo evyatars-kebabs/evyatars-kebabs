@@ -532,6 +532,13 @@ function shopSetVariant(base, id) {
 const SHOP_PREVIEW = 4;                 // כמה סקינים מוצגים בכל קטגוריה לפני "הצג עוד"
 const shopExpanded = new Set();         // קטגוריות שנפתחו במלואן
 
+function copyPreview(sk) {
+    const src = getPreview(sk);
+    const cv = document.createElement('canvas');
+    cv.width = src.width; cv.height = src.height; cv.className = src.className;
+    cv.getContext('2d').drawImage(src, 0, 0);
+    return cv;
+}
 function shopScrollTo(id) {
     const head = document.getElementById('shop-cat-' + id);
     if (head) head.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -738,7 +745,10 @@ function renderShop() {
     const byRarity = (a, b) => a.rarity - b.rarity;
     const isSpecial = s => s.rarity >= 0 && SK_RARITY[s.rarity] && SK_RARITY[s.rarity].codeOnly;
     const placed = new Set(SHOP_CATEGORIES.flatMap(c => c.ids));
-    const groups = [{ id: 'default', title: 'ברירת מחדל', icon: '🥙', color: '#b9a38e', skins: SV_SKINS.filter(s => s.rarity < 0) }];
+    // הקטגוריה הראשונה: הסקינים של השחקן, מהנדיר ביותר לנפוץ (כרטיס אחד לכל סקין עם גרסאות)
+    const groups = [{ id: 'owned', title: 'הסקינים שלי', icon: '🎒', color: '#4ad66d',
+                      skins: SV_SKINS.filter(s => owned.has(s.id) && !s.variantOf).sort((a, b) => b.rarity - a.rarity) },
+                    { id: 'default', title: 'ברירת מחדל', icon: '🥙', color: '#b9a38e', skins: SV_SKINS.filter(s => s.rarity < 0) }];
     SHOP_CATEGORIES.forEach(cat => groups.push({
         id: cat.id, title: cat.title, icon: cat.icon, color: '#ffc233',
         skins: SV_SKINS.filter(s => cat.ids.includes(s.id) && !isSpecial(s) && !s.variantOf).sort(byRarity)
@@ -778,7 +788,7 @@ function renderShop() {
         const r = document.createElement('span');
         r.className = 'shop-group-count';
         const have = g.skins.filter(s => owned.has(s.id)).length;      // כרטיס עם גרסאות נספר פעם אחת
-        r.textContent = g.id === 'default' ? 'חינם' : have + '/' + g.skins.length;
+        r.textContent = g.id === 'default' ? 'חינם' : g.id === 'owned' ? (g.skins.length === 1 ? 'סקין אחד' : g.skins.length + ' סקינים') : have + '/' + g.skins.length;
         head.appendChild(l);
         head.appendChild(r);
         grid.appendChild(head);
@@ -797,7 +807,8 @@ function renderShop() {
             card.className = 'shop-card r' + sk.rarity + (eq === sk.id ? ' equipped' : '');
             card.style.setProperty('--rc', rar ? rar.color : '#b9a38e');
 
-            const pv = getPreview(sk);
+            // אותו סקין מופיע גם ב"הסקינים שלי" וגם בקטגוריה שלו - לכרטיס השני מעתיקים את התמונה
+            const pv = g.id === 'owned' ? copyPreview(sk) : getPreview(sk);
             pv.onclick = () => openSkinModal(baseSk.id);
             card.appendChild(pv);
             const zoom = document.createElement('button');
