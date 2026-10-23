@@ -1523,7 +1523,7 @@ const firebaseConfig = {
             if (accountUser && accountUser.uid === uid) { store.remove(SYNC_DIRTY_KEY); setSyncState('saved'); }
         }).catch(err => {
             console.error('שגיאה בשמירת החשבון:', err.code || '', err.message || err);
-            setSyncState('error');
+            setSyncState(err.code === 'permission-denied' ? 'denied' : 'error');
         });
     }
     document.addEventListener('visibilitychange', () => { if (document.hidden && cloudTimer) saveCloudNow(); });
@@ -1558,7 +1558,7 @@ const firebaseConfig = {
             renderAccountUI();
         }).catch(err => {
             console.error('שגיאה בטעינת החשבון:', err.code || '', err.message || err);
-            setSyncState('error');
+            setSyncState(err.code === 'permission-denied' ? 'denied' : 'error');
             renderAccountUI();
         });
     }
@@ -1595,8 +1595,12 @@ const firebaseConfig = {
         if (code === 'auth/weak-password') return 'הסיסמה חלשה מדי (לפחות 6 תווים)';
         if (code === 'auth/too-many-requests') return 'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות';
         if (code === 'auth/network-request-failed') return 'אין חיבור לאינטרנט';
-        if (code === 'auth/operation-not-allowed') return 'החשבונות עדיין לא הופעלו (צריך להפעיל Email/Password ב-Firebase)';
-        return 'משהו השתבש. נסו שוב';
+        // בעיות הגדרה בשרת - לא באשמת השחקן
+        if (['auth/configuration-not-found', 'auth/operation-not-allowed', 'auth/admin-restricted-operation'].includes(code))
+            return 'החשבונות עדיין לא הופעלו בשרת. נסו שוב מאוחר יותר';
+        if (code.startsWith('auth/requests-from-referer') || code === 'auth/api-key-not-valid' || code === 'auth/invalid-api-key')
+            return 'האתר הזה לא מורשה להשתמש בחשבונות';
+        return 'משהו השתבש. נסו שוב (' + (code || 'שגיאה לא ידועה') + ')';
     }
 
     function setAccountMsg(text, ok) {
@@ -1633,6 +1637,7 @@ const firebaseConfig = {
                 }
                 sfx.buy(); confettiBurst(30);
             }).catch(err => {
+                console.error('הרשמה נכשלה:', err.code || '', err.message || err);
                 store.remove(ACCOUNT_KEY);
                 btn.disabled = false;
                 setAccountMsg(accountError(err));
@@ -1646,6 +1651,7 @@ const firebaseConfig = {
                 store.remove(SYNC_DIRTY_KEY);
                 sfx.good();
             }).catch(err => {
+                console.error('התחברות נכשלה:', err.code || '', err.message || err);
                 btn.disabled = false;
                 setAccountMsg(accountError(err));
                 sfx.err();
@@ -1664,7 +1670,8 @@ const firebaseConfig = {
         syncState = s;
         const el = document.getElementById('account-sync');
         if (!el) return;
-        el.textContent = { loading: '⏳ טוען את ההתקדמות...', saving: '⏳ שומר...', saved: '☁️ ההתקדמות שמורה בחשבון', error: '⚠️ השמירה נכשלה - ננסה שוב בשינוי הבא' }[s] || '';
+        el.textContent = { loading: '⏳ טוען את ההתקדמות...', saving: '⏳ שומר...', saved: '☁️ ההתקדמות שמורה בחשבון', error: '⚠️ השמירה נכשלה - ננסה שוב בשינוי הבא',
+                          denied: '⚠️ השמירה בענן חסומה כרגע בשרת. ההתקדמות נשמרת במכשיר בינתיים' }[s] || '';
     }
 
     function renderAccountUI() {
