@@ -627,6 +627,41 @@ function skMouseBack(c, sk, st) {
     skEyes(c, sk, st);
 }
 // טוקסידו: דשים שחורים מבריקים מעל חולצה לבנה, פפיון אדום וכפתורים
+// מר קבב: טוקסידו, משקפי שמש, שיער חום פרוע עם נפח וזיפים קלים, וסיכת שיפוד זהב על הדש
+function skMrKebabBack(c, sk, st) {
+    const t = st.t;
+    skAuraBack(c, sk, t);
+    skOutfit(c, sk, t);
+    skTuxedo(c);
+    // סיכת שיפוד מזהב על הדש
+    c.save(); c.translate(-48, 128); c.rotate(-0.5);
+    c.strokeStyle = '#7a5a10'; c.lineWidth = 3.5; c.beginPath(); c.moveTo(0, -16); c.lineTo(0, 16); c.stroke();
+    c.strokeStyle = '#f1c40f'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, -16); c.lineTo(0, 16); c.stroke();
+    for (const [y, col] of [[-8, '#c97a32'], [0, '#e8402a'], [8, '#c97a32']]) skR(c, -6, y - 3.5, 12, 7, 3, col, '#3a1a08', 1.2);
+    const tw = Math.max(0, Math.sin(t * 2.2));
+    if (tw > 0.75) skStar(c, 5, -14, 2 + (tw - 0.75) * 14, '#ffffff', t * 3);
+    c.restore();
+    skHead(c, sk);
+    skFaceMarks(c, sk, t);
+    skEyes(c, sk, st);
+    skBeardBack(c, sk, t);
+}
+function skMrKebabFront(c, sk, st) {
+    const col = sk.hair.color, hl = skShade(col, 0.22);
+    skHairFront(c, sk, st.t);
+    // נפח פרוע למעלה ותלתל שנופל קצת על המצח
+    for (const [x, y, rx, ry, r] of [[-56, -132, 30, 20, -0.4], [-18, -146, 34, 22, -0.1], [22, -146, 32, 21, 0.15], [58, -130, 28, 19, 0.5]])
+        skE(c, x, y, rx, ry, col, SK_OUT, 2.5, r);
+    skE(c, 0, -138, 70, 18, col);
+    c.beginPath(); c.moveTo(-34, -112); c.quadraticCurveTo(-10, -104, 4, -92); c.quadraticCurveTo(-4, -110, -24, -118); c.closePath();
+    c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2; c.stroke();
+    c.strokeStyle = hl; c.lineWidth = 2.5; c.lineCap = 'round';
+    for (const [x0, y0, x1, y1] of [[-60, -142, -40, -124], [-24, -156, -8, -134], [16, -156, 30, -136], [50, -142, 64, -124]]) {
+        c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo((x0 + x1) / 2 + 6, (y0 + y1) / 2 - 4, x1, y1); c.stroke();
+    }
+    skGlasses(c, sk);
+}
+
 function skTuxedo(c) {
     c.save(); skTorsoPath(c); c.clip();
     for (const s of [-1, 1]) {
