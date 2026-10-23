@@ -3701,7 +3701,59 @@ function skDrawHumanFront(c, sk, st) {
     skHairFront(c, sk, t);
     skEarring(c, sk);
     skHatOver(c, sk, t);
+    if (sk.extra) sk.extra(c, sk, st);                 // פרט ייחודי לסקין (מעל הכול)
     c.restore();
+}
+
+/* ---------- פרטים ייחודיים לסקינים היסטוריים ---------- */
+function skEinsteinExtra(c, sk, st) {
+    // שפם עבות ופרוע
+    c.fillStyle = sk.beard.color;
+    for (const s of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(s * 2, -24);
+        c.quadraticCurveTo(s * 30, -34, s * 56, -14);
+        c.quadraticCurveTo(s * 44, -8, s * 36, -10);
+        c.quadraticCurveTo(s * 20, -6, s * 2, -14);
+        c.closePath(); c.fill();
+        c.strokeStyle = 'rgba(160,160,170,0.7)'; c.lineWidth = 1.5;
+        for (let i = 0; i < 5; i++) { c.beginPath(); c.moveTo(s * (10 + i * 8), -24 + i); c.lineTo(s * (8 + i * 9), -12); c.stroke(); }
+    }
+    // E=mc² בגיר
+    const bob = Math.sin(st.t * 2) * 4;
+    c.save();
+    c.translate(118, -170 + bob); c.rotate(-0.12);
+    skR(c, -54, -26, 108, 48, 8, 'rgba(30,50,40,0.9)', '#8a6a3a', 4);
+    c.fillStyle = '#f4f4ec'; c.font = 'bold 26px "Secular One", Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.direction = 'ltr';
+    c.fillText('E=mc²', 0, 0);
+    c.restore();
+}
+function skNewtonExtra(c, sk, st) {
+    // תלתלי פאה לאורך הצדדים
+    const col = sk.hair.color, dk = skShade(col, -0.25);
+    for (const s of [-1, 1]) {
+        for (let i = 0; i < 5; i++) {
+            const x = s * (96 + (i % 2) * 8), y = -70 + i * 30;
+            skE(c, x, y, 17, 15, i % 2 ? col : dk, SK_OUT, 2);
+            c.strokeStyle = skA('#ffffff', 0.35); c.lineWidth = 2;
+            c.beginPath(); c.arc(x, y, 8, Math.PI * 1.1, Math.PI * 1.9); c.stroke();
+        }
+    }
+    // תפוח שנופל על הראש וקופץ
+    const ph = (st.t * 0.9) % 1;
+    const y = -168 - Math.abs(Math.sin(ph * Math.PI)) * 34;
+    c.save();
+    c.translate(16, y); c.rotate(Math.sin(st.t * 3) * 0.2);
+    skE(c, 0, 0, 22, 20, '#d8231c', '#5a0a08', 2.5);
+    skE(c, -8, -6, 6, 4, 'rgba(255,255,255,0.5)');
+    c.strokeStyle = '#5a3a1a'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, -18); c.lineTo(2, -28); c.stroke();
+    skE(c, 10, -26, 9, 4.5, '#3fa33a', '#1e5a1a', 1.5, -0.4);
+    c.restore();
+    // כוכבי "אאוץ'" כשהתפוח נוחת
+    if (ph < 0.12 || ph > 0.88) {
+        for (const [x, yy] of [[-44, -150], [64, -154], [-4, -186]]) skStar(c, x, yy, 7, '#ffe27a', st.t * 4);
+    }
 }
 
 function skDrawHumanFx(c, sk, st) {
@@ -4662,6 +4714,12 @@ const SV_SKINS = [
     { id: 'detective', name: 'הבלש', rarity: 2, tone: '#f0c08f', hair: { style: 'short', color: '#3a2a1a' },
       glasses: { type: 'monocle' }, beard: { style: 'mustache', color: '#3a2a1a' }, hat: { type: 'fedora' },
       outfit: { base: '#d9d4c5', coat: '#a8875a', collar: 'tie', tie: '#6a1d12' } },
+    { id: 'einstein', name: 'אלברט', rarity: 2, tone: '#f0c8a0', hair: { style: 'wild', color: '#ececf2' }, brow: '#b8b8c0',
+      beard: { color: '#e4e4ea' }, lips: '#b8676a', eyes: { iris: '#4a3020' },
+      outfit: { base: '#e8e4da', cardigan: '#7a6a58', collar: 'tie', tie: '#3a3a46' }, extra: skEinsteinExtra },
+    { id: 'newton', name: 'אייזק', rarity: 2, tone: '#f3d2b0', hair: { style: 'wavy', color: '#d6cebe' }, brow: '#7a6a50',
+      lips: '#c25a6a', eyes: { iris: '#3a2a1a' },
+      outfit: { base: '#2a2a32', trim: '#15151a', collar: 'v', inner: '#f7f7fa', coat: '#3a2a20' }, extra: skNewtonExtra },
 
     /* ---------- אפי ---------- */
     { id: 'astronaut', name: 'האסטרונאוט', rarity: 3, tone: '#e0a977', hair: { style: 'short', color: '#2a1a12' }, hat: { type: 'astro' },
@@ -5092,7 +5150,7 @@ const SHOP_CATEGORIES = [
     { id: 'food',    title: 'אוכל ושתייה',        icon: '🍢', ids: ['kebab', 'laffa', 'bubacola', 'rolazero', 'albanta'] },
     { id: 'hood',    title: 'אנשי השכונה',        icon: '🏘️', ids: ['danny', 'noa', 'yosi', 'roei', 'michal', 'avi', 'yuval', 'shira', 'omer', 'tamar', 'itay', 'dudu', 'maya', 'gili', 'yacht'] },
     { id: 'jobs',    title: 'מקצועות',            icon: '👷', ids: ['chef', 'waiter', 'farmer', 'beekeeper', 'builder', 'mechanic', 'fire', 'police', 'lifeguard', 'sailor', 'pilot', 'scientist', 'detective', 'dj', 'boxer', 'astronaut'] },
-    { id: 'history', title: 'דמויות היסטוריות',   icon: '🏛️', ids: ['pharaoh', 'gladiator', 'samurai', 'knight', 'viking', 'ninja', 'pirate', 'sultan', 'king', 'cowboy', 'hunter', 'gangster'] },
+    { id: 'history', title: 'דמויות היסטוריות',   icon: '🏛️', ids: ['pharaoh', 'gladiator', 'samurai', 'knight', 'viking', 'ninja', 'pirate', 'sultan', 'king', 'cowboy', 'hunter', 'gangster', 'einstein', 'newton'] },
     { id: 'fantasy', title: 'פנטזיה ומיתולוגיה',  icon: '🧙', ids: ['wizard', 'vampire', 'icequeen', 'angel', 'firemage', 'thunder', 'phoenix', 'shadow', 'dragon', 'cosmic', 'voidlord', 'kebabgod'] },
     { id: 'future',  title: 'גיבורים ועתיד',      icon: '🚀', ids: ['hero', 'cyborg', 'hacker'] },
     { id: 'stars',   title: 'כוכבים',             icon: '⭐', ids: ['rocker', 'punk', 'hedgehog', 'deni'] }
