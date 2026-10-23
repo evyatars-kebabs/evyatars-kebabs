@@ -763,8 +763,7 @@ function skJerseyBody(c, sk, t, J) {
 function skNirBack(c, sk, st) {
     skJerseyBody(c, sk, st.t, sk.jersey);
     skHead(c, sk);
-    for (const [x, y] of [[-56, -30], [-46, -38], [-40, -24], [52, -32], [44, -22], [60, -40], [-8, -44], [8, -46]])
-        skE(c, x, y, 1.8, 1.8, 'rgba(160, 90, 50, 0.45)');                 // נמשים עדינים
+    skFaceMarks(c, sk, st.t);
     skEyes(c, sk, st);
 }
 function skNirFront(c, sk, st) {
@@ -773,12 +772,12 @@ function skNirFront(c, sk, st) {
     hair.moveTo(-94, -36);
     hair.bezierCurveTo(-104, -110, -70, -152, -10, -154);
     hair.bezierCurveTo(56, -158, 104, -118, 94, -36);
-    hair.lineTo(88, -60);                                     // צדדים מכסים את קצה האוזן
-    hair.lineTo(80, -96);
-    // פוני פרוע שנופל על המצח, ארוך יותר בצד שמאל
-    for (const [x, y] of [[70, -104], [60, -98], [50, -112], [38, -102], [26, -116], [12, -104], [0, -118], [-12, -104],
-                           [-22, -114], [-36, -100], [-44, -110], [-58, -96], [-66, -106], [-78, -92]]) hair.lineTo(x, y);
-    hair.lineTo(-86, -62);
+    hair.lineTo(86, -58);                                     // צדדים מכסים את קצה האוזן
+    hair.lineTo(80, -84);
+    // פוני משונן שיורד על המצח
+    for (const [x, y] of [[66, -90], [56, -82], [44, -96], [30, -86], [18, -100], [4, -88], [-10, -100], [-24, -88],
+                           [-36, -100], [-50, -86], [-62, -96], [-76, -84]]) hair.lineTo(x, y);
+    hair.lineTo(-84, -60);
     hair.closePath();
     const g = c.createLinearGradient(0, -156, 0, -80);
     g.addColorStop(0, hl); g.addColorStop(1, col);
@@ -786,8 +785,8 @@ function skNirFront(c, sk, st) {
     c.strokeStyle = SK_OUT; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(hair);
     c.save(); c.clip(hair);
     c.strokeStyle = skA(dk, 0.75); c.lineWidth = 2.5; c.lineCap = 'round';
-    for (const [x0, y0, x1, y1] of [[-56, -140, -62, -100], [-30, -150, -38, -104], [-2, -152, -10, -108], [26, -148, 18, -108], [56, -134, 48, -104]]) {
-        c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(x0 + 6, (y0 + y1) / 2, x1, y1); c.stroke();
+    for (const [x0, y0, x1, y1] of [[-60, -140, -50, -96], [-30, -150, -24, -96], [0, -152, 6, -98], [30, -148, 30, -94], [60, -132, 56, -92]]) {
+        c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(x0 + 10, (y0 + y1) / 2, x1, y1); c.stroke();
     }
     c.restore();
     // שערות סוררות למעלה
