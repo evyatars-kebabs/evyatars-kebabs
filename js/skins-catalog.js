@@ -223,7 +223,7 @@ const SV_SKINS = [
       aura: { color: '#ff2fd0', alpha: 0.5, runes: true, rings: true }, fx: { type: 'stars', count: 24, speed: 0.35 } },
 
     /* ---------- מהדורה מיוחדת: זמינים רק עם קוד ---------- */
-    { id: 'banana', name: 'איתמר האגדי', rarity: 6, brow: '#5a3e0a', lips: '#b8860b', eyes: { iris: '#4a2e10' },
+    { id: 'banana', name: 'בננה', rarity: 6, brow: '#5a3e0a', lips: '#b8860b', eyes: { iris: '#4a2e10' },
       aura: { color: '#ffe066', alpha: 0.4 }, drawBack: skBananaBack },
     { id: 'lizard', name: 'השרגונת', rarity: 6, brow: '#1e5a1a', lips: '#2e6a2a', eyes: { iris: '#e0b020' },
       aura: { color: '#7fff6a', alpha: 0.28 }, drawBack: skLizardBack },
