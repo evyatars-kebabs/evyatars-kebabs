@@ -170,8 +170,8 @@ const firebaseConfig = {
         return lbAvatarCache[id];
     }
 
-    const LB_LIMIT = 500;                 // כמה שחקנים מוצגים בכל טבלה
-    const LB_CACHE_MS = 60000;            // שומרים תשובה דקה כדי לא לקרוא 500 מסמכים בכל מעבר בין לשוניות
+    const LB_LIMIT = 100;                 // כמה שחקנים מוצגים בכל טבלה
+    const LB_CACHE_MS = 300000;           // שומרים תשובה 5 דקות כדי לא לקרוא את כל הטבלה בכל מעבר בין לשוניות
     const lbCache = {};
     const LB_LOCAL_KEY = {
         leaderboard: 'kebab_highScore',
@@ -215,7 +215,7 @@ const firebaseConfig = {
                 me.className = 'lb-me';
                 const a = document.createElement('span');
                 const b = document.createElement('small');
-                if (myIdx >= 0) { a.textContent = 'המקום שלך: #' + rows[myIdx].rank; b.textContent = 'מתוך ' + rows.length + ' שחקנים'; }
+                if (myIdx >= 0) { a.textContent = 'המקום שלך: #' + rows[myIdx].rank; b.textContent = rows.length >= LB_LIMIT ? 'בין ' + LB_LIMIT + ' המובילים' : 'מתוך ' + rows.length + ' שחקנים'; }
                 else { a.textContent = 'עדיין לא ב-' + LB_LIMIT + ' המובילים'; b.textContent = 'השיא שלך: ' + myBest; }
                 me.appendChild(a); me.appendChild(b);
                 frag.appendChild(me);
