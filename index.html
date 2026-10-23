@@ -5528,11 +5528,11 @@ const KV_TUT_KEY = 'kebab_kvk_tutorial_done';
 
 // הקבבים (המגינים)
 const KV_KEBABS = {
-    grill:   { name: 'מנגל',  cost: 50,  cd: 5,  hp: 300 },     // מייצר גחלים
-    skewer:  { name: 'שיפוד', cost: 100, cd: 5,  hp: 300 },     // יורה קציצות
-    falafel: { name: 'פלאפל', cost: 175, cd: 7,  hp: 300 },     // יורה פלאפל שמאט
-    tahini:  { name: 'טחינה', cost: 50,  cd: 20, hp: 2000 },    // חומה
-    onion:   { name: 'בצל',   cost: 150, cd: 35, hp: 9999 }     // פצצה חד-פעמית
+    grill:   { name: 'מנגל',  cost: 50,  cd: 5,  hp: 300,  desc: 'מייצר גחלים כל כמה שניות' },
+    skewer:  { name: 'שיפוד', cost: 100, cd: 5,  hp: 300,  desc: 'יורה קציצות בקולסקים שבשורה' },
+    falafel: { name: 'פלאפל', cost: 175, cd: 7,  hp: 300,  desc: 'יורה פלאפל שמאט את הקולסקים' },
+    tahini:  { name: 'טחינה', cost: 50,  cd: 20, hp: 2000, desc: 'חומה עמידה שעוצרת אותם' },
+    onion:   { name: 'בצל',   cost: 150, cd: 35, hp: 9999, desc: 'מתפוצץ פעם אחת ופוגע בכל מי שקרוב' }
 };
 const KV_ORDER = ['grill', 'skewer', 'falafel', 'tahini', 'onion'];
 
@@ -5562,6 +5562,7 @@ const kvMouthY = l => kvGround(l) - 40 * kvScale();
 const kvCardRect = i => ({ x: 62 + i * 51, y: 8, w: 48, h: 52 });
 const KV_SHOVEL = { x: 319, y: 8, w: 37, h: 52 };
 const kvSkipRect = () => ({ x: 12, y: kvH - KV_FOOT - 40, w: 104, h: 30 });
+const kvHelpRect = () => ({ x: 326, y: kvH - KV_FOOT + 2, w: 30, h: 26 });
 const kvIn = (p, r) => p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
 
 function kvNewState() {
@@ -5573,7 +5574,7 @@ function kvNewState() {
         wave: 0, waveState: 'grace', waveTimer: 25, queue: [], spawnIn: 0, waveTotal: 0, waveDone: 0, lastLane: -1,
         kebabs: [], kols: [], shots: [], pickups: [], flying: [], fx: [], knifeRuns: [],
         knives: [true, true, true, true], cds, selected: null, shovel: false, drag: null, hover: null,
-        skyIn: 7, banner: null, shake: 0, tut: null, pool: [], shownWave: -1, shownScore: -1
+        skyIn: 7, guide: false, banner: null, shake: 0, tut: null, pool: [], shownWave: -1, shownScore: -1
     };
 }
 
@@ -5729,7 +5730,7 @@ function kvPlace(type, tile) {
 /* ---------- עדכון ---------- */
 function kvStep(dt) {
     kv.t += dt;
-    const live = kv.started && !kv.tut && !kv.over;
+    const live = kv.started && !kv.tut && !kv.over && !kv.guide;
     if (kv.tut) kv.tut.t += dt;
 
     if (kv.over) {
@@ -5933,7 +5934,8 @@ const KV_TUT = [
     { lines: ['הקישו על הגחלים כדי לאסוף אותן'], wait: 'collect' },
     { lines: ['עכשיו בחרו שיפוד', 'הוא יורה קציצות בקולסקים.'], wait: 'select-skewer' },
     { lines: ['הניחו את השיפוד על משבצת פנויה'], wait: 'place-skewer' },
-    { lines: ['אם קולסקי מגיע לסוף השורה, הסכין חותכת', 'את כל השורה – אבל רק פעם אחת.', 'בהצלחה!'], tap: true }
+    { guide: true, tap: true },
+    { lines: ['אם קולסקי מגיע לסוף השורה, הסכין חותכת', 'את כל השורה – אבל רק פעם אחת.', 'את המדריך אפשר לפתוח שוב בכפתור (?) למטה.', 'בהצלחה!'], tap: true }
 ];
 
 function kvTutEvent(ev) {
@@ -5973,6 +5975,8 @@ function kvTutTarget() {
 /* ---------- קלט ---------- */
 function kvPointerDown(p) {
     if (!kv || !kv.running || kv.over) return;
+    if (kv.guide) { kv.guide = false; return; }             // מדריך פתוח - כל נגיעה סוגרת
+    if (!kv.tut && kvIn(p, kvHelpRect())) { kv.guide = true; kv.selected = null; kv.drag = null; return; }
     if (kv.tut) {
         if (kvIn(p, kvSkipRect())) { kvTutDone(); return; }
         if (KV_TUT[kv.tut.step].tap) { if (kv.tut.t > 0.35) kvTutNext(); return; }
@@ -6337,9 +6341,9 @@ function kvDraw() {
     } else {
         const prog = kv.waveTotal ? kv.waveDone / kv.waveTotal : 0;
         c.fillText('גל ' + kv.wave, 34, fy + 15);
-        skR(c, 70, fy + 9, 270, 12, 6, 'rgba(0,0,0,0.55)', '#6b4426', 1);
-        c.fillStyle = '#ff9f1c'; c.fillRect(72, fy + 11, 266 * Math.min(1, prog), 8);
-        c.fillStyle = '#ff4d6d'; c.fillRect(336, fy + 4, 2, 16); skP(c, [[338, fy + 4], [347, fy + 8], [338, fy + 12]], '#ff4d6d');
+        skR(c, 70, fy + 9, 240, 12, 6, 'rgba(0,0,0,0.55)', '#6b4426', 1);
+        c.fillStyle = '#ff9f1c'; c.fillRect(72, fy + 11, 236 * Math.min(1, prog), 8);
+        c.fillStyle = '#ff4d6d'; c.fillRect(306, fy + 4, 2, 16); skP(c, [[308, fy + 4], [317, fy + 8], [308, fy + 12]], '#ff4d6d');
     }
 
     // לפני הנגיעה הראשונה
@@ -6365,6 +6369,13 @@ function kvDraw() {
     }
     c.restore();
 
+    if (!kv.tut) {                                       // כפתור המדריך
+        const h = kvHelpRect();
+        skE(c, h.x + h.w / 2, h.y + h.h / 2, 11, 11, kv.guide ? '#ffc233' : 'rgba(255,194,51,0.18)', '#ffc233', 1.5);
+        c.fillStyle = kv.guide ? '#2a1206' : '#ffd54f'; c.font = 'bold 14px Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText('?', h.x + h.w / 2, h.y + h.h / 2 + 1);
+    }
+    if (kv.guide) { kvDrawGuide(c, 'הקישו כדי לחזור למשחק'); }
     if (kv.tut) kvDrawTutorial(c);
 }
 
@@ -6372,9 +6383,55 @@ function kvWrapLines(c, lines, x, y, lh) {
     lines.forEach((ln, i) => c.fillText(ln, x, y + i * lh));
 }
 
+// מדריך הקבבים: מה כל קבב עושה ובכמה גחלים
+function kvDrawGuide(c, hint) {
+    c.save();
+    c.fillStyle = 'rgba(0,0,0,0.62)'; c.fillRect(0, 0, KV_W, kvH);
+    const rowH = Math.max(40, Math.min(54, (kvH - KV_BAR - 164) / KV_ORDER.length));       // מתכווץ במסכים נמוכים
+    const top = Math.max(KV_BAR + 6, kvH / 2 - (KV_ORDER.length * rowH + 74) / 2);
+    const h = KV_ORDER.length * rowH + 74;
+    skR(c, 14, top, KV_W - 28, h, 16, 'rgba(26,12,6,0.96)', '#ffc233', 2);
+    c.fillStyle = '#ffd54f'; c.font = 'bold 18px "Secular One", Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('הכירו את הקבבים', KV_W / 2, top + 22);
+    KV_ORDER.forEach((type, i) => {
+        const def = KV_KEBABS[type], y = top + 44 + i * rowH;
+        skR(c, 24, y, KV_W - 48, rowH - 6, 10, i % 2 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.07)');
+        c.save(); c.beginPath(); c.rect(26, y, 48, rowH - 6); c.clip();
+        c.translate(50, y + rowH - 10); c.scale(0.5, 0.5);
+        kvDrawKebabShape(c, type, null);
+        c.restore();
+        c.textAlign = 'right';
+        c.fillStyle = '#fff3d6'; c.font = 'bold 14px Rubik, sans-serif';
+        c.fillText(def.name, KV_W - 34, y + 15);
+        c.fillStyle = '#e0c9a8'; c.font = '11px Rubik, sans-serif';
+        c.fillText(def.desc, KV_W - 34, y + 34);
+        c.textAlign = 'center';
+        kvDrawCoal(c, 96, y + 16, 6, 0.3);
+        c.fillStyle = '#ffd08a'; c.font = 'bold 12px Rubik, sans-serif';
+        c.fillText(def.cost, 96, y + 34);
+    });
+    if (hint) {
+        c.fillStyle = 'rgba(255,215,0,' + (0.55 + 0.45 * Math.sin(kv.t * 4)) + ')'; c.font = 'bold 11px Rubik, sans-serif'; c.textAlign = 'center';
+        c.fillText(hint, KV_W / 2, top + h - 14);
+    }
+    c.restore();
+}
+
 function kvDrawTutorial(c) {
     const st = KV_TUT[kv.tut.step];
     if (!st) return;
+    if (st.guide) {
+        kvDrawGuide(c, 'הקישו כדי להמשיך');
+        c.save();
+        c.fillStyle = '#ffc233'; c.font = 'bold 10px Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText('הדרכה ' + (kv.tut.step + 1) + '/' + KV_TUT.length, KV_W / 2, KV_BAR - 2);
+        const sk = kvSkipRect();
+        skR(c, sk.x, sk.y, sk.w, sk.h, 15, 'rgba(0,0,0,0.6)', 'rgba(255,255,255,0.4)', 1);
+        c.fillStyle = '#f0dcc8'; c.font = 'bold 11px Rubik, sans-serif';
+        c.fillText('דילוג על ההדרכה', sk.x + sk.w / 2, sk.y + sk.h / 2 + 1);
+        c.restore();
+        return;
+    }
     const tg = kvTutTarget();
     // החשכה עם "חור" סביב היעד
     c.save();
