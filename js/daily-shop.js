@@ -691,8 +691,8 @@ function openPlayerModal(p) {
     const nm = document.createElement('div'); nm.className = 'skin-modal-name'; nm.textContent = p.name + (p.id === playerId ? ' (אתה)' : '');
     const skl = document.createElement('div'); skl.className = 'skin-modal-sub';
     const tag = document.createElement('span'); tag.className = 'shop-rarity'; tag.textContent = rar ? rar.name : 'ברירת מחדל';
-    // שם של סקין ממהדורה מיוחדת נשאר סוד (חוץ מבפרופיל של עצמך)
-    const secret = rar && rar.codeOnly && p.id !== playerId;
+    // שם של סקין ממהדורה מיוחדת נשאר סוד - אלא אם גם לך יש אותו (או שזה הפרופיל שלך)
+    const secret = rar && rar.codeOnly && p.id !== playerId && !getOwnedSkins().has(sk.id);
     skl.appendChild(document.createTextNode('הסקין: ' + (secret ? '???' : sk.name) + ' '));
     skl.appendChild(tag);
     const coinsEl = document.createElement('div'); coinsEl.className = 'player-coins'; coinsEl.textContent = '🪙 ...';
