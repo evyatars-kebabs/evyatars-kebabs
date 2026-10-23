@@ -893,7 +893,61 @@
         .daily-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
         .daily-title { font-family: 'Secular One', 'Rubik', sans-serif; color: var(--accent-gold); font-size: 1rem; }
         .daily-meta { display: flex; gap: 8px; align-items: center; font-size: 0.72rem; color: var(--muted); }
-        .daily-streak { color: #ff9f1c; font-weight: 700; font-size: 0.8rem; }
+        .daily-streak { display: inline-flex; align-items: center; gap: 2px; color: var(--muted); font-weight: 700; font-size: 0.85rem;
+            padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.25); }
+        .daily-streak i { font-style: normal; filter: grayscale(1) opacity(0.5); }
+        .daily-streak.on { color: #ffb02e; border-color: rgba(255, 140, 30, 0.6); background: rgba(255, 106, 26, 0.12); box-shadow: 0 0 12px rgba(255, 106, 26, 0.35); }
+        .daily-streak.on i { filter: none; display: inline-block; animation: flameFlicker 1.1s ease-in-out infinite; transform-origin: 50% 90%; }
+        @keyframes flameFlicker { 0%, 100% { transform: scale(1) rotate(-3deg); } 30% { transform: scale(1.18, 1.08) rotate(3deg); } 60% { transform: scale(0.95, 1.12) rotate(-2deg); } }
+        .daily-week { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 4px 2px 8px; }
+        .daily-week-label { font-size: 0.72rem; color: var(--muted); flex: 1; min-width: 120px; }
+        .streak-week { display: flex; gap: 4px; direction: rtl; }
+        .streak-day {
+            width: 24px; height: 24px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem; font-weight: 700; color: var(--muted); background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color);
+        }
+        .streak-day.lit { background: linear-gradient(180deg, rgba(255, 159, 28, 0.35), rgba(255, 74, 20, 0.25)); border-color: #ff9f1c; box-shadow: 0 0 8px rgba(255, 120, 30, 0.45); }
+        .streak-day.prize { border-color: rgba(255, 194, 51, 0.7); font-size: 0.9rem; }
+        .streak-day.prize.lit { background: linear-gradient(180deg, #ffd54f, #ff9f1c); animation: prizeGlow 1.2s ease-in-out infinite; }
+        @keyframes prizeGlow { 50% { box-shadow: 0 0 16px rgba(255, 210, 60, 0.9); transform: scale(1.08); } }
+
+        /* חגיגת רצף */
+        #streak-pop { position: fixed; inset: 0; z-index: 9990; display: flex; align-items: center; justify-content: center;
+            background: rgba(8, 3, 1, 0); transition: background .3s; padding: 16px; }
+        #streak-pop.open { background: rgba(8, 3, 1, 0.78); }
+        .streak-card {
+            width: 100%; max-width: 340px; text-align: center; border-radius: 24px; padding: 22px 18px 18px;
+            background: radial-gradient(circle at 50% 20%, rgba(255, 120, 30, 0.35), transparent 60%), linear-gradient(180deg, #2a1206, #170903);
+            border: 2px solid #ff9f1c; box-shadow: 0 0 40px rgba(255, 106, 26, 0.45);
+            transform: scale(0.6) translateY(30px); opacity: 0; transition: transform .45s cubic-bezier(.2, 1.6, .4, 1), opacity .25s;
+        }
+        #streak-pop.open .streak-card { transform: none; opacity: 1; }
+        .streak-flame { position: relative; height: 120px; display: flex; align-items: center; justify-content: center; }
+        .sf-fire { font-size: 96px; line-height: 1; display: inline-block; transform-origin: 50% 90%;
+            animation: fireIn .7s cubic-bezier(.2, 1.8, .4, 1) both, flameFlicker 1s ease-in-out .7s infinite;
+            filter: drop-shadow(0 0 22px rgba(255, 140, 30, 0.9)); }
+        @keyframes fireIn { from { transform: scale(0.1) translateY(40px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .sf-num { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-family: 'Secular One', 'Rubik', sans-serif;
+            font-size: 2.4rem; color: #fff; text-shadow: 0 2px 0 #7a2a05, 0 0 14px rgba(255, 200, 80, 0.9); }
+        .sf-num.bump { animation: numBump .25s cubic-bezier(.2, 1.8, .4, 1); }
+        @keyframes numBump { from { transform: translateX(-50%) scale(1.6); } to { transform: translateX(-50%) scale(1); } }
+        .streak-title { font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1.6rem; color: var(--accent-gold); margin-top: 6px;
+            text-shadow: 0 0 16px rgba(255, 140, 30, 0.6); }
+        .streak-sub { font-size: 0.85rem; color: #f0dcc8; margin: 4px 0 12px; }
+        .streak-card .streak-week { justify-content: center; margin-bottom: 16px; }
+        .streak-card .streak-day { width: 34px; height: 34px; font-size: 0.95rem; border-radius: 10px; }
+        .streak-card .streak-day.lit { animation: dayLight .4s cubic-bezier(.2, 1.8, .4, 1) both; }
+        .streak-card .streak-day.prize.lit { animation: dayLight .4s cubic-bezier(.2, 1.8, .4, 1) both, prizeGlow 1.2s ease-in-out 1s infinite; }
+        .streak-card .streak-day.new { animation: dayNew .7s cubic-bezier(.2, 1.8, .4, 1) both; }
+        @keyframes dayLight { from { transform: scale(0.4); opacity: 0.2; } to { transform: scale(1); opacity: 1; } }
+        @keyframes dayNew { 0% { transform: scale(0.3); filter: brightness(2); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+        .sf-chest { font-size: 92px; display: inline-block; animation: chestShake .6s ease-in-out, chestPop .5s cubic-bezier(.2, 1.8, .4, 1) .6s both; }
+        @keyframes chestShake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-12deg); } 40% { transform: rotate(12deg); } 60% { transform: rotate(-8deg); } 80% { transform: rotate(8deg); } }
+        @keyframes chestPop { from { transform: scale(1); } 50% { transform: scale(1.35); } to { transform: scale(1.1); } }
+        .sf-prize { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-family: 'Secular One', 'Rubik', sans-serif; direction: ltr;
+            font-size: 1.8rem; color: #ffd54f; text-shadow: 0 0 16px rgba(255, 210, 60, 0.9); white-space: nowrap; animation: prizeRise .6s ease-out .8s both; }
+        @keyframes prizeRise { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .streak-card.chest-mode { border-color: #ffd54f; box-shadow: 0 0 50px rgba(255, 210, 60, 0.6); }
         .daily-row { display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
         .daily-icon { font-size: 1.3rem; width: 28px; text-align: center; flex-shrink: 0; }
         .daily-body { flex: 1; min-width: 0; }
@@ -5481,6 +5535,7 @@ function flyCoins(fromEl, amount) {
    ============================================================ */
 const DAILY_KEY = 'kebab_daily';
 const DAILY_BONUS = 75;
+const WEEKLY_PRIZE = 400;                 // כל 7 ימים ברצף
 // on = סוג האירוע (שם המשחק, '*' לכל משחק, או 'coupon'); mode: max = הכי טוב במשחק אחד, sum = מצטבר, set = משחקים שונים
 const DAILY_POOL = [
     { id: 'catch_max',   game: 'catch',   icon: '🍢', text: 'תפסו {t} קבבים במשחק אחד',               t: 12,  reward: 30, on: 'catch',   mode: 'max', val: e => e.score },
@@ -5528,7 +5583,8 @@ function dailyLoad() {
     const today = dailyDate();
     if (!st || st.date !== today) {
         st = { date: today, ids: dailyPick(today), prog: {}, claimed: [], notified: [], bonus: false,
-               streak: st ? st.streak || 0 : 0, lastFull: st ? st.lastFull || '' : '' };
+               streak: st ? st.streak || 0 : 0, lastFull: st ? st.lastFull || '' : '',
+               weekly: st && st.weekly === 'pending' ? 'pending' : null };            // פרס שבועי שלא נאסף נשמר
         dailySave(st);
     }
     return st;
@@ -5580,13 +5636,110 @@ function dailyClaimBonus(btn) {
     st.bonus = true;
     // רצף: ימים רצופים שבהם הושלמו כל האתגרים
     const y = new Date(); y.setDate(y.getDate() - 1);
-    st.streak = st.lastFull === dailyDate(y) ? (st.streak || 0) + 1 : 1;
+    const prev = st.lastFull === dailyDate(y) ? (st.streak || 0) : 0;
+    st.streak = prev + 1;
     st.lastFull = st.date;
+    if (st.streak % 7 === 0) st.weekly = 'pending';
     dailySave(st);
     haptic([90, 40, 90, 40, 140]);
     flyCoins(btn, DAILY_BONUS);
     confettiBurst(60);
     renderDaily();
+    setTimeout(() => showStreakPop(prev, st.streak), 1400);   // אחרי שהמטבעות נוחתים
+}
+
+function dailyClaimWeekly(btn) {
+    const st = dailyLoad();
+    if (st.weekly !== 'pending') return false;
+    st.weekly = 'claimed';
+    dailySave(st);
+    haptic([60, 40, 60, 40, 200]);
+    sfx.chest();
+    flyCoins(btn, WEEKLY_PRIZE);
+    confettiBurst(90);
+    renderDaily();
+    return true;
+}
+
+// מיקום ברצף השבועי (1-7). ביום שעוד לא הושלם מציגים את הרצף של אתמול.
+function streakWeekPos(n) { return n > 0 ? ((n - 1) % 7) + 1 : 0; }
+
+function streakWeekCells(pos, animateNew) {
+    const wrap = document.createElement('div');
+    wrap.className = 'streak-week';
+    for (let i = 1; i <= 7; i++) {
+        const d = document.createElement('div');
+        d.className = 'streak-day' + (i <= pos ? ' lit' : '') + (i === 7 ? ' prize' : '') + (animateNew && i === pos ? ' new' : '');
+        d.style.animationDelay = (animateNew ? 0.35 + i * 0.1 : 0) + 's';
+        d.textContent = i === 7 ? '🎁' : (i <= pos ? '🔥' : i);
+        wrap.appendChild(d);
+    }
+    return wrap;
+}
+
+/* ---------- חגיגת רצף ---------- */
+function showStreakPop(from, to) {
+    let pop = document.getElementById('streak-pop');
+    if (pop) pop.remove();
+    pop = document.createElement('div');
+    pop.id = 'streak-pop';
+    const card = document.createElement('div');
+    card.className = 'streak-card';
+    const flame = document.createElement('div');
+    flame.className = 'streak-flame';
+    flame.innerHTML = '<span class="sf-fire">🔥</span>';
+    const num = document.createElement('span');
+    num.className = 'sf-num';
+    num.textContent = from;
+    flame.appendChild(num);
+    const title = document.createElement('div');
+    title.className = 'streak-title';
+    title.textContent = to === 1 ? 'התחלתם רצף!' : 'רצף של ' + to + ' ימים!';
+    const pos = streakWeekPos(to);
+    const sub = document.createElement('div');
+    sub.className = 'streak-sub';
+    sub.textContent = pos === 7 ? 'שבוע שלם ברצף - הפרס השבועי שלכם!' : 'עוד ' + (7 - pos) + (7 - pos === 1 ? ' יום' : ' ימים') + ' לפרס השבועי של 🪙' + WEEKLY_PRIZE;
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.textContent = 'יאללה! 🔥';
+    card.appendChild(flame); card.appendChild(title); card.appendChild(sub);
+    card.appendChild(streakWeekCells(pos, true));
+    card.appendChild(btn);
+    pop.appendChild(card);
+    document.body.appendChild(pop);
+    requestAnimationFrame(() => pop.classList.add('open'));
+
+    sfx.streak();
+    haptic([40, 30, 40, 30, 120]);
+    // ספירה עולה של המספר
+    let n = from;
+    const step = () => {
+        if (n >= to) { num.classList.add('done'); return; }
+        n++; num.textContent = n; sfx.streakTick(n); num.classList.remove('bump'); void num.offsetWidth; num.classList.add('bump');
+        setTimeout(step, 180);
+    };
+    setTimeout(step, 450);
+    // יום חדש נדלק במסלול
+    setTimeout(() => { sfx.tap(); haptic(25); }, 450 + pos * 100);
+
+    const close = () => { pop.classList.remove('open'); setTimeout(() => pop.remove(), 300); };
+    if (pos === 7 && dailyLoad().weekly === 'pending') {
+        // יום 7: תיבת האוצר
+        btn.textContent = 'פתחו את התיבה 🎁';
+        btn.onclick = () => {
+            card.classList.add('chest-mode');
+            title.textContent = 'פרס שבועי!';
+            sub.textContent = '7 ימים ברצף - אלופים!';
+            flame.innerHTML = '<span class="sf-chest">🎁</span><span class="sf-prize">+' + WEEKLY_PRIZE + ' 🪙</span>';
+            btn.textContent = 'אסוף 🪙' + WEEKLY_PRIZE;
+            sfx.chest();
+            haptic([30, 20, 30, 20, 30]);
+            btn.onclick = () => { btn.disabled = true; dailyClaimWeekly(btn); setTimeout(close, 1800); };
+        };
+    } else {
+        btn.onclick = close;
+        pop.addEventListener('click', e => { if (e.target === pop) close(); });
+    }
 }
 
 function dailyCountdown() {
@@ -5616,10 +5769,34 @@ function renderDaily() {
     timer.id = 'daily-timer';
     timer.textContent = '⏳ ' + dailyCountdown();
     meta.appendChild(timer);
-    if (streak > 0) { const sk = document.createElement('span'); sk.className = 'daily-streak'; sk.textContent = '🔥 ' + streak; sk.title = 'ימים ברצף'; meta.appendChild(sk); }
+    const sk = document.createElement('span');
+    sk.className = 'daily-streak' + (streak > 0 ? ' on' : '');
+    sk.innerHTML = '<i>🔥</i>' + streak;
+    sk.title = 'ימים ברצף';
+    meta.appendChild(sk);
     head.appendChild(title);
     head.appendChild(meta);
     box.appendChild(head);
+
+    // מסלול השבוע: 7 ימים, בסופו פרס
+    const pos = streakWeekPos(streak);
+    const week = document.createElement('div');
+    week.className = 'daily-week';
+    week.appendChild(streakWeekCells(pos, false));
+    const wl = document.createElement('div');
+    wl.className = 'daily-week-label';
+    const left = 7 - pos;
+    wl.textContent = st.weekly === 'pending' ? '🎁 הפרס השבועי מחכה לכם!' :
+        (pos === 7 ? '🏆 השלמתם שבוע! רצף חדש מתחיל מחר' : 'עוד ' + left + (left === 1 ? ' יום' : ' ימים') + ' ברצף לפרס של 🪙' + WEEKLY_PRIZE);
+    week.appendChild(wl);
+    if (st.weekly === 'pending') {
+        const wb = document.createElement('button');
+        wb.className = 'daily-act ready';
+        wb.textContent = 'אסוף 🪙' + WEEKLY_PRIZE;
+        wb.onclick = () => dailyClaimWeekly(wb);
+        week.appendChild(wb);
+    }
+    box.appendChild(week);
 
     st.ids.forEach(id => {
         const c = dailyDef(id);
@@ -7367,7 +7544,21 @@ const sfx = (() => {
         coin()  { tone(1318, 0.08, 'square', 0.07); tone(1760, 0.2, 'square', 0.07, 0.07); },
         buy()   { tone(523, 0.1, 'triangle', 0.16); tone(784, 0.1, 'triangle', 0.16, 0.09); tone(1046, 0.1, 'triangle', 0.16, 0.18); tone(1568, 0.3, 'sine', 0.14, 0.27); },
         win()   { [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.22, 'triangle', 0.17, i * 0.1)); tone(1318, 0.5, 'sine', 0.14, 0.4); },
-        low()   { tone(330, 0.16, 'triangle', 0.1); tone(262, 0.24, 'triangle', 0.1, 0.12); }
+        low()   { tone(330, 0.16, 'triangle', 0.1); tone(262, 0.24, 'triangle', 0.1, 0.12); },
+        // רצף: "וושש" של אש + ארפג'ו עולה
+        streak() {
+            noise(0.6, 0.28, 250, 3200);
+            [392, 523, 659, 784].forEach((f, i) => tone(f, 0.16, 'triangle', 0.15, 0.12 + i * 0.09));
+            tone(1046, 0.45, 'sine', 0.14, 0.5); tone(1568, 0.35, 'sine', 0.06, 0.55);
+        },
+        streakTick(i) { tone(700 + i * 60, 0.05, 'square', 0.045); },
+        // תיבת אוצר: רעד, פתיחה ופאנפרה
+        chest() {
+            noise(0.25, 0.2, 2400, 600);
+            [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, 0.14, 'square', 0.07, 0.25 + i * 0.08));
+            [523, 659, 784].forEach(f => tone(f, 0.8, 'triangle', 0.09, 0.7));
+            tone(2093, 0.4, 'sine', 0.05, 0.75);
+        }
     };
 })();
 document.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
