@@ -4317,35 +4317,43 @@ function skLizardBack(c, sk, st) {
     skEyes(c, sk, st);
 }
 
+const DOSUS_PAL = { hc: '#8a5a32', hd: '#5e3a1c', hl: '#a87044', mane: '#2a1a10', coat: '#15151a', collar: '#f7f7fa',
+    payot: '#1a1410', hat: '#15151a', band: '#2b2b33', holes: false };
+const DOSUS_CHEDDAR = { hc: '#f2a22a', hd: '#c46e08', hl: '#ffd877', mane: '#b8700c', coat: '#e8961c', collar: '#fff3c4',
+    payot: '#b8700c', hat: '#e8961c', band: '#c46e08', holes: true };
+
 function skDosusBack(c, sk, st) {
-    const t = st.t, hc = '#8a5a32', hd = '#5e3a1c';
+    const P = sk.pal || DOSUS_PAL;
+    const t = st.t, hc = P.hc, hd = P.hd;
     skAuraBack(c, sk, t);
     // זנב
     const sw = Math.sin(t * 2) * 10;
-    c.strokeStyle = '#2a1a10'; c.lineCap = 'round';
+    c.strokeStyle = P.mane; c.lineCap = 'round';
     for (let i = 0; i < 5; i++) { c.lineWidth = 9 - i; c.beginPath(); c.moveTo(196, 90); c.quadraticCurveTo(236 + sw, 130 + i * 6, 214 + sw, 210 + i * 6); c.stroke(); }
     // רגליים
     for (const [x, dk] of [[44, 1], [158, 1], [74, 0], [186, 0]]) {
         skR(c, x - 13, 120, 26, 140, 9, dk ? hd : hc, SK_OUT, 2.5);
-        skR(c, x - 15, 252, 30, 16, 4, '#2a1a10');
+        skR(c, x - 15, 252, 30, 16, 4, P.mane);
     }
     // גוף הסוס
     const bg = c.createLinearGradient(0, 50, 0, 170);
-    bg.addColorStop(0, '#a87044'); bg.addColorStop(1, hd);
+    bg.addColorStop(0, P.hl); bg.addColorStop(1, hd);
     skE(c, 116, 110, 96, 56, bg, SK_OUT, 3);
+    if (P.holes) { const body = new Path2D(); body.ellipse(116, 110, 95, 55, 0, 0, Math.PI * 2); skCheeseHoles(c, body, 30, 60, 180, 100, 9, 5); }
     // צוואר ורעמה
     skP(c, [[-50, 30], [50, 24], [90, 80], [40, 150]], hc, SK_OUT, 3);
-    c.strokeStyle = '#2a1a10'; c.lineWidth = 12;
+    c.strokeStyle = P.mane; c.lineWidth = 12;
     c.beginPath(); c.moveTo(56, 22); c.quadraticCurveTo(80, 50, 96, 76); c.stroke();
     // צווארון לבן של חולצה וחליפה שחורה
-    skP(c, [[-60, 46], [60, 46], [64, 84], [-64, 84]], '#15151a', SK_OUT, 2);
-    skP(c, [[-34, 40], [0, 70], [34, 40], [30, 56], [0, 84], [-30, 56]], '#f7f7fa', SK_OUT, 2);
+    skP(c, [[-60, 46], [60, 46], [64, 84], [-64, 84]], P.coat, SK_OUT, 2);
+    skP(c, [[-34, 40], [0, 70], [34, 40], [30, 56], [0, 84], [-30, 56]], P.collar, SK_OUT, 2);
     // ראש אנושי
     skHead(c, sk);
     skEyes(c, sk, st);
     skBeardBack(c, sk, t);
 }
 function skDosusFront(c, sk, st) {
+    const P = sk.pal || DOSUS_PAL;
     skMustache(c, sk);
     skGlasses(c, sk);
     skHairFront(c, sk, st.t);
@@ -4354,15 +4362,16 @@ function skDosusFront(c, sk, st) {
         for (let i = 0; i < 6; i++) {
             const y = -60 + i * 18, x = s * (90 + (i % 2 ? 7 : -3));
             c.beginPath(); c.ellipse(x, y, 9, 10, 0, 0, Math.PI * 2);
-            c.strokeStyle = '#1a1410'; c.lineWidth = 5; c.stroke();
+            c.strokeStyle = P.payot; c.lineWidth = 5; c.stroke();
         }
     }
     // כובע שחור רחב שוליים
-    skR(c, -70, -206, 140, 96, 22, '#15151a', SK_OUT, 3);
-    c.fillStyle = '#2b2b33'; c.fillRect(-69, -132, 138, 14);
+    skR(c, -70, -206, 140, 96, 22, P.hat, SK_OUT, 3);
+    if (P.holes) { const crown = new Path2D(); crown.rect(-68, -204, 136, 70); skCheeseHoles(c, crown, -68, -204, 136, 70, 6, 2); }
+    c.fillStyle = P.band; c.fillRect(-69, -132, 138, 14);
     c.strokeStyle = 'rgba(255,255,255,0.12)'; c.lineWidth = 3;
     c.beginPath(); c.moveTo(-6, -200); c.lineTo(-6, -140); c.stroke();
-    skE(c, 0, -110, 134, 24, '#15151a', SK_OUT, 3);
+    skE(c, 0, -110, 134, 24, P.hat, SK_OUT, 3);
 }
 
 function skDogBack(c, sk, st) {
@@ -4458,11 +4467,36 @@ function skCapybaraBack(c, sk, st) {
     skEyes(c, sk, st);
 }
 
+// צבעי הסקין. גרסת הצ'דר מחליפה את הצבעים ומוסיפה חורי גבינה
+const VADER_PAL = { g0: '#5a5f6e', g1: '#23252e', g2: '#07070a', out: '#000000', panel: '#2a2c34', panelEdge: '#5a5f6e', belt: '#c9ccd4',
+    beltBox: '#9aa1ae', brow: '#3a3d48', lens: ['#2a0608', '#0a0204', '#3a0a0e'], lensEdge: '#4a4f5c', grille: '#2a2c34', plate: '#5a5f6e',
+    hilt: '#b8bfcc', hiltBand: '#14141a', holes: false };
+const VADER_CHEDDAR = { g0: '#fff0b0', g1: '#f6b43a', g2: '#c46e08', out: '#7a3e02', panel: '#d98a14', panelEdge: '#ffd877', belt: '#ffd877',
+    beltBox: '#f0a62a', brow: '#c27a10', lens: ['#8a3e02', '#5e2a00', '#a04a06'], lensEdge: '#7a3e02', grille: '#b8700c', plate: '#ffcf5a',
+    hilt: '#ffe08a', hiltBand: '#c27a10', holes: true };
+
+// חורי גבינה בתוך צורה (Path2D או פונקציה שמציירת נתיב). seed קובע את המיקומים
+function skCheeseHoles(c, shape, x, y, w, h, n, seed) {
+    c.save();
+    if (typeof shape === 'function') { shape(); c.clip(); } else c.clip(shape);
+    let r = seed * 9301 + 49297;
+    const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+    for (let i = 0; i < n; i++) {
+        const hx = x + rnd() * w, hy = y + rnd() * h, rad = 5 + rnd() * 11;
+        skE(c, hx, hy, rad, rad * 0.85, 'rgba(160, 80, 0, 0.55)');
+        skE(c, hx + rad * 0.15, hy + rad * 0.2, rad * 0.75, rad * 0.6, 'rgba(120, 55, 0, 0.45)');
+        c.strokeStyle = 'rgba(255, 245, 200, 0.6)'; c.lineWidth = 1.6;
+        c.beginPath(); c.arc(hx, hy, rad, Math.PI * 0.15, Math.PI * 0.85); c.stroke();
+    }
+    c.restore();
+}
+
 function skVaderBack(c, sk, st) {
-    const t = st.t, blk = '#121216', out = '#000000';
+    const P = sk.pal || VADER_PAL;
+    const t = st.t, out = P.out;
     const gloss = (x0, y0, r) => {
         const g = c.createRadialGradient(x0 - r * 0.4, y0 - r * 0.5, r * 0.05, x0, y0, r);
-        g.addColorStop(0, '#5a5f6e'); g.addColorStop(0.3, '#23252e'); g.addColorStop(1, '#07070a');
+        g.addColorStop(0, P.g0); g.addColorStop(0.3, P.g1); g.addColorStop(1, P.g2);
         return g;
     };
     skAuraBack(c, sk, t);
@@ -4475,52 +4509,55 @@ function skVaderBack(c, sk, st) {
     c.strokeStyle = skA('#ff2a2a', 0.25 * pulse); c.lineWidth = 34; c.beginPath(); c.moveTo(0, -40); c.lineTo(0, -330); c.stroke();
     c.strokeStyle = skA('#ff3030', 0.7); c.lineWidth = 16; c.beginPath(); c.moveTo(0, -40); c.lineTo(0, -330); c.stroke();
     c.strokeStyle = '#ffe8e8'; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -40); c.lineTo(0, -326); c.stroke();
-    skR(c, -9, -44, 18, 70, 4, '#b8bfcc', out, 2);
-    c.fillStyle = '#14141a'; for (const y of [-30, -18, -6, 6]) c.fillRect(-9, y, 18, 5);
+    skR(c, -9, -44, 18, 70, 4, P.hilt, out, 2);
+    c.fillStyle = P.hiltBand; for (const y of [-30, -18, -6, 6]) c.fillRect(-9, y, 18, 5);
     c.restore();
     // שריון וחזה עם לוח בקרה
     skOutfit(c, sk, t);
-    skR(c, -50, 118, 100, 66, 6, '#2a2c34', '#5a5f6e', 2.5);
+    if (P.holes) skCheeseHoles(c, () => skTorsoPath(c), -120, 70, 240, 270, 16, 3);
+    skR(c, -50, 118, 100, 66, 6, P.panel, P.panelEdge, 2.5);
     const lights = ['#ff3030', '#30d158', '#3b9cff', '#ff3030', '#ffd23d', '#30d158'];
     lights.forEach((col, i) => skR(c, -40 + (i % 3) * 28, 128 + Math.floor(i / 3) * 26, 18, 14, 2, (Math.sin(t * 3 + i * 1.7) > -0.3) ? col : skShade(col, -0.6), out, 1.5));
-    c.fillStyle = '#c9ccd4'; c.fillRect(-124, 286, 248, 22);
-    for (const x of [-70, -26, 18, 62]) skR(c, x, 282, 30, 30, 3, '#9aa1ae', out, 1.5);
+    c.fillStyle = P.belt; c.fillRect(-124, 286, 248, 22);
+    for (const x of [-70, -26, 18, 62]) skR(c, x, 282, 30, 30, 3, P.beltBox, out, 1.5);
     // קסדה: כיפה ושוליים מתרחבים
-    c.beginPath();
-    c.moveTo(-98, -60);
-    c.bezierCurveTo(-110, -176, 110, -176, 98, -60);
-    c.quadraticCurveTo(104, 10, 132, 70);
-    c.lineTo(84, 76); c.lineTo(70, 30);
-    c.lineTo(-70, 30); c.lineTo(-84, 76); c.lineTo(-132, 70);
-    c.quadraticCurveTo(-104, 10, -98, -60);
-    c.closePath();
-    c.fillStyle = gloss(0, -70, 170); c.fill();
-    c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    const helmet = new Path2D();
+    helmet.moveTo(-98, -60);
+    helmet.bezierCurveTo(-110, -176, 110, -176, 98, -60);
+    helmet.quadraticCurveTo(104, 10, 132, 70);
+    helmet.lineTo(84, 76); helmet.lineTo(70, 30);
+    helmet.lineTo(-70, 30); helmet.lineTo(-84, 76); helmet.lineTo(-132, 70);
+    helmet.quadraticCurveTo(-104, 10, -98, -60);
+    helmet.closePath();
+    c.fillStyle = gloss(0, -70, 170); c.fill(helmet);
+    if (P.holes) skCheeseHoles(c, helmet, -130, -170, 260, 240, 14, 7);
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke(helmet);
     c.strokeStyle = 'rgba(255,255,255,0.18)'; c.lineWidth = 4;
     c.beginPath(); c.moveTo(-6, -158); c.quadraticCurveTo(-60, -150, -84, -96); c.stroke();
     // מסכת פנים
-    c.beginPath();
-    c.moveTo(-74, -98); c.lineTo(74, -98); c.lineTo(80, -30); c.lineTo(56, 40); c.lineTo(-56, 40); c.lineTo(-80, -30);
-    c.closePath();
-    c.fillStyle = gloss(0, -40, 120); c.fill();
-    c.strokeStyle = out; c.lineWidth = 3; c.stroke();
-    c.strokeStyle = '#3a3d48'; c.lineWidth = 6;                         // גבה קשתית
+    const mask = new Path2D();
+    mask.moveTo(-74, -98); mask.lineTo(74, -98); mask.lineTo(80, -30); mask.lineTo(56, 40); mask.lineTo(-56, 40); mask.lineTo(-80, -30);
+    mask.closePath();
+    c.fillStyle = gloss(0, -40, 120); c.fill(mask);
+    if (P.holes) skCheeseHoles(c, mask, -78, -30, 156, 70, 4, 11);
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke(mask);
+    c.strokeStyle = P.brow; c.lineWidth = 6;                         // גבה קשתית
     c.beginPath(); c.moveTo(-76, -96); c.quadraticCurveTo(0, -78, 76, -96); c.stroke();
     // עדשות העיניים
     for (const s of [-1, 1]) {
         c.save(); c.scale(s, 1);
         c.beginPath(); c.moveTo(8, -84); c.lineTo(66, -90); c.lineTo(62, -54); c.lineTo(18, -40); c.closePath();
         const lg = c.createLinearGradient(10, -90, 60, -40);
-        lg.addColorStop(0, '#2a0608'); lg.addColorStop(0.6, '#0a0204'); lg.addColorStop(1, '#3a0a0e');
-        c.fillStyle = lg; c.fill(); c.strokeStyle = '#4a4f5c'; c.lineWidth = 3; c.stroke();
+        lg.addColorStop(0, P.lens[0]); lg.addColorStop(0.6, P.lens[1]); lg.addColorStop(1, P.lens[2]);
+        c.fillStyle = lg; c.fill(); c.strokeStyle = P.lensEdge; c.lineWidth = 3; c.stroke();
         skGlow(c, 38, -68, 22, '#ff2a2a', 0.35 * pulse);
         skE(c, 30, -76, 7, 3.5, 'rgba(255,255,255,0.55)', null, 0, -0.2);
         c.restore();
     }
     // אף ולוח הנשימה סביב הפה
-    skP(c, [[-12, -50], [12, -50], [6, -18], [-6, -18]], '#2a2c34', out, 2);
-    skP(c, [[-66, -14], [66, -14], [24, 70], [-24, 70]], '#5a5f6e', out, 2.5);
-    c.strokeStyle = '#2a2c34'; c.lineWidth = 3;
+    skP(c, [[-12, -50], [12, -50], [6, -18], [-6, -18]], P.grille, out, 2);
+    skP(c, [[-66, -14], [66, -14], [24, 70], [-24, 70]], P.plate, out, 2.5);
+    c.strokeStyle = P.grille; c.lineWidth = 3;
     for (let i = -3; i <= 3; i++) { c.beginPath(); c.moveTo(i * 12, 20); c.lineTo(i * 8, 64); c.stroke(); }
 }
 
@@ -5517,6 +5554,21 @@ Object.entries(GENDER_FLIPS).forEach(([id, f]) => {
 ['rolazero', 'albanta'].forEach(id => { const sk = SV_SKINS.find(x => x.id === id); if (sk) sk.variantOf = 'bubacola'; });
 SKIN_GROUPS.bubacola = [{ id: 'bubacola', label: 'קולה' }, { id: 'rolazero', label: 'זירו' }, { id: 'albanta', label: 'פאנטה' }];
 
+// גרסאות צ'דר לסקינים של מהדורה מיוחדת - נפתחות עם אותו קוד
+const CHEDDAR_VARIANTS = {
+    vader: { name: 'סטארוורס צ\'דר', pal: VADER_CHEDDAR, tone: '#e8961c', lips: '#c46e08',
+             outfit: { base: '#e8961c', collar: 'high' }, cape: { color: '#d07a10' }, aura: { color: '#ffb02e', alpha: 0.35 } },
+    dosus: { name: 'דוסוס צ\'דר', pal: DOSUS_CHEDDAR, tone: '#ffcf5a', lips: '#d98a14',
+             hair: { style: 'short', color: '#b8700c' }, beard: { style: 'long', color: '#e8961c' },
+             glasses: { type: 'round', color: '#7a3e02' }, aura: { color: '#ffd23d', alpha: 0.3 } }
+};
+Object.entries(CHEDDAR_VARIANTS).forEach(([id, ov]) => {
+    const base = SV_SKINS.find(x => x.id === id);
+    if (!base) return;
+    SV_SKINS.push(Object.assign({}, base, ov, { id: id + '_cheddar', variantOf: id }));
+    SKIN_GROUPS[id] = [{ id, label: 'רגיל' }, { id: id + '_cheddar', label: '🧀 צ\'דר' }];
+});
+
 function skinGroupOf(id) {
     const sk = SV_SKINS.find(x => x.id === id);
     const base = sk && sk.variantOf ? sk.variantOf : id;
@@ -6187,7 +6239,7 @@ function renderShop() {
                   skins: SV_SKINS.filter(s => s.rarity >= 0 && !isSpecial(s) && !placed.has(s.id) && !s.variantOf).sort(byRarity) });
     // סקינים של מהדורה מיוחדת מופיעים רק אחרי שהושגו עם קוד
     groups.push({ id: 'special', title: 'מהדורה מיוחדת', icon: '🎟', color: SK_RARITY[6].color,
-                  skins: SV_SKINS.filter(s => isSpecial(s) && owned.has(s.id)) });
+                  skins: SV_SKINS.filter(s => isSpecial(s) && owned.has(s.id) && !s.variantOf) });
     const visible = groups.filter(g => g.skins.length);
 
     // קיצורי דרך לקטגוריות
