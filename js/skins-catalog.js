@@ -22,7 +22,7 @@ const SV_SKINS = [
       outfit: { base: '#e86a9a', collar: 'crew' } },
     { id: 'yosi', name: 'סבא דני', rarity: 0, tone: '#f3d2b0', hair: { style: 'sidebald', color: '#e8e8ee' }, brow: '#cfcfd6',
       glasses: { type: 'round', color: '#5a4630' }, beard: { style: 'mustache', color: '#e8e8ee' },
-      outfit: { base: '#f3f3f6', cardigan: '#4f7a4a', collar: 'v', inner: '#f3f3f6' } },
+      outfit: { base: '#1d2b5e' }, extra: skCoachPolo },
     { id: 'roei', name: 'רועי', rarity: 0, tone: '#f1c8a0', hair: { style: 'short', color: '#a8641e' }, face: ['freckles'],
       hat: { type: 'cap', c1: '#d6291f' }, outfit: { base: '#f2c230', collar: 'crew' } },
     { id: 'michal', name: 'מיכל', rarity: 0, tone: '#c68642', hair: { style: 'curly', color: '#1f130c' }, lips: '#a8434f',
@@ -282,7 +282,8 @@ const GENDER_FLIPS = {
     // אנשי השכונה
     danny: { g: 'm', name: 'דניאלה' },
     noa: { g: 'f', name: 'נועם' },
-    yosi: { g: 'm', name: 'סבתא רוזי', ov: { hair: { style: 'bun', color: '#e8e8ee' } } },
+    yosi: { g: 'm', name: 'סבתא רוזי', ov: { hair: { style: 'bun', color: '#e8e8ee' }, extra: undefined,
+                                           outfit: { base: '#f3f3f6', cardigan: '#4f7a4a', collar: 'v', inner: '#f3f3f6' } } },
     roei: { g: 'm', name: 'רעות' },
     michal: { g: 'f', name: 'מיכאל', ov: { beard: { style: 'stubble', color: '#1f130c' } } },
     avi: { g: 'm', name: 'אביבה', ov: { hair: { style: 'afro', color: '#14110f' } } },

@@ -1287,6 +1287,38 @@ function skMonaFront(c, sk, st) {
 }
 
 // כתר זהב קטן ומוטה על הראש
+// חולצת פולו כחולה של מאמן כדורסל: צווארון, כפתורים, לוגו לבן וסמל קבוצה עם כדור כתום
+function skCoachPolo(c, sk, st) {
+    const navy = '#1d2b5e', trim = '#2c3f80';
+    // תפרים בצדדים בכחול בהיר יותר
+    c.save(); skTorsoPath(c); c.clip();
+    c.strokeStyle = trim; c.lineWidth = 6;
+    for (const sd of [-1, 1]) { c.beginPath(); c.moveTo(sd * 100, 96); c.quadraticCurveTo(sd * 112, 200, sd * 110, 340); c.stroke(); }
+    c.restore();
+    // פתח כפתורים
+    skR(c, -9, 62, 18, 64, 4, skShade(navy, -0.15), SK_OUT, 2);
+    for (const y of [76, 96, 116]) skE(c, 0, y, 3.2, 3.2, '#e8ecf4', 'rgba(0,0,0,0.5)', 1);
+    // צווארון פולו
+    for (const sd of [-1, 1]) {
+        skP(c, [[sd * 4, 60], [sd * 40, 42], [sd * 46, 52], [sd * 26, 86]], navy, SK_OUT, 2.5);
+        c.strokeStyle = trim; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(sd * 38, 47); c.lineTo(sd * 24, 78); c.stroke();
+    }
+    // לוגו לבן קטן (צד ימין של המסך = שמאל החולצה)
+    c.strokeStyle = '#ffffff'; c.lineWidth = 3; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-64, 128); c.quadraticCurveTo(-56, 116, -46, 122); c.quadraticCurveTo(-40, 128, -48, 132); c.stroke();
+    c.beginPath(); c.moveTo(-64, 138); c.lineTo(-44, 138); c.stroke();
+    // סמל הקבוצה: מגן כחול-כתום עם כדורסל
+    c.save(); c.translate(56, 132);
+    skP(c, [[-15, -16], [15, -16], [15, 4], [0, 18], [-15, 4]], '#f4f6fb', SK_OUT, 2);
+    skP(c, [[-11, -12], [11, -12], [11, 3], [0, 13], [-11, 3]], '#2c58c8', null, 0);
+    skE(c, 0, -1, 8, 8, '#ff8a1a', '#7a3a08', 1.5);
+    c.strokeStyle = '#7a3a08'; c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(-8, -1); c.lineTo(8, -1); c.moveTo(0, -9); c.lineTo(0, 7);
+    c.moveTo(-5, -7); c.quadraticCurveTo(-1, -1, -5, 5); c.moveTo(5, -7); c.quadraticCurveTo(1, -1, 5, 5); c.stroke();
+    c.restore();
+}
+
 function skSmallCrown(c, sk, st) {
     c.save();
     c.translate(10, -108); c.rotate(0.14); c.scale(0.3, 0.3);        // בסיס הכתר (y≈-100) יושב על השיער
