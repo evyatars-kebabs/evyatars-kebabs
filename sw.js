@@ -1,5 +1,5 @@
-// הדף עצמו תמיד נבדק מול השרת (no-cache), כך שאחרי עדכון השחקנים מקבלים את הגרסה החדשה מיד.
-// אם לא השתנה כלום, השרת עונה "ללא שינוי" והטעינה כמעט מיידית.
+// כל הקבצים של האתר (הדף, הקוד והעיצוב) תמיד נבדקים מול השרת (no-cache), כך שאחרי עדכון
+// השחקנים מקבלים גרסה חדשה ועקבית מיד. אם לא השתנה כלום, השרת עונה "ללא שינוי" והטעינה מהירה.
 self.addEventListener('install', () => {
   self.skipWaiting();
 });
@@ -10,8 +10,8 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const req = e.request;
-  const isPage = req.mode === 'navigate' || (req.destination === 'document');
-  if (isPage) {
+  const sameOrigin = new URL(req.url).origin === self.location.origin;
+  if (req.method === 'GET' && sameOrigin) {
     e.respondWith(fetch(req, { cache: 'no-cache' }).catch(() => fetch(req)));
     return;
   }
