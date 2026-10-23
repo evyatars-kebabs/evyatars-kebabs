@@ -319,7 +319,7 @@ const GENDER_FLIPS = {
     viking: { g: 'm', name: 'הוויקינגית' },
     ninja: { g: 'm', name: 'לוחמת הנינג\'ה', ov: { hair: { style: 'ponytail', color: '#14110f' } } },
     pirate: { g: 'm', name: 'הפיראטית' },
-    sultan: { g: 'm', name: 'הסולטנה', ov: { hair: { style: 'long', color: '#14110f' } } },
+    sultan: { g: 'm', name: 'אשת הסולטן', ov: { hair: { style: 'long', color: '#14110f' } } },
     king: { g: 'm', name: 'מלכת הבייגלה' },
     cowboy: { g: 'm', name: 'הבוקרת' },
     hunter: { g: 'm', name: 'הציידת' },
