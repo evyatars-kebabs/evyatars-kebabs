@@ -203,7 +203,7 @@ function animateNumber(el, from, to, ms) {
 // שדות אפשריים במסמך: coins (מספר), skin (מזהה סקין), wipe (true).
 // הקודים של הסקינים המיוחדים נשארים כאן.
 const REDEEM_CODES = {
-    'BANANA999888':      { skin: 'banana' },
+    'ITAMARTHEAGADI455': { skin: 'banana' },
     'SHRAGONT888':       { skin: 'lizard' },
     'DOSUS505':          { skin: 'dosus' },
     'SPRINGYDADOG3':     { skin: 'yuvaldog' },
