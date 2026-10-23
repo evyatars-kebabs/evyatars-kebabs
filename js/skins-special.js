@@ -583,17 +583,29 @@ function skLaffaBack(c, sk, st) {
 
 function skMouseBack(c, sk, st) {
     const t = st.t, blk = '#15151a', skin = '#f6c9a0';
+    const mag = !!sk.magician;
     skAuraBack(c, sk, t);
-    // שרביט קסמים ביד עם כפפה לבנה
+    if (mag) skCapeBack(c, sk, t);
+    // שרביט ביד עם כפפה לבנה (קוסם: שרביט שחור עם קצוות לבנים)
     c.save(); c.translate(118, 230); c.rotate(0.42 + Math.sin(t * 2) * 0.06);
-    skR(c, -5, -150, 10, 150, 4, '#6b4a2c', '#2a1206', 2);
-    skGlow(c, 0, -158, 34, '#9fd4ff', 0.6 + 0.3 * Math.sin(t * 5));
-    skStar(c, 0, -158, 13, '#fff3b0', t * 2);
+    if (mag) {
+        skR(c, -5, -150, 10, 150, 4, '#111114', '#000', 2);
+        skR(c, -5.5, -156, 11, 26, 4, '#ffffff', '#2a2a30', 2);
+        for (let i = 0; i < 4; i++) {                                // נצנוצים סביב הקצה
+            const a = t * 2.2 + i * Math.PI / 2, tw = 0.5 + 0.5 * Math.sin(t * 6 + i * 2);
+            skStar(c, Math.cos(a) * 24, -150 + Math.sin(a) * 24, 4 + tw * 4, 'rgba(255,240,170,' + (0.4 + tw * 0.6) + ')', a);
+        }
+    } else {
+        skR(c, -5, -150, 10, 150, 4, '#6b4a2c', '#2a1206', 2);
+        skGlow(c, 0, -158, 34, '#9fd4ff', 0.6 + 0.3 * Math.sin(t * 5));
+        skStar(c, 0, -158, 13, '#fff3b0', t * 2);
+    }
     skE(c, 0, 4, 24, 20, '#ffffff', '#2a2a30', 2.5);
     for (const x of [-12, 0, 12]) { c.strokeStyle = '#2a2a30'; c.lineWidth = 2; c.beginPath(); c.moveTo(x, -6); c.lineTo(x, 8); c.stroke(); }
     c.restore();
-    // גלימה אדומה
+    // גלימה אדומה / טוקסידו של קוסם
     skOutfit(c, sk, t);
+    if (mag) skTuxedo(c);
     // אוזניים עגולות גדולות
     for (const s of [-1, 1]) {
         const g = c.createRadialGradient(s * 108 - 14, -164, 6, s * 108, -148, 52);
@@ -614,7 +626,54 @@ function skMouseBack(c, sk, st) {
     skE(c, -5, -36, 6, 3.5, 'rgba(255,255,255,0.6)');
     skEyes(c, sk, st);
 }
+// טוקסידו: דשים שחורים מבריקים מעל חולצה לבנה, פפיון אדום וכפתורים
+function skTuxedo(c) {
+    c.save(); skTorsoPath(c); c.clip();
+    for (const s of [-1, 1]) {
+        skP(c, [[s * 124, 340], [s * 124, 100], [s * 62, 84], [s * 8, 170], [s * 10, 340]], '#17171c', 'rgba(0,0,0,0.6)', 3);
+        const lg = c.createLinearGradient(s * 60, 84, s * 20, 200);
+        lg.addColorStop(0, '#4a4a56'); lg.addColorStop(1, '#22222a');
+        skP(c, [[s * 62, 84], [s * 8, 170], [s * 30, 196], [s * 70, 120]], lg, 'rgba(0,0,0,0.7)', 2);   // דש סאטן
+    }
+    skR(c, 62, 150, 34, 7, 2, '#f3f3f6');                              // ממחטה בכיס
+    skP(c, [[64, 150], [72, 138], [80, 150], [88, 140], [94, 150]], '#e03a3e', 'rgba(0,0,0,0.4)', 1.5);
+    for (const y of [210, 250]) skE(c, 0, y, 5, 5, '#15151a', '#000', 1);   // כפתורי חולצה
+    c.restore();
+    skTorsoPath(c); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+    // צווארון לבן ופפיון אדום
+    skP(c, [[-34, 46], [0, 74], [-12, 92]], '#ffffff', SK_OUT, 2);
+    skP(c, [[34, 46], [0, 74], [12, 92]], '#ffffff', SK_OUT, 2);
+    skP(c, [[0, 80], [-34, 64], [-36, 98]], '#d6291f', SK_OUT, 2.5);
+    skP(c, [[0, 80], [34, 64], [36, 98]], '#d6291f', SK_OUT, 2.5);
+    skE(c, 0, 80, 9, 9, '#a81c14', SK_OUT, 2.5);
+}
+
+// מגבעת של קוסם עם סרט אדום
+function skTopHat(c, t) {
+    c.save();
+    c.translate(0, -122); c.rotate(-0.08 + Math.sin(t * 1.6) * 0.02);
+    const g = c.createLinearGradient(-58, 0, 58, 0);
+    g.addColorStop(0, '#0c0c10'); g.addColorStop(0.35, '#3a3a46'); g.addColorStop(1, '#0c0c10');
+    skE(c, 0, 4, 96, 18, '#121216', '#000', 3);                        // שוליים
+    c.beginPath();
+    c.moveTo(-56, 0); c.lineTo(-62, -118);
+    c.quadraticCurveTo(0, -134, 62, -118);
+    c.lineTo(56, 0); c.quadraticCurveTo(0, 12, -56, 0); c.closePath();
+    c.fillStyle = g; c.fill(); c.strokeStyle = '#000'; c.lineWidth = 3; c.stroke();
+    skE(c, 0, -120, 62, 12, '#1e1e26', '#000', 3);                     // מכסה
+    c.save(); c.clip(new Path2D('M-60 -34 L60 -34 L58 -6 Q0 6 -58 -6 Z'));
+    c.fillStyle = '#d6291f'; c.fillRect(-64, -40, 128, 50);
+    c.restore();
+    c.strokeStyle = '#000'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-60, -34); c.quadraticCurveTo(0, -24, 60, -34); c.stroke();
+    skStar(c, 34, -20, 7, '#ffd23d', t);
+    c.strokeStyle = 'rgba(255,255,255,0.18)'; c.lineWidth = 6;            // ברק
+    c.beginPath(); c.moveTo(-34, -108); c.lineTo(-30, -44); c.stroke();
+    c.restore();
+}
+
 function skMouseFront(c, sk, st) {
+    if (sk.magician) { skTopHat(c, st.t); return; }
     c.save();
     c.translate(0, -40); c.scale(0.86, 0.86);                // הכובע מורם כדי לא להסתיר את הפנים
     skHatOver(c, sk, st.t);

@@ -352,6 +352,15 @@ const CHEDDAR_VARIANTS = {
     yuvaldog: { name: 'הכלב של יובל צ\'דר', pal: DOG_CHEDDAR, tone: '#ffd877', brow: '#8a4a04', lips: '#7a3e02',
                 eyes: { iris: '#7a3e02' }, outfit: { base: '#e8961c', collar: 'crew' }, aura: { color: '#ffc83d', alpha: 0.35 } }
 };
+// מיקי הקוסם - גרסה של מיקי המכשף, נפתחת באותו קוד
+(() => {
+    const base = SV_SKINS.find(x => x.id === 'wizmouse');
+    SV_SKINS.push(Object.assign({}, base, { id: 'wizmouse_magic', name: 'מיקי הקוסם', variantOf: 'wizmouse', magician: true, hat: null,
+        outfit: { base: '#ffffff' }, cape: { color: '#b3121f' },
+        aura: { color: '#ff4a5a', alpha: 0.35 }, fx: { type: 'sparkles', count: 16, speed: 0.4 } }));
+    SKIN_GROUPS.wizmouse = [{ id: 'wizmouse', label: '🧙 מכשף' }, { id: 'wizmouse_magic', label: '🎩 קוסם' }];
+})();
+
 // דני בגופיית נבחרת ישראל
 (() => {
     const base = SV_SKINS.find(x => x.id === 'deni');
