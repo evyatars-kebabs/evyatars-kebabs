@@ -1199,6 +1199,23 @@ function skEinsteinExtra(c, sk, st) {
     c.fillText('E=mc²', 0, 0);
     c.restore();
 }
+// ססיל רודז: שביל צד בשיער, פאות קצרות ושרשרת שעון זהב על הווסט
+function skRhodesExtra(c, sk, st) {
+    const col = sk.hair.color;
+    c.strokeStyle = skShade(col, -0.45); c.lineWidth = 4.5; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-40, -140); c.quadraticCurveTo(-46, -118, -44, -94); c.stroke();      // שביל צד
+    c.strokeStyle = skShade(col, 0.25); c.lineWidth = 2.5;
+    for (const x of [-26, -2, 22, 46]) { c.beginPath(); c.moveTo(x - 6, -136); c.quadraticCurveTo(x + 10, -128, x + 18, -104); c.stroke(); }
+    for (const s of [-1, 1]) skR(c, s * 84 - 6, -62, 12, 34, 5, col, SK_OUT, 2);                // פאות קצרות
+    // שרשרת שעון מכיס לכפתור
+    c.strokeStyle = '#7a5a10'; c.lineWidth = 4.5;
+    c.beginPath(); c.moveTo(-58, 176); c.quadraticCurveTo(-30, 200, 0, 182); c.stroke();
+    c.strokeStyle = '#f1c40f'; c.lineWidth = 2.5;
+    c.beginPath(); c.moveTo(-58, 176); c.quadraticCurveTo(-30, 200, 0, 182); c.stroke();
+    skE(c, -60, 176, 6, 6, '#f1c40f', '#7a5a10', 2);
+    for (const y of [182, 210, 238, 266]) skE(c, 0, y, 4, 4, '#c9a24a', 'rgba(0,0,0,0.5)', 1.2); // כפתורי הווסט
+}
+
 function skNewtonExtra(c, sk, st) {
     // תלתלי פאה לאורך הצדדים
     const col = sk.hair.color, dk = skShade(col, -0.25);
