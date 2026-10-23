@@ -885,6 +885,37 @@
         #coupon-text { color: var(--text-color) !important; font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1.15rem !important; font-weight: 400 !important; }
         #coupon-coins { font-family: 'Secular One', 'Rubik', sans-serif; font-size: 1.5rem; color: var(--accent-gold); text-shadow: 0 0 14px rgba(255, 194, 51, 0.6); animation: coinPop .5s cubic-bezier(.2, 1.8, .4, 1) .5s both; }
         #coupon-total { margin-top: 4px; font-size: 0.85rem; color: var(--muted); }
+        #screen-home > * { flex-shrink: 0; }           /* הכרטיסים לא מתכווצים - המסך גולל */
+        .daily-box {
+            border: 1px solid rgba(255, 194, 51, 0.35); border-radius: 18px; padding: 10px 10px 8px; margin-bottom: 14px;
+            background: linear-gradient(180deg, rgba(255, 194, 51, 0.1), rgba(255, 106, 26, 0.04));
+        }
+        .daily-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .daily-title { font-family: 'Secular One', 'Rubik', sans-serif; color: var(--accent-gold); font-size: 1rem; }
+        .daily-meta { display: flex; gap: 8px; align-items: center; font-size: 0.72rem; color: var(--muted); }
+        .daily-streak { color: #ff9f1c; font-weight: 700; font-size: 0.8rem; }
+        .daily-row { display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+        .daily-icon { font-size: 1.3rem; width: 28px; text-align: center; flex-shrink: 0; }
+        .daily-body { flex: 1; min-width: 0; }
+        .daily-text { font-size: 0.8rem; color: var(--text-color); line-height: 1.25; }
+        .daily-bar { height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.4); margin-top: 4px; overflow: hidden; }
+        .daily-bar i { display: block; height: 100%; background: linear-gradient(90deg, #ff9f1c, #ffd54f); border-radius: 3px; }
+        .daily-num { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+        .daily-row.complete .daily-bar i, .daily-row.claimed .daily-bar i { background: linear-gradient(90deg, #2ea043, #4ad66d); }
+        .daily-row.claimed { opacity: 0.6; }
+        .daily-act {
+            flex-shrink: 0; min-width: 58px; padding: 6px 8px; border-radius: 10px; font-family: 'Rubik', sans-serif; font-size: 0.75rem; font-weight: 700;
+            background: rgba(0, 0, 0, 0.3); color: var(--muted); border: 1px solid var(--border-color); cursor: default;
+        }
+        .daily-act.ready {
+            cursor: pointer; color: #2a1204; border: 0; background: linear-gradient(180deg, #ffd54f, #ff9f1c);
+            box-shadow: 0 3px 0 #b3560a; animation: claimPulse 1.4s ease-in-out infinite;
+        }
+        .daily-act.ready:active { transform: translateY(2px); box-shadow: 0 1px 0 #b3560a; }
+        .daily-bonus { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; padding: 7px 6px 2px;
+            border-top: 1px dashed rgba(255, 194, 51, 0.3); font-size: 0.75rem; color: var(--muted); }
+        .daily-bonus.complete span { color: var(--accent-gold); font-weight: 700; }
+        .daily-bonus.claimed span { color: #4ad66d; }
         .claim-btn { margin: 12px auto 0; display: block; width: auto; min-width: 60%; padding: 12px 26px; animation: claimPulse 1.4s ease-in-out .9s infinite; }
         .claim-btn:disabled { animation: none; }
         @keyframes claimPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
@@ -976,6 +1007,7 @@
 	</div>
 	
     <div id="screen-home" class="screen">
+        <div id="daily-box" class="daily-box"></div>
         <h2 style="font-weight: 400; text-align: center; margin-bottom: 15px; font-size: 1rem; color: #b9a38e;">בחר מסלול משחק</h2>
         
         <div class="game-card" onclick="startKvkGame()">
@@ -1466,7 +1498,7 @@ const firebaseConfig = {
     const LB_ID_KEY = 'kebab_lbId';
     const PROGRESS_KEYS = ['kebab_lbId', 'kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
         'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
-        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_kvk_tutorial_done'];
+        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
     const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
     const LB_BEST = [['leaderboard', 'kebab_highScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
@@ -1494,6 +1526,7 @@ const firebaseConfig = {
     }
 
     function refreshAfterProgress() {
+        if (typeof renderDaily === 'function') renderDaily();
         playerName = store.get('kebab_playerName') || 'אורח';
         document.getElementById('player-name-input').value = playerName;
         renderProfileStats();
@@ -1767,6 +1800,7 @@ const firebaseConfig = {
 
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
 		if (screenId === 'shop') renderShop();
+		if (screenId === 'home') renderDaily();
 
 		if (screenId === 'leaderboard') {
 			const active = document.querySelector('.sub-tab-btn.active');
@@ -1906,6 +1940,7 @@ const firebaseConfig = {
 
         checkHighScore(catchScore);
         document.getElementById('result-desc').textContent = `תפסת קבבים בשווי ${catchScore} נקודות!`;
+        dailyEvent('catch', { score: catchScore });
         showResultReward('catch', catchScore);
         switchTab('result');
     }
@@ -2093,6 +2128,7 @@ const firebaseConfig = {
         const totalPoints = triviaScore * 20;
         saveLocalBest('kebab_triviaHighScore', totalPoints);
         document.getElementById('result-desc').textContent = `ענית נכון על ${triviaScore} מתוך ${activeTriviaQuestions.length} שאלות! (${totalPoints} נקודות)`;
+        dailyEvent('trivia', { score: totalPoints, correct: triviaScore });
         showResultReward('trivia', totalPoints);
         switchTab('result');
     }
@@ -2271,6 +2307,7 @@ function endGoodsSortGame() {
     saveBestScore('leaderboard_goods', goodsScore, 'kebab_goodsHighScore');
 
     document.getElementById('result-desc').textContent = `סידרתם את המדפים וצברתם ${goodsScore} נקודות!`;
+        dailyEvent('goods', { score: goodsScore });
         showResultReward('goods', goodsScore);
     switchTab('result');
 }
@@ -2537,6 +2574,7 @@ function svEnd() {
     saveBestScore('leaderboard_shvartz', sv.score, 'kebab_shvartzHighScore');
     document.getElementById('result-desc').textContent =
         `שוורץ אכל ${sv.made} פעמים ואתם צברתם ${sv.score} נקודות!`;
+        dailyEvent('shvartz', { score: sv.score, made: sv.made });
         showResultReward('shvartz', sv.score);
     switchTab('result');
 }
@@ -5393,11 +5431,15 @@ function claimCoins() {
     btn.textContent = 'נאסף ✓';
     // אי אפשר לשלוט בעוצמת הרטט בדפדפן - רק באורך; רטט ארוך מורגש חזק יותר
     haptic([90, 40, 90]);
+    flyCoins(btn, amount);
+}
 
+// מוסיף מטבעות ליתרה עם אנימציה: המטבעות עפים מ-fromEl אל היתרה למעלה
+function flyCoins(fromEl, amount) {
     const before = getCoins();
     store.set(COIN_KEY, before + amount);             // נשמר מיד; התצוגה מתעדכנת עם כל מטבע שמגיע
     const chip = document.querySelector('.top-bar .coin-chip');
-    const from = btn.getBoundingClientRect();
+    const from = fromEl.getBoundingClientRect();
     const to = chip ? chip.getBoundingClientRect() : { left: 20, top: 20, width: 40, height: 30 };
     const x0 = from.left + from.width / 2, y0 = from.top + from.height / 2;
     const x1 = to.left + to.width / 2, y1 = to.top + to.height / 2;
@@ -5432,6 +5474,202 @@ function claimCoins() {
     }
 }
 
+/* ============================================================
+   אתגרים יומיים
+   כל יום נבחרים 3 אתגרים לפי התאריך (אותם אתגרים לכל השחקנים), כל אחד ממשחק אחר.
+   ההתקדמות מתעדכנת בסוף כל משחק, ואת הפרס אוספים בבית. השלמת שלושתם = בונוס ורצף ימים.
+   ============================================================ */
+const DAILY_KEY = 'kebab_daily';
+const DAILY_BONUS = 75;
+// on = סוג האירוע (שם המשחק, '*' לכל משחק, או 'coupon'); mode: max = הכי טוב במשחק אחד, sum = מצטבר, set = משחקים שונים
+const DAILY_POOL = [
+    { id: 'catch_max',   game: 'catch',   icon: '🍢', text: 'תפסו {t} קבבים במשחק אחד',               t: 12,  reward: 30, on: 'catch',   mode: 'max', val: e => e.score },
+    { id: 'catch_sum',   game: 'catch',   icon: '🍢', text: 'תפסו {t} קבבים בסך הכול',                 t: 35,  reward: 35, on: 'catch',   mode: 'sum', val: e => e.score },
+    { id: 'ninja_slice', game: 'ninja',   icon: '🥷', text: 'חתכו {t} פריטים בקבב נינג\'ה',             t: 60,  reward: 40, on: 'ninja',   mode: 'sum', val: e => e.sliced },
+    { id: 'ninja_max',   game: 'ninja',   icon: '🥷', text: 'צברו {t} נקודות במשחק נינג\'ה אחד',        t: 60,  reward: 45, on: 'ninja',   mode: 'max', val: e => e.score },
+    { id: 'sv_made',     game: 'shvartz', icon: '🥙', text: 'האכילו את שוורץ {t} פעמים במשחק אחד',     t: 8,   reward: 40, on: 'shvartz', mode: 'max', val: e => e.made },
+    { id: 'sv_sum',      game: 'shvartz', icon: '🥙', text: 'צברו {t} נקודות ב"האכל את השוורץ"',        t: 200, reward: 40, on: 'shvartz', mode: 'sum', val: e => e.score },
+    { id: 'goods_max',   game: 'goods',   icon: '🥫', text: 'צברו {t} נקודות בסידור המדפים',            t: 30,  reward: 35, on: 'goods',   mode: 'max', val: e => e.score },
+    { id: 'trivia_4',    game: 'trivia',  icon: '🧠', text: 'ענו נכון על {t} שאלות בחידון אחד',         t: 4,   reward: 30, on: 'trivia',  mode: 'max', val: e => e.correct },
+    { id: 'trivia_sum',  game: 'trivia',  icon: '🧠', text: 'ענו נכון על {t} שאלות בחידון בסך הכול',    t: 10,  reward: 35, on: 'trivia',  mode: 'sum', val: e => e.correct },
+    { id: 'kvk_waves',   game: 'kvk',     icon: '🧟', text: 'החזיקו מעמד {t} גלים בקבבים מול קולסקים',  t: 3,   reward: 50, on: 'kvk',     mode: 'max', val: e => e.waves },
+    { id: 'kvk_kills',   game: 'kvk',     icon: '🧟', text: 'הביסו {t} קולסקים בסך הכול',              t: 25,  reward: 50, on: 'kvk',     mode: 'sum', val: e => e.kills },
+    { id: 'play_5',      game: 'any',     icon: '🎮', text: 'שחקו {t} משחקים',                          t: 5,   reward: 30, on: '*',       mode: 'sum', val: () => 1 },
+    { id: 'variety_3',   game: 'any',     icon: '🎲', text: 'שחקו ב-{t} משחקים שונים',                  t: 3,   reward: 40, on: '*',       mode: 'set', val: e => e.game },
+    { id: 'coupons_2',   game: 'any',     icon: '🎁', text: 'קבלו {t} קופונים בסוף משחקים',             t: 2,   reward: 35, on: 'coupon',  mode: 'sum', val: () => 1 }
+];
+
+function dailyDate(d) { return (d || new Date()).toLocaleDateString('en-CA'); }       // YYYY-MM-DD לפי השעון המקומי
+
+// בחירה דטרמיניסטית לפי התאריך: 3 אתגרים, כל אחד ממשחק אחר (ולכל היותר אחד כללי)
+function dailyPick(date) {
+    let h = 2166136261;
+    for (const ch of date) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+    const rnd = () => {                                   // mulberry32 - מפזר היטב גם תאריכים דומים
+        h = (h + 0x6D2B79F5) >>> 0;
+        let t = h;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const pool = DAILY_POOL.slice(), picked = [], games = new Set();
+    while (picked.length < 3 && pool.length) {
+        const c = pool.splice(Math.floor(rnd() * pool.length), 1)[0];
+        if (games.has(c.game)) continue;
+        games.add(c.game);
+        picked.push(c.id);
+    }
+    return picked;
+}
+
+function dailyLoad() {
+    let st = null;
+    try { st = JSON.parse(store.get(DAILY_KEY) || 'null'); } catch (e) { st = null; }
+    const today = dailyDate();
+    if (!st || st.date !== today) {
+        st = { date: today, ids: dailyPick(today), prog: {}, claimed: [], notified: [], bonus: false,
+               streak: st ? st.streak || 0 : 0, lastFull: st ? st.lastFull || '' : '' };
+        dailySave(st);
+    }
+    return st;
+}
+function dailySave(st) { store.set(DAILY_KEY, JSON.stringify(st)); }
+function dailyDef(id) { return DAILY_POOL.find(c => c.id === id); }
+function dailyValue(st, c) {
+    const v = st.prog[c.id];
+    return c.mode === 'set' ? (Array.isArray(v) ? v.length : 0) : (v || 0);
+}
+
+// נקרא בסוף כל משחק (game = שם המשחק) ובכל קופון (game = 'coupon')
+function dailyEvent(game, data) {
+    const st = dailyLoad();
+    const e = Object.assign({ game }, data);
+    const done = [];
+    st.ids.forEach(id => {
+        const c = dailyDef(id);
+        if (!c) return;
+        if (!(c.on === game || (c.on === '*' && game !== 'coupon'))) return;
+        const before = dailyValue(st, c);
+        const v = c.val(e);
+        if (c.mode === 'max') st.prog[c.id] = Math.max(st.prog[c.id] || 0, v || 0);
+        else if (c.mode === 'sum') st.prog[c.id] = (st.prog[c.id] || 0) + (v || 0);
+        else if (c.mode === 'set') { const a = Array.isArray(st.prog[c.id]) ? st.prog[c.id] : []; if (!a.includes(v)) a.push(v); st.prog[c.id] = a; }
+        if (before < c.t && dailyValue(st, c) >= c.t && !st.notified.includes(c.id)) { st.notified.push(c.id); done.push(c); }
+    });
+    dailySave(st);
+    if (done.length) {
+        setTimeout(() => { showToast('🎯 אתגר יומי הושלם! אספו את הפרס במסך הבית'); sfx.match(1); haptic([30, 30, 30]); }, 900);
+    }
+    renderDaily();
+}
+
+function dailyClaim(id, btn) {
+    const st = dailyLoad();
+    const c = dailyDef(id);
+    if (!c || st.claimed.includes(id) || dailyValue(st, c) < c.t) return;
+    st.claimed.push(id);
+    dailySave(st);
+    haptic([90, 40, 90]);
+    flyCoins(btn, c.reward);
+    renderDaily();
+}
+
+function dailyClaimBonus(btn) {
+    const st = dailyLoad();
+    if (st.bonus || st.claimed.length < st.ids.length) return;
+    st.bonus = true;
+    // רצף: ימים רצופים שבהם הושלמו כל האתגרים
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    st.streak = st.lastFull === dailyDate(y) ? (st.streak || 0) + 1 : 1;
+    st.lastFull = st.date;
+    dailySave(st);
+    haptic([90, 40, 90, 40, 140]);
+    flyCoins(btn, DAILY_BONUS);
+    confettiBurst(60);
+    renderDaily();
+}
+
+function dailyCountdown() {
+    const now = new Date(), next = new Date(now);
+    next.setHours(24, 0, 0, 0);
+    const s = Math.max(0, Math.floor((next - now) / 1000));
+    const p = n => String(n).padStart(2, '0');
+    return p(Math.floor(s / 3600)) + ':' + p(Math.floor(s / 60) % 60) + ':' + p(s % 60);
+}
+
+function renderDaily() {
+    const box = document.getElementById('daily-box');
+    if (!box) return;
+    const st = dailyLoad();
+    // רצף שנשבר (פספסו יום) מוצג כ-0
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    const streak = (st.lastFull === st.date || st.lastFull === dailyDate(y)) ? st.streak : 0;
+    box.innerHTML = '';
+    const head = document.createElement('div');
+    head.className = 'daily-head';
+    const title = document.createElement('div');
+    title.className = 'daily-title';
+    title.textContent = '🎯 אתגרים יומיים';
+    const meta = document.createElement('div');
+    meta.className = 'daily-meta';
+    const timer = document.createElement('span');
+    timer.id = 'daily-timer';
+    timer.textContent = '⏳ ' + dailyCountdown();
+    meta.appendChild(timer);
+    if (streak > 0) { const sk = document.createElement('span'); sk.className = 'daily-streak'; sk.textContent = '🔥 ' + streak; sk.title = 'ימים ברצף'; meta.appendChild(sk); }
+    head.appendChild(title);
+    head.appendChild(meta);
+    box.appendChild(head);
+
+    st.ids.forEach(id => {
+        const c = dailyDef(id);
+        if (!c) return;
+        const v = Math.min(c.t, dailyValue(st, c)), complete = v >= c.t, claimed = st.claimed.includes(id);
+        const row = document.createElement('div');
+        row.className = 'daily-row' + (claimed ? ' claimed' : complete ? ' complete' : '');
+        const icon = document.createElement('div'); icon.className = 'daily-icon'; icon.textContent = c.icon;
+        const body = document.createElement('div'); body.className = 'daily-body';
+        const txt = document.createElement('div'); txt.className = 'daily-text'; txt.textContent = c.text.replace('{t}', c.t);
+        const bar = document.createElement('div'); bar.className = 'daily-bar';
+        const fill = document.createElement('i'); fill.style.width = (v / c.t * 100) + '%'; bar.appendChild(fill);
+        const num = document.createElement('div'); num.className = 'daily-num'; num.textContent = v + '/' + c.t;
+        body.appendChild(txt); body.appendChild(bar); body.appendChild(num);
+        const act = document.createElement('button');
+        act.className = 'daily-act';
+        if (claimed) { act.textContent = '✓'; act.disabled = true; }
+        else if (complete) { act.textContent = 'אסוף 🪙' + c.reward; act.classList.add('ready'); act.onclick = () => dailyClaim(id, act); }
+        else { act.textContent = '🪙' + c.reward; act.disabled = true; }
+        row.appendChild(icon); row.appendChild(body); row.appendChild(act);
+        box.appendChild(row);
+    });
+
+    const all = st.claimed.length >= st.ids.length;
+    const bonus = document.createElement('div');
+    bonus.className = 'daily-bonus' + (st.bonus ? ' claimed' : all ? ' complete' : '');
+    const bt = document.createElement('span');
+    bt.textContent = st.bonus ? '🏆 כל האתגרים של היום הושלמו! חזרו מחר' : '🏆 השלימו את שלושת האתגרים: בונוס ורצף ימים';
+    bonus.appendChild(bt);
+    if (!st.bonus) {
+        const bb = document.createElement('button');
+        bb.className = 'daily-act' + (all ? ' ready' : '');
+        bb.textContent = all ? 'אסוף 🪙' + DAILY_BONUS : '🪙' + DAILY_BONUS;
+        bb.disabled = !all;
+        if (all) bb.onclick = () => dailyClaimBonus(bb);
+        bonus.appendChild(bb);
+    }
+    box.appendChild(bonus);
+}
+
+// טיימר ההתחלפות + מעבר יום כשהמסך פתוח
+setInterval(() => {
+    const home = document.getElementById('screen-home');
+    if (!home || !home.classList.contains('active')) return;
+    const st = (() => { try { return JSON.parse(store.get(DAILY_KEY) || 'null'); } catch (e) { return null; } })();
+    if (!st || st.date !== dailyDate()) { renderDaily(); return; }
+    const t = document.getElementById('daily-timer');
+    if (t) t.textContent = '⏳ ' + dailyCountdown();
+}, 1000);
+
 let lastGameKey = null;
 function playAgain() {
     const starters = { catch: startCatchGame, trivia: startTriviaGame, goods: startGoodsSortGame, shvartz: startShvartzGame, ninja: startNinjaGame, kvk: startKvkGame };
@@ -5464,6 +5702,7 @@ function showResultReward(gameKey, score) {
         return;
     }
     box.classList.remove('empty');
+    dailyEvent('coupon', {});
     txt.textContent = coupon.text;
     coinsEl.textContent = '+' + coupon.coins + ' 🪙 קבב קוינס';
     totalEl.textContent = '';
@@ -5923,6 +6162,7 @@ function njEnd() {
     saveBestScore('leaderboard_ninja', nj.score, 'kebab_ninjaHighScore');
     document.getElementById('result-desc').textContent =
         `חתכתם ${nj.sliced} חלקי אוכל וצברתם ${nj.score} נקודות!`;
+    dailyEvent('ninja', { score: nj.score, sliced: nj.sliced });
     showResultReward('ninja', nj.score);
     switchTab('result');
 }
@@ -6481,6 +6721,7 @@ function kvEnd() {
     const held = waves === 0 ? 'הקולסקים פרצו כבר בגל הראשון' : waves === 1 ? 'החזקתם מעמד גל אחד' : `החזקתם מעמד ${waves} גלים`;
     document.getElementById('result-desc').textContent =
         `${held}, הבסתם ${kv.kills} קולסקים וצברתם ${kv.score} נקודות!`;
+    dailyEvent('kvk', { score: kv.score, waves, kills: kv.kills });
     showResultReward('kvk', kv.score);
     switchTab('result');
 }
@@ -7134,7 +7375,7 @@ document.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
 function haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* ignore */ } }
 
 /* ---------- אפקט לחיצה: ניצוצות + צליל + רטט ---------- */
-const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn, .shop-cat, .shop-more';
+const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn, .shop-cat, .shop-more, .daily-act.ready';
 const BURST_COLORS = ['#ffd24a', '#ff9f1c', '#ff6a1a', '#fff2b0'];
 
 function burstAt(x, y, n, spread) {
@@ -7305,6 +7546,7 @@ document.getElementById('code-input').addEventListener('keydown', e => { if (e.k
 document.getElementById('code-modal').addEventListener('click', e => { if (e.target.id === 'code-modal') closeCodeModal(); });
 
 renderCoinBadges();
+renderDaily();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
