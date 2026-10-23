@@ -480,6 +480,12 @@
         }
         .shop-cat:active { transform: scale(0.94); border-color: var(--accent-gold); }
         .shop-group-head { scroll-margin-top: 8px; }
+        .shop-more {
+            display: block; width: 100%; margin: 10px 0 4px; padding: 9px 12px; border-radius: 12px; cursor: pointer;
+            background: rgba(255, 194, 51, 0.08); color: var(--accent-gold); border: 1px dashed rgba(255, 194, 51, 0.5);
+            font-family: 'Rubik', sans-serif; font-size: 0.85rem; font-weight: 600;
+        }
+        .shop-more:active { transform: scale(0.98); }
         .shop-group-count { color: var(--muted); font-size: 0.8rem; font-family: 'Rubik', sans-serif; }
         .shop-rarity {
             display: inline-block; margin: 4px auto 0; padding: 1px 8px; border-radius: 999px; font-size: 0.68rem; font-weight: 700;
@@ -4668,6 +4674,81 @@ function skBottleBack(c, sk, st) {
     skEyes(c, sk, st);
 }
 
+function skSpideyBack(c, sk, st) {
+    const t = st.t, red = '#d4141c', dkred = '#8a0a10', blue = '#1f4fc4', out = '#1a0406';
+    skAuraBack(c, sk, t);
+    // קורי עכביש ברקע
+    c.save();
+    c.translate(-150, -190);
+    c.strokeStyle = 'rgba(235,240,255,0.55)'; c.lineWidth = 2;
+    for (let i = 0; i < 7; i++) { const a = i / 6 * Math.PI / 2; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a) * 150, Math.sin(a) * 150); c.stroke(); }
+    for (let r = 30; r <= 150; r += 30) {
+        c.beginPath();
+        for (let i = 0; i <= 6; i++) { const a = i / 6 * Math.PI / 2, x = Math.cos(a) * r, y = Math.sin(a) * r; if (i) c.quadraticCurveTo(Math.cos(a - Math.PI / 12) * r * 0.86, Math.sin(a - Math.PI / 12) * r * 0.86, x, y); else c.moveTo(x, y); }
+        c.stroke();
+    }
+    c.restore();
+    // חוט קורים שמתנדנד מלמעלה
+    const sw = Math.sin(t * 1.6) * 10;
+    c.strokeStyle = 'rgba(235,240,255,0.8)'; c.lineWidth = 2.5;
+    c.beginPath(); c.moveTo(150 + sw, -340); c.quadraticCurveTo(140, -200, 110, 120); c.stroke();
+
+    // חליפה: אדום עם קורים, צדדים כחולים וסמל עכביש
+    skR(c, -26, 30, 52, 48, 10, dkred, null);
+    skTorsoPath(c);
+    c.fillStyle = red; c.fill();
+    c.save();
+    skTorsoPath(c); c.clip();
+    c.fillStyle = blue;
+    c.beginPath(); c.moveTo(-130, 160); c.lineTo(-62, 170); c.lineTo(-54, 340); c.lineTo(-130, 340); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(130, 160); c.lineTo(62, 170); c.lineTo(54, 340); c.lineTo(130, 340); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(20,0,0,0.55)'; c.lineWidth = 1.6;
+    for (let x = -60; x <= 60; x += 20) { c.beginPath(); c.moveTo(x * 0.5, 50); c.quadraticCurveTo(x * 1.1, 170, x * 0.9, 340); c.stroke(); }
+    for (let y = 90; y < 340; y += 28) { c.beginPath(); c.moveTo(-62, y); c.quadraticCurveTo(0, y + 12, 62, y); c.stroke(); }
+    c.restore();
+    c.strokeStyle = out; c.lineWidth = 3; skTorsoPath(c); c.stroke();
+    // סמל העכביש
+    c.fillStyle = '#111';
+    skE(c, 0, 132, 7, 9, '#111'); skE(c, 0, 118, 5, 5, '#111');
+    c.strokeStyle = '#111'; c.lineWidth = 3; c.lineCap = 'round';
+    for (const s of [-1, 1]) for (const [dy, dx, ey] of [[-6, 22, -22], [0, 26, -6], [6, 24, 12], [12, 18, 28]]) {
+        c.beginPath(); c.moveTo(0, 130 + dy); c.quadraticCurveTo(s * dx * 0.7, 130 + dy - 8, s * dx, 130 + ey); c.stroke();
+    }
+
+    // ראש: מסכה מגולגלת עד האף - הפה והסנטר חשופים
+    skHead(c, sk);
+    for (const s of [-1, 1]) skE(c, s * 86, -30, 14, 19, '#b80e16', out, 2.5);   // האוזניים בתוך המסכה
+    c.save();
+    c.beginPath(); c.ellipse(SK_HEAD.cx, SK_HEAD.cy, SK_HEAD.rx + 1, SK_HEAD.ry + 1, 0, 0, Math.PI * 2); c.clip();
+    const mask = new Path2D();
+    mask.rect(-120, -160, 240, 134);
+    const mg = c.createRadialGradient(-30, -90, 10, 0, -60, 130);
+    mg.addColorStop(0, '#f0303a'); mg.addColorStop(1, '#a80c14');
+    c.fillStyle = mg; c.fill(mask);
+    // קורים על המסכה: קווים שיוצאים מבין העיניים וקשתות
+    c.strokeStyle = 'rgba(20,0,0,0.6)'; c.lineWidth = 1.6;
+    for (let i = 0; i < 12; i++) { const a = Math.PI + i / 11 * Math.PI; c.beginPath(); c.moveTo(0, -52); c.lineTo(Math.cos(a) * 160, -52 + Math.sin(a) * 160); c.stroke(); }
+    for (let r = 26; r < 150; r += 26) { c.beginPath(); c.ellipse(0, -52, r * 1.15, r, 0, Math.PI, Math.PI * 2); c.stroke(); }
+    c.restore();
+    // שפת המסכה המגולגלת מעל האף
+    skR(c, -86, -36, 172, 14, 7, red, out, 2.5);
+    c.strokeStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-76, -32); c.lineTo(76, -32); c.stroke();
+    skE(c, 0, -14, 10, 7, skShade(sk.tone, -0.12));                       // קצה האף
+    // עדשות עיניים לבנות גדולות (מצמצמות כשלועס)
+    const squint = st.chew > 0.25 ? 0.45 : 1;
+    for (const s of [-1, 1]) {
+        c.save(); c.translate(s * 38, -70); c.scale(s * 1.35, squint * 1.35);
+        c.beginPath();
+        c.moveTo(-26, 4); c.quadraticCurveTo(-10, -30, 26, -18); c.quadraticCurveTo(24, 14, -26, 4); c.closePath();
+        c.fillStyle = '#111'; c.fill();
+        c.beginPath();
+        c.moveTo(-18, 2); c.quadraticCurveTo(-6, -22, 20, -13); c.quadraticCurveTo(18, 8, -18, 2); c.closePath();
+        c.fillStyle = '#f4f6fb'; c.fill();
+        c.restore();
+    }
+}
+
 /* ============================================================
    קטלוג הסקינים של שוורץ - 60 דמויות אנושיות
    rarity: 0 נפוץ | 1 לא נפוץ | 2 נדיר | 3 אפי | 4 אגדי | 5 מיתי | 6 מהדורה מיוחדת (קוד בלבד)
@@ -4785,6 +4866,8 @@ const SV_SKINS = [
       aura: { color: '#ffb02e', alpha: 0.45 }, fx: { type: 'sparkles', count: 14 }, drawBack: skLaffaBack },
     { id: 'hedgehog', name: 'סוניק', rarity: 4, brow: '#123c94', lips: '#8a4a3a', eyes: { iris: '#1f9a4a' }, blush: false,
       aura: { color: '#4a9cff', alpha: 0.45 }, fx: { type: 'sparkles', count: 14, speed: 0.6 }, drawBack: skHedgehogBack },
+    { id: 'spidey', name: 'ספיידי', rarity: 4, tone: '#f0c8a0', lips: '#b8576a', blush: false,
+      aura: { color: '#ff3040', alpha: 0.4 }, fx: { type: 'sparkles', count: 12, speed: 0.5 }, drawBack: skSpideyBack },
 
     /* ---------- מיתי ---------- */
     { id: 'cosmic', name: 'קיסר הגלקסיה', rarity: 5, tone: '#e6c6e8', hair: { style: 'galaxy', color: '#3b2a9c' }, eyes: { glow: '#35e0ff' }, brow: '#cfd8ff', hat: { type: 'cosmiccrown' },
@@ -5189,8 +5272,16 @@ const SHOP_CATEGORIES = [
     { id: 'history', title: 'דמויות היסטוריות',   icon: '🏛️', ids: ['pharaoh', 'gladiator', 'samurai', 'knight', 'viking', 'ninja', 'pirate', 'sultan', 'king', 'cowboy', 'hunter', 'gangster', 'einstein', 'newton'] },
     { id: 'fantasy', title: 'פנטזיה ומיתולוגיה',  icon: '🧙', ids: ['wizard', 'vampire', 'icequeen', 'angel', 'firemage', 'thunder', 'phoenix', 'shadow', 'dragon', 'cosmic', 'voidlord', 'kebabgod'] },
     { id: 'future',  title: 'גיבורים ועתיד',      icon: '🚀', ids: ['hero', 'cyborg', 'hacker'] },
-    { id: 'stars',   title: 'כוכבים',             icon: '⭐', ids: ['rocker', 'punk', 'hedgehog', 'deni'] }
+    { id: 'stars',   title: 'כוכבים',             icon: '⭐', ids: ['rocker', 'punk', 'hedgehog', 'spidey', 'deni'] }
 ];
+
+const SHOP_PREVIEW = 4;                 // כמה סקינים מוצגים בכל קטגוריה לפני "הצג עוד"
+const shopExpanded = new Set();         // קטגוריות שנפתחו במלואן
+
+function shopScrollTo(id) {
+    const head = document.getElementById('shop-cat-' + id);
+    if (head) head.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 function renderShop() {
     const grid = document.getElementById('shop-grid');
@@ -5224,9 +5315,10 @@ function renderShop() {
         const chip = document.createElement('button');
         chip.className = 'shop-cat';
         chip.textContent = g.icon + ' ' + g.title;
-        chip.onclick = () => {
-            const head = document.getElementById('shop-cat-' + g.id);
-            if (head) head.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        chip.onclick = () => {                         // בחירת קטגוריה פותחת אותה במלואה
+            shopExpanded.add(g.id);
+            renderShop();
+            shopScrollTo(g.id);
         };
         chips.appendChild(chip);
     });
@@ -5250,7 +5342,10 @@ function renderShop() {
 
         const wrap = document.createElement('div');
         wrap.className = 'shop-cards';
-        g.skins.forEach(sk => {
+        const long = g.skins.length > SHOP_PREVIEW;
+        const open = shopExpanded.has(g.id);
+        const shown = long && !open ? g.skins.slice(0, SHOP_PREVIEW) : g.skins;
+        shown.forEach(sk => {
             const rar = SK_RARITY[sk.rarity];
             const card = document.createElement('div');
             card.className = 'shop-card r' + sk.rarity + (eq === sk.id ? ' equipped' : '');
@@ -5286,6 +5381,17 @@ function renderShop() {
             wrap.appendChild(card);
         });
         grid.appendChild(wrap);
+        if (long) {
+            const more = document.createElement('button');
+            more.className = 'shop-more';
+            more.textContent = open ? 'הצג פחות ▲' : 'הצג עוד (' + (g.skins.length - SHOP_PREVIEW) + ') ▼';
+            more.onclick = () => {
+                if (open) shopExpanded.delete(g.id); else shopExpanded.add(g.id);
+                renderShop();
+                if (open) shopScrollTo(g.id);             // אחרי כיווץ חוזרים לראש הקטגוריה
+            };
+            grid.appendChild(more);
+        }
     });
     document.getElementById('screen-shop').scrollTop = prevScroll;
 }
@@ -6715,7 +6821,7 @@ document.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
 function haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* ignore */ } }
 
 /* ---------- אפקט לחיצה: ניצוצות + צליל + רטט ---------- */
-const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn, .shop-cat';
+const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn, .shop-cat, .shop-more';
 const BURST_COLORS = ['#ffd24a', '#ff9f1c', '#ff6a1a', '#fff2b0'];
 
 function burstAt(x, y, n, spread) {
