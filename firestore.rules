@@ -8,14 +8,15 @@ service cloud.firestore {
     function isBoard(col) {
       return col in ['leaderboard', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja', 'leaderboard_kvk'];
     }
-    // רשומה בטבלה: שם, ניקוד, זמן, והסקין שנבחר
+    // רשומה בטבלה: שם, ניקוד, זמן, הסקין שנבחר ויתרת המטבעות (לפרופיל)
     function validEntry(d) {
       return d.keys().hasAll(['name', 'score'])
-        && d.keys().hasOnly(['name', 'score', 'timestamp', 'skin'])
+        && d.keys().hasOnly(['name', 'score', 'timestamp', 'skin', 'coins'])
         && d.name is string && d.name.size() <= 20
         && d.score is number && d.score >= 0 && d.score <= 1000000
         && (!('timestamp' in d) || d.timestamp is timestamp)
-        && (!('skin' in d) || (d.skin is string && d.skin.size() <= 40));
+        && (!('skin' in d) || (d.skin is string && d.skin.size() <= 40))
+        && (!('coins' in d) || (d.coins is number && d.coins >= 0 && d.coins <= 100000000));
     }
 
     match /{col}/{playerId} {

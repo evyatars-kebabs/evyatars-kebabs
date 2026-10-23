@@ -684,12 +684,15 @@ function openPlayerModal(p) {
     const nm = document.createElement('div'); nm.className = 'skin-modal-name'; nm.textContent = p.name + (p.id === playerId ? ' (אתה)' : '');
     const skl = document.createElement('div'); skl.className = 'skin-modal-sub';
     const tag = document.createElement('span'); tag.className = 'shop-rarity'; tag.textContent = rar ? rar.name : 'ברירת מחדל';
-    skl.appendChild(document.createTextNode('הסקין: ' + sk.name + ' '));
+    // שם של סקין ממהדורה מיוחדת נשאר סוד (חוץ מבפרופיל של עצמך)
+    const secret = rar && rar.codeOnly && p.id !== playerId;
+    skl.appendChild(document.createTextNode('הסקין: ' + (secret ? '???' : sk.name) + ' '));
     skl.appendChild(tag);
+    const coinsEl = document.createElement('div'); coinsEl.className = 'player-coins'; coinsEl.textContent = '🪙 ...';
     const list = document.createElement('ul'); list.className = 'player-bests';
     const li = document.createElement('li'); li.className = 'player-bests-wait'; li.textContent = 'טוען שיאים...';
     list.appendChild(li);
-    body.appendChild(nm); body.appendChild(skl); body.appendChild(list);
+    body.appendChild(nm); body.appendChild(skl); body.appendChild(coinsEl); body.appendChild(list);
     card.appendChild(x); card.appendChild(cv); card.appendChild(body);
     el.appendChild(card);
     el.addEventListener('click', e => { if (e.target === el) closeSkinModal(); });
@@ -703,8 +706,10 @@ function openPlayerModal(p) {
     };
     skinModal.raf = requestAnimationFrame(loop);
 
-    getPlayerBests(p.id, p.known).then(rows => {
+    getPlayerBests(p.id, p.known).then(data => {
         if (!skinModal || skinModal.el !== el) return;
+        const rows = data.list;
+        coinsEl.textContent = '🪙 ' + (typeof data.coins === 'number' ? data.coins.toLocaleString('en-US') + ' מטבעות' : 'יתרה לא ידועה');
         list.innerHTML = '';
         rows.forEach(r => {
             const row = document.createElement('li');

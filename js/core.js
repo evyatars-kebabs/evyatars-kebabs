@@ -118,7 +118,7 @@ const firebaseConfig = {
                 }, { merge: true })
                 : Promise.resolve();
             // הסקין נשמר בכתיבה נפרדת, כך שגם אם הכללים בשרת לא מאפשרים אותו - הניקוד עדיין נשמר
-            return write.then(() => { if (data.skin !== currentSkinId()) return saveLbSkin(userRef); });
+            return write.then(() => { if (data.skin !== currentSkinId() || data.coins !== getCoins()) return saveLbSkin(userRef); });
         }).catch(err => {
             console.error("שגיאה בשמירה בענן (" + collectionName + "):", err.code || '', err.message || err);
         }).then(() => { delete lbCache[collectionName]; pendingSaves.delete(p); });
@@ -131,29 +131,37 @@ const firebaseConfig = {
     function currentSkinId() {
         return typeof getEquippedSkinId === 'function' ? getEquippedSkinId() : 'classic';
     }
+    // הסקין והמטבעות נשמרים ליד השיא. אם הכללים בשרת עוד לא מאפשרים מטבעות - שומרים רק את הסקין
+    let lbCoinsOk = true;
+    const lbExtras = () => lbCoinsOk ? { skin: currentSkinId(), coins: getCoins() } : { skin: currentSkinId() };
+    function lbWriteExtras(write) {
+        return write(lbExtras()).catch(err => {
+            if (err && err.code === 'permission-denied' && lbCoinsOk) { lbCoinsOk = false; return write(lbExtras()); }
+            throw err;
+        });
+    }
     function saveLbSkin(ref) {
-        return ref.set({ skin: currentSkinId() }, { merge: true })
+        return lbWriteExtras(d => ref.set(d, { merge: true }))
             .catch(err => console.warn('לא נשמר הסקין בטבלה:', err.code || err.message || err));
     }
-    // אחרי החלפת סקין (או בפתיחת האפליקציה) מעדכנים את הסקין בכל הטבלאות שבהן השחקן כבר מופיע
+    // אחרי החלפת סקין, שינוי במטבעות או פתיחת האפליקציה - מעדכנים את כל הטבלאות שבהן השחקן כבר מופיע.
+    // update בלי קריאה מראש: בטבלה שהשחקן לא נמצא בה העדכון פשוט נכשל (not-found)
     let lbSkinTimer = null;
     function syncLeaderboardSkin(delay) {
         clearTimeout(lbSkinTimer);
         lbSkinTimer = setTimeout(() => {
             if (!db) return;
-            const mark = playerId + '|' + currentSkinId();
+            const mark = playerId + '|' + currentSkinId() + '|' + getCoins();
             if (store.get('kebab_lbSkin') === mark) return;
             const jobs = Object.keys(LB_LOCAL_KEY).map(col => {
                 const ref = db.collection(col).doc(playerId);
-                return ref.get().then(doc => {
-                    const d = doc.exists ? doc.data() : null;
-                    if (d && typeof d.score === 'number' && d.skin !== currentSkinId()) return ref.update({ skin: currentSkinId() });
-                });
+                return lbWriteExtras(d => ref.update(d)).then(() => {
+                    const row = lbCache[col] && lbCache[col].rows.find(r => r.id === playerId);
+                    if (row) Object.assign(row, lbExtras());            // מעדכנים את הטבלה השמורה בלי לטעון אותה שוב
+                }, err => { if (!err || err.code !== 'not-found') throw err; });
             });
-            Promise.all(jobs).then(() => {
-                store.set('kebab_lbSkin', mark);
-                Object.keys(lbCache).forEach(k => { delete lbCache[k]; });
-            }).catch(err => console.warn('לא עודכן הסקין בטבלאות:', err.code || err.message || err));
+            Promise.all(jobs).then(() => { store.set('kebab_lbSkin', mark); delete profileCache[playerId]; })
+                .catch(err => console.warn('לא עודכן הסקין בטבלאות:', err.code || err.message || err));
         }, delay === undefined ? 1500 : delay);
     }
     // תמונה קטנה של הפנים של הסקין (נשמרת לכל סקין פעם אחת)
@@ -176,25 +184,52 @@ const firebaseConfig = {
         ['leaderboard_goods', '🥫 סידור המדפים'], ['leaderboard_kvk', '🍢 קבבים מול קולסקים']
     ];
     const profileCache = {};
-    // מחזיר [{ label, score, rank }] - מהטבלאות שכבר נטענו כשאפשר, אחרת קריאה אחת לכל משחק
-    // known = השורה שעליה לחצו ({ col, score, rank }) - לא צריך לקרוא אותה שוב
+    // המקום בטבלה לשחקן מחוץ לטבלה שנטענה: כמה שחקנים עם ניקוד גבוה יותר (+1).
+    // ספירה דרך ה-REST של Firestore (ב-SDK שבשימוש אין ספירה) - עולה קריאה אחת בלבד
+    function countAbove(col, score) {
+        const url = 'https://firestore.googleapis.com/v1/projects/' + firebaseConfig.projectId +
+            '/databases/(default)/documents:runAggregationQuery?key=' + firebaseConfig.apiKey;
+        const body = { structuredAggregationQuery: {
+            aggregations: [{ alias: 'n', count: {} }],
+            structuredQuery: { from: [{ collectionId: col }],
+                where: { fieldFilter: { field: { fieldPath: 'score' }, op: 'GREATER_THAN', value: { integerValue: String(Math.floor(score)) } } } } } };
+        return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+            .then(j => {
+                const res = (Array.isArray(j) ? j : [j]).find(x => x && x.result);
+                const n = res && res.result.aggregateFields && res.result.aggregateFields.n;
+                return n ? parseInt(n.integerValue) + 1 : null;
+            });
+    }
+    // known = השורה שעליה לחצו ({ col, score, rank, coins }) - לא צריך לקרוא אותה שוב.
+    // מחזיר { list: [{ label, score, rank }], coins }
     function getPlayerBests(id, known) {
         const cached = profileCache[id];
-        if (cached && Date.now() - cached.t < LB_CACHE_MS) return Promise.resolve(cached.list);
+        if (cached && Date.now() - cached.t < LB_CACHE_MS) return Promise.resolve(cached.data);
+        const me = id === playerId;
+        let coins = me ? getCoins() : (known && typeof known.coins === 'number' ? known.coins : null);
         const jobs = PROFILE_BOARDS.map(([col, label]) => {
             if (known && known.col === col) return Promise.resolve({ label, score: known.score, rank: known.rank });
             const lb = lbCache[col];
-            const row = lb && Date.now() - lb.t < LB_CACHE_MS ? lb.rows.find(r => r.id === id) : null;
-            if (row) return Promise.resolve({ label, score: row.score, rank: row.rank });
-            if (id === playerId) return Promise.resolve({ label, score: parseInt(store.get(LB_LOCAL_KEY[col])) || 0, rank: null });
-            if (!db) return Promise.resolve({ label, score: null, rank: null });
-            return db.collection(col).doc(id).get()
-                .then(doc => ({ label, score: doc.exists && typeof doc.data().score === 'number' ? doc.data().score : 0, rank: null }))
-                .catch(() => ({ label, score: null, rank: null }));
+            const fresh = lb && Date.now() - lb.t < LB_CACHE_MS;
+            const row = fresh ? lb.rows.find(r => r.id === id) : null;
+            if (row) { if (coins === null && typeof row.coins === 'number') coins = row.coins; return Promise.resolve({ label, score: row.score, rank: row.rank }); }
+            const score = me ? Promise.resolve(parseInt(store.get(LB_LOCAL_KEY[col])) || 0)
+                : !db ? Promise.resolve(null)
+                : db.collection(col).doc(id).get().then(doc => {
+                    const d = doc.exists ? doc.data() : {};
+                    if (coins === null && typeof d.coins === 'number') coins = d.coins;
+                    return typeof d.score === 'number' ? d.score : 0;
+                });
+            return score.then(sc => {
+                if (!(sc > 0)) return { label, score: sc, rank: null };
+                return countAbove(col, sc).catch(() => null).then(rank => ({ label, score: sc, rank }));
+            }).catch(() => ({ label, score: null, rank: null }));
         });
         return Promise.all(jobs).then(list => {
-            if (list.every(x => x.score !== null)) profileCache[id] = { t: Date.now(), list };
-            return list;
+            const data = { list, coins };
+            if (list.every(x => x.score !== null && (!(x.score > 0) || x.rank))) profileCache[id] = { t: Date.now(), data };
+            return data;
         });
     }
 
@@ -253,7 +288,7 @@ const firebaseConfig = {
                 const li = document.createElement('li');
                 li.className = 'leaderboard-item' + (row.rank <= 3 ? ' r' + row.rank : '') + (row.id === playerId ? ' me' : '');
                 li.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
-                                                     known: { col: collectionName, score: row.score, rank: row.rank } });
+                                                     known: { col: collectionName, score: row.score, rank: row.rank, coins: row.coins } });
 
                 const left = document.createElement('span');
                 const strong = document.createElement('strong');
@@ -311,7 +346,8 @@ const firebaseConfig = {
                     if (typeof d.score !== 'number') return;
                     const ts = d.timestamp && typeof d.timestamp.toMillis === 'function' ? d.timestamp.toMillis() : Infinity;
                     rows.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score, ts,
-                                skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic' });
+                                skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic',
+                                coins: typeof d.coins === 'number' ? d.coins : null });
                 });
                 // חשבונות שנוצרו לפני התיקון נשארו גם עם רשומת האורח הישנה.
                 // מסתירים רשומת אורח (player_...) כשיש חשבון באותו שם עם ניקוד זהה או גבוה יותר.

@@ -528,6 +528,8 @@
         .leaderboard-list .leaderboard-item { cursor: pointer; }
         .leaderboard-list .leaderboard-item:active { transform: scale(0.98); }
         .player-modal .skin-modal-cv { width: 62%; margin: 0 auto; }
+        .player-coins { font-weight: 800; color: var(--accent-gold); background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 194, 51, 0.35);
+            border-radius: 999px; padding: 3px 14px; font-size: 0.9rem; }
         .player-bests { list-style: none; width: 100%; margin: 6px 0 2px; padding: 0; display: flex; flex-direction: column; gap: 5px; }
         .player-bests li { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; border-radius: 12px;
             background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); font-size: 0.85rem; }

@@ -9,6 +9,7 @@ function getCoins() { return parseInt(store.get(COIN_KEY)) || 0; }
 function setCoins(n) {
     store.set(COIN_KEY, Math.max(0, Math.floor(n)));
     renderCoinBadges();
+    if (typeof syncLeaderboardSkin === 'function') syncLeaderboardSkin(3000);     // היתרה מוצגת בפרופיל בטבלאות
 }
 function addCoins(n) { setCoins(getCoins() + n); }
 function spendCoins(n) {
