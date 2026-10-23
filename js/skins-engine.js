@@ -1289,7 +1289,7 @@ function skMonaFront(c, sk, st) {
 // כתר זהב קטן ומוטה על הראש
 function skSmallCrown(c, sk, st) {
     c.save();
-    c.translate(14, -84); c.rotate(0.14); c.scale(0.55, 0.55);      // בסיס הכתר (y≈-100) יושב על השיער
+    c.translate(12, -98); c.rotate(0.14); c.scale(0.4, 0.4);        // בסיס הכתר (y≈-100) יושב על השיער
     skHatOver(c, { hat: { type: 'crown' } }, st.t);
     c.restore();
 }
