@@ -1227,6 +1227,53 @@ function skEinsteinExtra(c, sk, st) {
 }
 // ססיל רודז: שביל צד בשיער, פאות קצרות ושרשרת שעון זהב על הווסט
 // שני הרקדנית: שמלת פלמנקו אדומה עם נקודות ומלמלות, פרח אדום בשיער ומניפה
+// אלה הרקדנית: בגד גוף ורוד עם נצנצים, טוטו מטול, כתר קטן ופפיון סאטן בשיער
+function skEllaExtra(c, sk, st) {
+    const t = st.t;
+    // נצנצים על בגד הגוף
+    c.save(); skTorsoPath(c); c.clip();
+    for (let i = 0; i < 16; i++) {
+        const x = -90 + (i * 47) % 180, y = 104 + (i * 29) % 72;
+        const tw = 0.5 + 0.5 * Math.sin(t * 4 + i * 1.7);
+        skStar(c, x, y, 2 + tw * 3, 'rgba(255,255,255,' + (0.35 + tw * 0.6) + ')', t + i);
+    }
+    // קו מותן עם סרט סאטן
+    c.fillStyle = '#e07aa6'; c.fillRect(-124, 178, 248, 12);
+    c.restore();
+    // טוטו: שכבות טול חצי-שקופות שמתנופפות
+    for (let layer = 0; layer < 3; layer++) {
+        const y0 = 190 + layer * 9, w = 160 - layer * 10, sw = Math.sin(t * 3 + layer) * 3;
+        c.beginPath();
+        c.moveTo(-w, y0 + 16);
+        for (let i = 0; i <= 12; i++) {
+            const x = -w + i * (w * 2 / 12);
+            c.quadraticCurveTo(x - w / 12, y0 + 34 + sw * (i % 2 ? 1 : -1), x, y0 + 16);
+        }
+        c.lineTo(w * 0.8, y0 - 8); c.lineTo(-w * 0.8, y0 - 8); c.closePath();
+        c.fillStyle = ['rgba(255,205,225,0.85)', 'rgba(255,182,210,0.8)', 'rgba(255,225,238,0.75)'][layer];
+        c.fill(); c.strokeStyle = 'rgba(190,90,130,0.6)'; c.lineWidth = 1.6; c.stroke();
+    }
+    // פפיון סאטן ורוד בצד השיער
+    c.save(); c.translate(70, -118); c.rotate(0.35);
+    for (const s of [-1, 1]) skP(c, [[0, 0], [s * 22, -12], [s * 24, 12]], '#f4a6c4', SK_OUT, 2);
+    skE(c, 0, 0, 6, 6, '#e07aa6', SK_OUT, 2);
+    c.strokeStyle = '#e07aa6'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(-2, 4); c.quadraticCurveTo(-6, 22, -2, 34); c.moveTo(2, 4); c.quadraticCurveTo(8, 20, 6, 32); c.stroke();
+    c.restore();
+    // כתר קטן עם אבנים
+    c.save(); c.translate(-10, -146);
+    c.beginPath();
+    c.moveTo(-34, 8); c.lineTo(-30, -6); c.lineTo(-18, 2); c.lineTo(-8, -14); c.lineTo(0, -2); c.lineTo(8, -14); c.lineTo(18, 2); c.lineTo(30, -6); c.lineTo(34, 8); c.closePath();
+    const g = c.createLinearGradient(0, -16, 0, 8);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#c9d3e6');
+    c.fillStyle = g; c.fill(); c.strokeStyle = '#6a7a96'; c.lineWidth = 2; c.stroke();
+    for (const [x, y] of [[-8, -14], [8, -14], [-30, -6], [30, -6]]) skE(c, x, y, 3, 3, '#ffd6ea', '#6a7a96', 1.2);
+    skE(c, 0, 2, 4, 4, '#f06aa0', '#6a7a96', 1.2);
+    const tw = Math.max(0, Math.sin(t * 2.5));
+    if (tw > 0.7) skStar(c, 10, -16, 3 + (tw - 0.7) * 16, '#ffffff', t * 3);
+    c.restore();
+}
+
 function skShanyExtra(c, sk, st) {
     const t = st.t, red = '#c8102e', dk = '#8a0a1e';
     // נקודות לבנות על השמלה (לא על המחשוף)
