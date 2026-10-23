@@ -760,8 +760,29 @@ function skJerseyBody(c, sk, t, J) {
 }
 
 // ניר - שיער חום פרוע עם פוני על המצח, בגופיית נבחרת ישראל מספר 7
+// מדליית זהב על סרט כחול-לבן
+function skMedal(c, x, y, t, ph) {
+    for (const s of [-1, 1]) {
+        const nx = s * 30, ny = 46;
+        c.strokeStyle = SK_OUT; c.lineWidth = 13;
+        c.beginPath(); c.moveTo(nx, ny); c.lineTo(x + s * 7, y - 16); c.stroke();
+        c.strokeStyle = '#0038b8'; c.lineWidth = 10;
+        c.beginPath(); c.moveTo(nx, ny); c.lineTo(x + s * 7, y - 16); c.stroke();
+        c.strokeStyle = '#ffffff'; c.lineWidth = 3;
+        c.beginPath(); c.moveTo(nx, ny); c.lineTo(x + s * 7, y - 16); c.stroke();
+    }
+    const g = c.createRadialGradient(x - 6, y - 6, 2, x, y, 22);
+    g.addColorStop(0, '#fff6b0'); g.addColorStop(0.5, '#f1c40f'); g.addColorStop(1, '#a8760a');
+    skE(c, x, y, 20, 20, g, '#6a4a04', 3);
+    skE(c, x, y, 13, 13, null, 'rgba(120,80,0,0.6)', 2);
+    skStar(c, x, y, 8, '#fff3b0', 0);
+    const tw = Math.max(0, Math.sin(t * 3 + ph));                       // נצנוץ
+    if (tw > 0.6) skStar(c, x + 10, y - 10, 3 + (tw - 0.6) * 12, '#ffffff', t * 4);
+}
+
 function skNirBack(c, sk, st) {
     skJerseyBody(c, sk, st.t, sk.jersey);
+    if (sk.champion) { skMedal(c, -38, 118, st.t, 0); skMedal(c, 4, 132, st.t, 2.1); }
     skHead(c, sk);
     skFaceMarks(c, sk, st.t);
     skEyes(c, sk, st);
@@ -794,6 +815,11 @@ function skNirFront(c, sk, st) {
     const w = Math.sin(t * 3) * 2;
     for (const [x, y, dx, dy] of [[-14, -153, -8, -16], [6, -155, 10, -18], [26, -150, 16, -10], [-40, -146, -14, -8]]) {
         c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + dx * 0.5 + w, y + dy, x + dx + w, y + dy * 0.8); c.stroke();
+    }
+    if (sk.champion) {                                       // כתר מעל השיער
+        c.save(); c.translate(0, -40); c.rotate(-0.06); c.scale(0.9, 0.9);
+        skHatOver(c, { hat: { type: 'crown' } }, t);
+        c.restore();
     }
 }
 

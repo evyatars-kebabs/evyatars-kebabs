@@ -373,6 +373,14 @@ const CHEDDAR_VARIANTS = {
     SKIN_GROUPS.wizmouse = [{ id: 'wizmouse', label: '🧙 מכשף' }, { id: 'wizmouse_magic', label: '🎩 קוסם' }];
 })();
 
+// ניר האלוף - מדליות זהב וכתר, נפתח באותו קוד
+(() => {
+    const base = SV_SKINS.find(x => x.id === 'nir');
+    SV_SKINS.push(Object.assign({}, base, { id: 'nir_champ', name: 'ניר האלוף', variantOf: 'nir', champion: true,
+        aura: { color: '#ffd23d', alpha: 0.5, rings: true }, fx: { type: 'sparkles', count: 20, speed: 0.45 } }));
+    SKIN_GROUPS.nir = [{ id: 'nir', label: 'רגיל' }, { id: 'nir_champ', label: '👑 אלוף' }];
+})();
+
 // דני בגופיית נבחרת ישראל
 (() => {
     const base = SV_SKINS.find(x => x.id === 'deni');
