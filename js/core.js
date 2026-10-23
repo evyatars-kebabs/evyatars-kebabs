@@ -216,7 +216,7 @@ const firebaseConfig = {
             if (row) { if (coins === null && typeof row.coins === 'number') coins = row.coins; return Promise.resolve({ label, score: row.score, rank: row.rank }); }
             const score = me ? Promise.resolve(parseInt(store.get(LB_LOCAL_KEY[col])) || 0)
                 : !db ? Promise.resolve(null)
-                : db.collection(col).doc(id).get().then(doc => {
+                : db.collection(col).doc(id).get({ source: 'server' }).then(doc => {
                     const d = doc.exists ? doc.data() : {};
                     if (coins === null && typeof d.coins === 'number') coins = d.coins;
                     return typeof d.score === 'number' ? d.score : 0;
@@ -334,7 +334,10 @@ const firebaseConfig = {
 
         // מחכים לשמירות שעדיין בדרך (כדי שהשיא שהרגע נקבע יופיע), ובכל מקרה לא יותר מ-8 שניות
         const fetchData = Promise.allSettled(Array.from(pendingSaves)).then(() =>
-            db.collection(collectionName).orderBy('score', 'desc').limit(LB_LIMIT).get());
+            // תמיד מהשרת: כשהשרת לא עונה (למשל כשנגמרה המכסה היומית) Firestore מחזיר בשקט את מה ששמור במכשיר -
+            // ובו רק השיא שהשחקן עצמו שמר עכשיו, כך שהוא נראה במקום הראשון
+            db.collection(collectionName).orderBy('score', 'desc').limit(LB_LIMIT).get({ source: 'server' }))
+            .then(snap => (snap.metadata && snap.metadata.fromCache) ? Promise.reject({ code: 'unavailable' }) : snap);
         const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
 
         Promise.race([fetchData, timeout])
@@ -369,6 +372,8 @@ const firebaseConfig = {
                 console.error("שגיאה בטעינת הטבלה (" + collectionName + "):", err.code || '', err.message || err);
                 const msg = err.code === 'permission-denied'
                     ? 'אין הרשאה לקרוא את הטבלה (בדקו את כללי Firestore)'
+                    : err.code === 'resource-exhausted'
+                    ? 'השרת הגיע למגבלת השימוש היומית. הטבלה תחזור מחר.'
                     : 'לא הצלחנו לטעון את הטבלה. בדקו את החיבור לאינטרנט.';
                 showMsg(msg, '#f85149', true);
             });
