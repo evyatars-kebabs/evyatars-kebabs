@@ -869,6 +869,8 @@
             content-visibility: auto; contain-intrinsic-size: 0 46px;
         }
         .leaderboard-item strong { display: inline-block; min-width: 42px; text-align: center; background: rgba(0, 0, 0, 0.3); border-radius: 999px; padding: 1px 7px; margin-left: 6px; font-size: 0.8rem; color: var(--muted); }
+        .lb-skin { width: 30px; height: 30px; border-radius: 50%; vertical-align: middle; margin-left: 7px; border: 2px solid rgba(255, 194, 51, 0.45); background: #2a160c; object-fit: cover; }
+        .leaderboard-item.r1 .lb-skin { border-color: #ffd700; } .leaderboard-item.r2 .lb-skin { border-color: #c8c8d4; } .leaderboard-item.r3 .lb-skin { border-color: #cd7f32; }
         .leaderboard-item.me { outline: 2px solid var(--accent-gold); box-shadow: 0 0 14px rgba(255, 194, 51, 0.3); }
         .leaderboard-item.r1 { background: linear-gradient(90deg, rgba(255, 215, 0, 0.28), rgba(255, 215, 0, 0.05)); border-color: #ffd700; box-shadow: 0 0 16px rgba(255, 215, 0, 0.2), inset 0 0 10px rgba(255, 215, 0, 0.15); }
         .leaderboard-item.r2 { background: linear-gradient(90deg, rgba(220, 220, 230, 0.22), rgba(220, 220, 230, 0.04)); border-color: #c8c8d4; }

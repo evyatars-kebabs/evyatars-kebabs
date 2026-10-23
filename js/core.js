@@ -110,19 +110,64 @@ const firebaseConfig = {
             const data = doc.exists ? doc.data() : {};
             const hasScore = typeof data.score === 'number';
             const currentBest = hasScore ? data.score : 0;
-            if (!doc.exists || !hasScore || score > currentBest) {
-                return userRef.set({
+            const write = (!doc.exists || !hasScore || score > currentBest)
+                ? userRef.set({
                     name: playerName,
                     score: Math.max(score, currentBest),
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-            }
+                }, { merge: true })
+                : Promise.resolve();
+            // הסקין נשמר בכתיבה נפרדת, כך שגם אם הכללים בשרת לא מאפשרים אותו - הניקוד עדיין נשמר
+            return write.then(() => { if (data.skin !== currentSkinId()) return saveLbSkin(userRef); });
         }).catch(err => {
             console.error("שגיאה בשמירה בענן (" + collectionName + "):", err.code || '', err.message || err);
         }).then(() => { delete lbCache[collectionName]; pendingSaves.delete(p); });
 
         pendingSaves.add(p);
         return p;
+    }
+
+    /* --- הסקין של השחקן בטבלאות השיאים --- */
+    function currentSkinId() {
+        return typeof getEquippedSkinId === 'function' ? getEquippedSkinId() : 'classic';
+    }
+    function saveLbSkin(ref) {
+        return ref.set({ skin: currentSkinId() }, { merge: true })
+            .catch(err => console.warn('לא נשמר הסקין בטבלה:', err.code || err.message || err));
+    }
+    // אחרי החלפת סקין (או בפתיחת האפליקציה) מעדכנים את הסקין בכל הטבלאות שבהן השחקן כבר מופיע
+    let lbSkinTimer = null;
+    function syncLeaderboardSkin(delay) {
+        clearTimeout(lbSkinTimer);
+        lbSkinTimer = setTimeout(() => {
+            if (!db) return;
+            const mark = playerId + '|' + currentSkinId();
+            if (store.get('kebab_lbSkin') === mark) return;
+            const jobs = Object.keys(LB_LOCAL_KEY).map(col => {
+                const ref = db.collection(col).doc(playerId);
+                return ref.get().then(doc => {
+                    const d = doc.exists ? doc.data() : null;
+                    if (d && typeof d.score === 'number' && d.skin !== currentSkinId()) return ref.update({ skin: currentSkinId() });
+                });
+            });
+            Promise.all(jobs).then(() => {
+                store.set('kebab_lbSkin', mark);
+                Object.keys(lbCache).forEach(k => { delete lbCache[k]; });
+            }).catch(err => console.warn('לא עודכן הסקין בטבלאות:', err.code || err.message || err));
+        }, delay === undefined ? 1500 : delay);
+    }
+    // תמונה קטנה של הפנים של הסקין (נשמרת לכל סקין פעם אחת)
+    const lbAvatarCache = {};
+    function lbAvatar(id) {
+        if (typeof skinById !== 'function' || typeof getPreview !== 'function') return null;
+        if (!SV_SKINS.some(x => x.id === id)) id = 'classic';
+        if (!lbAvatarCache[id]) {
+            const cv = document.createElement('canvas');
+            cv.width = 84; cv.height = 84;
+            try { cv.getContext('2d').drawImage(getPreview(skinById(id)), 60, 66, 240, 240, 0, 0, 84, 84); } catch (e) { return null; }
+            lbAvatarCache[id] = cv.toDataURL();
+        }
+        return lbAvatarCache[id];
     }
 
     const LB_LIMIT = 500;                 // כמה שחקנים מוצגים בכל טבלה
@@ -184,6 +229,12 @@ const firebaseConfig = {
                 const strong = document.createElement('strong');
                 strong.textContent = row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : '#' + row.rank;
                 left.appendChild(strong);
+                const av = lbAvatar(row.id === playerId ? currentSkinId() : row.skin);
+                if (av) {
+                    const img = document.createElement('img');
+                    img.className = 'lb-skin'; img.src = av; img.alt = ''; img.loading = 'lazy';
+                    left.appendChild(img);
+                }
                 // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
                 left.appendChild(document.createTextNode(' ' + row.name + (row.id === playerId ? ' (אתה)' : '')));
 
@@ -229,7 +280,8 @@ const firebaseConfig = {
                     const d = doc.data();
                     if (typeof d.score !== 'number') return;
                     const ts = d.timestamp && typeof d.timestamp.toMillis === 'function' ? d.timestamp.toMillis() : Infinity;
-                    rows.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score, ts });
+                    rows.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score, ts,
+                                skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic' });
                 });
                 // חשבונות שנוצרו לפני התיקון נשארו גם עם רשומת האורח הישנה.
                 // מסתירים רשומת אורח (player_...) כשיש חשבון באותו שם עם ניקוד זהה או גבוה יותר.

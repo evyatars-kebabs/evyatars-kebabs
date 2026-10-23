@@ -271,3 +271,4 @@ document.getElementById('code-modal').addEventListener('click', e => { if (e.tar
 
 renderCoinBadges();
 renderDaily();
+syncLeaderboardSkin(4000);

@@ -429,6 +429,7 @@ function equipSkin(id) {
     if (!getOwnedSkins().has(id)) return;
     store.set(SKIN_EQ_KEY, id);
     showToast('נבחר: ' + skinById(id).name);
+    syncLeaderboardSkin();
     renderShop();
 }
 
