@@ -644,43 +644,38 @@ function skMrKebabBack(c, sk, st) {
     skHead(c, sk);
     skFaceMarks(c, sk, t);
     skEyes(c, sk, st);
-    skBeardBack(c, sk, t);
 }
 function skMrKebabFront(c, sk, st) {
-    const col = sk.hair.color, hl = skShade(col, 0.22);
-    skHairFront(c, sk, st.t);
-    // נפח פרוע למעלה ותלתל שנופל קצת על המצח
-    for (const [x, y, rx, ry, r] of [[-56, -132, 30, 20, -0.4], [-18, -146, 34, 22, -0.1], [22, -146, 32, 21, 0.15], [58, -130, 28, 19, 0.5]])
-        skE(c, x, y, rx, ry, col, SK_OUT, 2.5, r);
-    skE(c, 0, -138, 70, 18, col);
-    c.beginPath(); c.moveTo(-34, -112); c.quadraticCurveTo(-10, -104, 4, -92); c.quadraticCurveTo(-4, -110, -24, -118); c.closePath();
-    c.fillStyle = col; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2; c.stroke();
-    c.strokeStyle = hl; c.lineWidth = 2.5; c.lineCap = 'round';
-    for (const [x0, y0, x1, y1] of [[-60, -142, -40, -124], [-24, -156, -8, -134], [16, -156, 30, -136], [50, -142, 64, -124]]) {
-        c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo((x0 + x1) / 2 + 6, (y0 + y1) / 2 - 4, x1, y1); c.stroke();
-    }
+    skDeniHair(c, sk);
     skGlasses(c, sk);
 }
 
+// טוקסידו: ז'קט שחור שמכסה את הכתפיים, מחשוף V צר עם חולצה לבנה, דשי סאטן, פפיון אדום וממחטה
 function skTuxedo(c) {
     c.save(); skTorsoPath(c); c.clip();
+    c.fillStyle = '#ffffff'; c.fillRect(-40, 40, 80, 300);                  // החולצה במחשוף
+    c.strokeStyle = 'rgba(0,0,0,0.12)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(0, 96); c.lineTo(0, 340); c.stroke();
+    for (const y of [120, 150, 180]) skE(c, 0, y, 3.5, 3.5, '#15151a', '#000', 1);   // כפתורי חולצה
     for (const s of [-1, 1]) {
-        skP(c, [[s * 124, 340], [s * 124, 100], [s * 62, 84], [s * 8, 170], [s * 10, 340]], '#17171c', 'rgba(0,0,0,0.6)', 3);
-        const lg = c.createLinearGradient(s * 60, 84, s * 20, 200);
-        lg.addColorStop(0, '#4a4a56'); lg.addColorStop(1, '#22222a');
-        skP(c, [[s * 62, 84], [s * 8, 170], [s * 30, 196], [s * 70, 120]], lg, 'rgba(0,0,0,0.7)', 2);   // דש סאטן
+        const jg = c.createLinearGradient(s * 124, 0, s * 20, 0);
+        jg.addColorStop(0, '#0c0c10'); jg.addColorStop(1, '#1c1c24');
+        skP(c, [[s * 130, 340], [s * 130, 60], [s * 30, 44], [s * 10, 196], [s * 4, 340]], jg, 'rgba(0,0,0,0.7)', 2.5);   // הז'קט
+        const lg = c.createLinearGradient(s * 40, 50, s * 20, 200);
+        lg.addColorStop(0, '#55555f'); lg.addColorStop(1, '#25252d');
+        skP(c, [[s * 30, 46], [s * 12, 190], [s * 30, 160], [s * 56, 100], [s * 44, 52]], lg, 'rgba(0,0,0,0.75)', 2);      // דש סאטן
     }
-    skR(c, 62, 150, 34, 7, 2, '#f3f3f6');                              // ממחטה בכיס
-    skP(c, [[64, 150], [72, 138], [80, 150], [88, 140], [94, 150]], '#e03a3e', 'rgba(0,0,0,0.4)', 1.5);
-    for (const y of [210, 250]) skE(c, 0, y, 5, 5, '#15151a', '#000', 1);   // כפתורי חולצה
+    skE(c, 0, 214, 5.5, 5.5, '#2a2a32', '#000', 1.5);                      // כפתור הז'קט
+    skR(c, 64, 140, 32, 6, 2, '#f3f3f6');                                   // ממחטה בכיס
+    skP(c, [[66, 140], [73, 129], [80, 140], [87, 131], [94, 140]], '#e03a3e', 'rgba(0,0,0,0.4)', 1.5);
     c.restore();
     skTorsoPath(c); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
     // צווארון לבן ופפיון אדום
-    skP(c, [[-34, 46], [0, 74], [-12, 92]], '#ffffff', SK_OUT, 2);
-    skP(c, [[34, 46], [0, 74], [12, 92]], '#ffffff', SK_OUT, 2);
-    skP(c, [[0, 80], [-34, 64], [-36, 98]], '#d6291f', SK_OUT, 2.5);
-    skP(c, [[0, 80], [34, 64], [36, 98]], '#d6291f', SK_OUT, 2.5);
-    skE(c, 0, 80, 9, 9, '#a81c14', SK_OUT, 2.5);
+    skP(c, [[-30, 48], [0, 72], [-14, 88]], '#ffffff', SK_OUT, 2);
+    skP(c, [[30, 48], [0, 72], [14, 88]], '#ffffff', SK_OUT, 2);
+    skP(c, [[0, 78], [-30, 64], [-32, 94]], '#d6291f', SK_OUT, 2.5);
+    skP(c, [[0, 78], [30, 64], [32, 94]], '#d6291f', SK_OUT, 2.5);
+    skE(c, 0, 78, 8, 8, '#a81c14', SK_OUT, 2.5);
 }
 
 // מגבעת של קוסם עם סרט אדום
@@ -888,8 +883,9 @@ function skDeniBack(c, sk, st) {
     c.restore();
     skEyes(c, sk, st);
 }
-function skDeniFront(c, sk, st) {
-    const t = st.t, col = sk.hair.color, hl = skShade(col, 0.25);
+// השיער של דני: גלי עם נפח למעלה וצדדים קצרים (משמש גם את מר קבב)
+function skDeniHair(c, sk) {
+    const col = sk.hair.color, hl = skShade(col, 0.25);
     // שיער גלי עם נפח למעלה וצדדים קצרים
     const hair = new Path2D();
     hair.moveTo(-90, -44);
@@ -919,6 +915,10 @@ function skDeniFront(c, sk, st) {
         c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo((x0 + x1) / 2 - 10, y1, x1, y1 - 8); c.stroke();
     }
     c.restore();
+}
+function skDeniFront(c, sk, st) {
+    const t = st.t;
+    skDeniHair(c, sk);
     // שפם דק שמתחבר לזקן
     c.strokeStyle = skA(sk.beard.color, 0.92); c.lineWidth = 7; c.lineCap = 'round';
     for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 6, -20); c.quadraticCurveTo(s * 30, -24, s * 46, -6); c.stroke(); }

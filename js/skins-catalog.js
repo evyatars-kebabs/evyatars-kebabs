@@ -252,7 +252,7 @@ const SV_SKINS = [
       outfit: { base: '#141418', collar: 'high' }, cape: { color: '#16161c' },
       aura: { color: '#ff2a2a', alpha: 0.3 }, drawBack: skVaderBack },
     { id: 'mrkebab', name: 'מר קבב', rarity: 6, tone: '#e6b892', hair: { style: 'short', color: '#2e1d12' }, brow: '#1e130b',
-      beard: { style: 'stubble', color: '#2e1d12' }, lips: '#c27a72', eyes: { iris: '#3a2414' }, glasses: { type: 'shades' }, blush: false,
+      lips: '#c27a72', eyes: { iris: '#3a2414' }, glasses: { type: 'shades' }, blush: false,
       outfit: { base: '#ffffff' }, aura: { color: '#ffc233', alpha: 0.35, rings: true }, fx: { type: 'sparkles', count: 14, speed: 0.4 },
       drawBack: skMrKebabBack, drawFront: skMrKebabFront },
     { id: 'ella', name: 'אלה הרקדנית', rarity: 6, tone: '#f1c8a6', hair: { style: 'parted', color: '#5a3a22' }, brow: '#3a2414',
