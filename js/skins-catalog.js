@@ -348,7 +348,9 @@ const CHEDDAR_VARIANTS = {
              outfit: { base: '#e8961c', collar: 'high' }, cape: { color: '#d07a10' }, aura: { color: '#ffb02e', alpha: 0.35 } },
     dosus: { name: 'דוסוס צ\'דר', pal: DOSUS_CHEDDAR, tone: '#ffcf5a', lips: '#d98a14',
              hair: { style: 'short', color: '#b8700c' }, beard: { style: 'long', color: '#e8961c' },
-             glasses: { type: 'round', color: '#7a3e02' }, aura: { color: '#ffd23d', alpha: 0.3 } }
+             glasses: { type: 'round', color: '#7a3e02' }, aura: { color: '#ffd23d', alpha: 0.3 } },
+    yuvaldog: { name: 'הכלב של יובל צ\'דר', pal: DOG_CHEDDAR, tone: '#ffd877', brow: '#8a4a04', lips: '#7a3e02',
+                eyes: { iris: '#7a3e02' }, outfit: { base: '#e8961c', collar: 'crew' }, aura: { color: '#ffc83d', alpha: 0.35 } }
 };
 Object.entries(CHEDDAR_VARIANTS).forEach(([id, ov]) => {
     const base = SV_SKINS.find(x => x.id === id);

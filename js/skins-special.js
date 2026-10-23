@@ -143,16 +143,22 @@ function skDosusFront(c, sk, st) {
     skE(c, 0, -110, 134, 24, P.hat, SK_OUT, 3);
 }
 
+const DOG_PAL = { brown: '#6b3a1e', white: '#f6f1e8', earLine: '#3a1e0e', dot: '#7a4a2a', nose: '#1a1410', muzzleEdge: '#8a7a6a', holes: false };
+const DOG_CHEDDAR = { brown: '#d98a14', white: '#ffd877', earLine: '#8a4a04', dot: '#a05a08', nose: '#7a3e02', muzzleEdge: '#c27a10', holes: true };
+
 function skDogBack(c, sk, st) {
-    const t = st.t, brown = '#6b3a1e', white = '#f6f1e8';
+    const P = sk.pal || DOG_PAL;
+    const t = st.t, brown = P.brown, white = P.white;
     skAuraBack(c, sk, t);
     skOutfit(c, sk, t);
+    if (P.holes) skCheeseHoles(c, () => skTorsoPath(c), -120, 80, 240, 260, 12, 4);
     // אוזניים ארוכות ומתנופפות
     const flop = Math.sin(t * 2.4) * 0.06;
     for (const s of [-1, 1]) {
         c.save(); c.translate(s * 76, -84); c.rotate(s * (0.18 + flop));
         skE(c, s * 14, 70, 36, 86, brown, SK_OUT, 3);
-        c.strokeStyle = skA('#3a1e0e', 0.6); c.lineWidth = 2.5;
+        if (P.holes) { const ear = new Path2D(); ear.ellipse(s * 14, 70, 35, 85, 0, 0, Math.PI * 2); skCheeseHoles(c, ear, s * 14 - 30, 0, 60, 150, 4, s > 0 ? 13 : 17); }
+        c.strokeStyle = skA(P.earLine, 0.6); c.lineWidth = 2.5;
         for (const d of [-14, 0, 14]) { c.beginPath(); c.moveTo(s * 14 + d, 10); c.quadraticCurveTo(s * 14 + d + 6, 80, s * 14 + d - 4, 146); c.stroke(); }
         c.restore();
     }
@@ -164,10 +170,14 @@ function skDogBack(c, sk, st) {
     skE(c, -44, -86, 52, 58, brown); skE(c, 44, -86, 52, 58, brown);
     skE(c, 0, -134, 18, 40, white);                       // פס לבן באמצע המצח
     c.restore();
+    if (P.holes) {
+        const head = new Path2D(); head.ellipse(H.cx, H.cy, H.rx - 1.5, H.ry - 1.5, 0, 0, Math.PI * 2);
+        skCheeseHoles(c, head, H.cx - H.rx * 0.8, H.cy - H.ry, H.rx * 1.6, H.ry * 0.45, 4, 9);
+    }
     // לוע
-    skE(c, 0, -6, 60, 44, white, skA('#8a7a6a', 0.6), 2);
-    for (const [x, y] of [[-30, -10], [-22, 0], [-38, 2], [30, -10], [22, 0], [38, 2]]) skE(c, x, y, 2.6, 2.6, '#7a4a2a');
-    skE(c, 0, -34, 20, 14, '#1a1410', SK_OUT, 2);
+    skE(c, 0, -6, 60, 44, white, skA(P.muzzleEdge, 0.6), 2);
+    for (const [x, y] of [[-30, -10], [-22, 0], [-38, 2], [30, -10], [22, 0], [38, 2]]) skE(c, x, y, 2.6, 2.6, P.dot);
+    skE(c, 0, -34, 20, 14, P.nose, SK_OUT, 2);
     skE(c, -6, -38, 6, 3.5, 'rgba(255,255,255,0.5)');
     skEyes(c, sk, st);
 }
