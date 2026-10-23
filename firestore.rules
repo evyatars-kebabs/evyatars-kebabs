@@ -1,0 +1,48 @@
+rules_version = '2';
+// כללי Firestore של הקבביה של אביתר.
+// להדביק ב-Firebase Console -> Firestore Database -> Rules -> Publish
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- טבלאות השיאים ----------
+    function isBoard(col) {
+      return col in ['leaderboard', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja', 'leaderboard_kvk'];
+    }
+    // רשומה בטבלה: שם, ניקוד, זמן, והסקין שנבחר
+    function validEntry(d) {
+      return d.keys().hasAll(['name', 'score'])
+        && d.keys().hasOnly(['name', 'score', 'timestamp', 'skin'])
+        && d.name is string && d.name.size() <= 20
+        && d.score is number && d.score >= 0 && d.score <= 1000000
+        && (!('timestamp' in d) || d.timestamp is timestamp)
+        && (!('skin' in d) || (d.skin is string && d.skin.size() <= 40));
+    }
+
+    match /{col}/{playerId} {
+      allow read: if isBoard(col);
+      allow create: if isBoard(col) && validEntry(request.resource.data);
+      // עדכון שם / סקין / שיא חדש - הניקוד לא יכול לרדת
+      allow update: if isBoard(col) && validEntry(request.resource.data)
+                    && request.resource.data.score >= resource.data.score;
+      allow delete: if false;
+    }
+
+    // ---------- שמירת ההתקדמות של חשבון ----------
+    // רק בעל החשבון יכול לקרוא ולכתוב את המסמך שלו
+    match /players/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+                            && request.resource.data.keys().hasOnly(['username', 'data', 'updatedAt'])
+                            && request.resource.data.username is string && request.resource.data.username.size() <= 20
+                            && request.resource.data.data is map;
+      allow delete: if false;
+    }
+
+    // ---------- קודים (להעברת קודי הפיתוח לשרת בהמשך) ----------
+    // אפשר לבדוק קוד אחד לפי השם שלו, אבל אי אפשר לקבל רשימה של כל הקודים
+    match /codes/{code} {
+      allow get: if true;
+      allow list, write: if false;
+    }
+  }
+}
