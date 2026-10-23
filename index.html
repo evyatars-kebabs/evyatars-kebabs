@@ -137,9 +137,21 @@
     <div id="screen-kvk" class="screen">
         <div class="hud">
             <div class="hud-pill"><small>גל</small><span id="kvk-wave">1</span></div>
+            <button id="kvk-pause-btn" class="kv-pause-btn" onclick="kvPause()" aria-label="השהיה">⏸</button>
             <div class="hud-pill"><small>ניקוד</small><span id="kvk-score">0</span></div>
         </div>
-        <div id="kvk-wrap"><canvas id="kvk-canvas"></canvas></div>
+        <div id="kvk-wrap">
+            <canvas id="kvk-canvas"></canvas>
+            <div id="kvk-menu" class="kv-menu">
+                <div class="code-card">
+                    <h3 id="kvk-menu-title">⏸ המשחק מושהה</h3>
+                    <p id="kvk-menu-info"></p>
+                    <button class="btn" id="kvk-menu-go"></button>
+                    <button class="btn secondary" id="kvk-menu-alt"></button>
+                    <button class="code-close" id="kvk-menu-extra"></button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="screen-shop" class="screen">

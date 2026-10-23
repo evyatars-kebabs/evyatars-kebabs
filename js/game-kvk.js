@@ -66,10 +66,99 @@ function kvNewState() {
 
 function kvStop() {
     cancelAnimationFrame(kvRaf);
-    if (kv) kv.running = false;
+    if (kv && kv.running && !kv.over) kvSave();     // יציאה באמצע משחק - נשמר כדי להמשיך אחר כך
+    if (kv) { kv.running = false; kv.paused = false; }
+    kvHideMenu();
 }
 
-function startKvkGame() {
+/* ---------- השהיה, שמירה והמשך ---------- */
+const KV_SAVE_KEY = 'kebab_kvk_save';
+const KV_SKIP_SAVE = ['running', 'paused', 'last', 'pool', 'flying', 'fx', 'drag', 'hover', 'selected', 'banner', 'shownWave', 'shownScore'];
+
+function kvSave() {
+    if (!kv || kv.over) return;
+    const data = { v: 1, savedAt: Date.now(), h: kvH, st: {} };
+    for (const k in kv) if (!KV_SKIP_SAVE.includes(k)) data.st[k] = kv[k];
+    try { store.set(KV_SAVE_KEY, JSON.stringify(data)); } catch (e) { /* אין מקום - ממשיכים בלי שמירה */ }
+}
+function kvLoadSave() {
+    try {
+        const d = JSON.parse(store.get(KV_SAVE_KEY) || 'null');
+        return d && d.v === 1 && d.st && Array.isArray(d.st.kebabs) ? d : null;
+    } catch (e) { return null; }
+}
+function kvClearSave() { store.remove(KV_SAVE_KEY); }
+
+function kvShowMenu(title, info, go, alt, extra) {
+    document.getElementById('kvk-menu-title').textContent = title;
+    document.getElementById('kvk-menu-info').textContent = info;
+    [['kvk-menu-go', go], ['kvk-menu-alt', alt], ['kvk-menu-extra', extra]].forEach(([id, b]) => {
+        const el = document.getElementById(id);
+        el.style.display = b ? '' : 'none';
+        if (b) { el.textContent = b[0]; el.onclick = b[1]; }
+    });
+    document.getElementById('kvk-menu').classList.add('open');
+}
+function kvHideMenu() {
+    const m = document.getElementById('kvk-menu');
+    if (m) m.classList.remove('open');
+}
+const kvSaveInfo = st => 'גל ' + Math.max(1, st.wave) + '  ·  ' + st.score + " נק'  ·  " + st.kills + ' קולסקים';
+
+function kvPause() {
+    if (!kv || !kv.running || kv.over || kv.paused) return;
+    kv.paused = true;
+    kv.drag = null;
+    cancelAnimationFrame(kvRaf);
+    kvSave();
+    sfx.low();
+    kvShowMenu('⏸ המשחק מושהה', kvSaveInfo(kv), ['▶️ המשך לשחק', kvResume],
+        ['💾 שמור וצא', kvSaveAndLeave], ['🔄 התחל משחק חדש', () => { kvClearSave(); kv.running = false; startKvkGame(true); }]);
+}
+function kvResume() {
+    if (!kv || !kv.paused) return;
+    kvHideMenu();
+    kv.paused = false;
+    kv.last = performance.now();
+    kvRaf = requestAnimationFrame(kvLoop);
+}
+function kvSaveAndLeave() {
+    kvSave();
+    if (kv) kv.running = false;
+    kvHideMenu();
+    switchTab('home');
+    showToast('💾 המשחק נשמר. אפשר להמשיך מאותה נקודה', true);
+}
+// ממשיכים משחק שמור: מחזירים את המצב ומתאימים את המיקומים לגובה המסך הנוכחי
+function kvContinueSaved(d) {
+    kvClearSave();
+    switchTab('kvk');
+    kv = Object.assign(kvNewState(), d.st);
+    kv.pool = kvSkinPool();
+    kvResize();
+    if (d.h && d.h !== kvH) {
+        const f = (kvH - KV_BAR - KV_FOOT) / (d.h - KV_BAR - KV_FOOT);
+        const fy = y => KV_BAR + (y - KV_BAR) * f;
+        kv.pickups.forEach(c => { c.y = fy(c.y); c.landY = fy(c.landY); });
+    }
+    kv.banner = { text: 'ממשיכים!', sub: 'גל ' + Math.max(1, kv.wave), t: 0, life: 1.6 };
+    kvUpdateHud();
+    kv.running = true;
+    kv.last = performance.now();
+    kvRaf = requestAnimationFrame(kvLoop);
+}
+
+function startKvkGame(fresh) {
+    const saved = fresh === true ? null : kvLoadSave();
+    if (saved) {                            // יש משחק שמור - שואלים אם להמשיך
+        switchTab('kvk');
+        kv = null;
+        kvResize();
+        if (kvCtx) { kvCtx.fillStyle = '#0b0604'; kvCtx.fillRect(0, 0, KV_W, kvH); }
+        kvShowMenu('💾 יש לך משחק שמור', kvSaveInfo(saved.st), ['▶️ המשך מאיפה שעצרתי', () => kvContinueSaved(saved)],
+            ['🆕 משחק חדש', () => { kvClearSave(); startKvkGame(true); }], null);
+        return;
+    }
     switchTab('kvk');                       // עוצר כל משחק אחר
     kv = kvNewState();
     kv.pool = kvSkinPool();
@@ -104,7 +193,10 @@ function kvResize() {
     kvCtx = cv.getContext('2d');
     kvCtx.setTransform(cv.width / KV_W, 0, 0, cv.height / kvH, 0, 0);
 }
-window.addEventListener('resize', () => { if (kv && kv.running) kvResize(); });
+window.addEventListener('resize', () => { if (kv && kv.running) { kvResize(); if (kv.paused) kvDraw(); } });
+// יציאה מהאפליקציה באמצע משחק - משהים ושומרים
+document.addEventListener('visibilitychange', () => { if (document.hidden && kv && kv.running && !kv.over) kvPause(); });
+window.addEventListener('pagehide', () => { if (kv && kv.running && !kv.over) kvSave(); });
 
 /* ---------- ספרייטים של קולסקים (נוצרים פעם אחת לכל סקין וגודל) ---------- */
 function kvKolScale(type) { return kvScale() * 0.21 * KV_KOL[type].scale; }
@@ -375,6 +467,7 @@ function kvExplode(k) {
 
 function kvGameOver() {
     kv.over = true;
+    kvClearSave();
     kv.endT = 0;
     kv.selected = null;
     kv.banner = { text: 'הקולסקים אכלו את הקבביה!', sub: '', t: 0, life: 9 };
@@ -461,7 +554,7 @@ function kvTutTarget() {
 
 /* ---------- קלט ---------- */
 function kvPointerDown(p) {
-    if (!kv || !kv.running || kv.over) return;
+    if (!kv || !kv.running || kv.over || kv.paused) return;
     if (kv.guide) { kv.guide = false; return; }             // מדריך פתוח - כל נגיעה סוגרת
     if (!kv.tut && kvIn(p, kvHelpRect())) { kv.guide = true; kv.selected = null; kv.drag = null; return; }
     if (kv.tut) {
