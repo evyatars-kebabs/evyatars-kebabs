@@ -472,6 +472,19 @@
             border-bottom: 1px solid; padding: 6px 2px; margin: 14px 0 8px;
         }
         .shop-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .shop-cats { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 6px; scrollbar-width: none; }
+        .shop-cats::-webkit-scrollbar { display: none; }
+        .shop-cat {
+            flex: 0 0 auto; background: rgba(0, 0, 0, 0.3); color: var(--text-color); border: 1px solid var(--border-color);
+            border-radius: 999px; padding: 6px 11px; font-family: 'Rubik', sans-serif; font-size: 0.78rem; cursor: pointer; white-space: nowrap;
+        }
+        .shop-cat:active { transform: scale(0.94); border-color: var(--accent-gold); }
+        .shop-group-head { scroll-margin-top: 8px; }
+        .shop-group-count { color: var(--muted); font-size: 0.8rem; font-family: 'Rubik', sans-serif; }
+        .shop-rarity {
+            display: inline-block; margin: 4px auto 0; padding: 1px 8px; border-radius: 999px; font-size: 0.68rem; font-weight: 700;
+            color: var(--rc); border: 1px solid var(--rc); background: color-mix(in srgb, var(--rc) 12%, transparent);
+        }
         .shop-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
@@ -5072,6 +5085,19 @@ function drawSkinPreview(cv, skin) {
 }
 
 /* ---------- מסך החנות ---------- */
+/* ---------- קטגוריות החנות ----------
+   כל קטגוריה ממוינת לפי נדירות. סקין חדש שלא שויך לקטגוריה יופיע ב"עוד סקינים".
+   מהדורה מיוחדת (נדירות 6) מוצגת בנפרד, ורק סקינים שכבר נפתחו בקוד. */
+const SHOP_CATEGORIES = [
+    { id: 'food',    title: 'אוכל ושתייה',        icon: '🍢', ids: ['kebab', 'laffa', 'bubacola', 'rolazero', 'albanta'] },
+    { id: 'hood',    title: 'אנשי השכונה',        icon: '🏘️', ids: ['danny', 'noa', 'yosi', 'roei', 'michal', 'avi', 'yuval', 'shira', 'omer', 'tamar', 'itay', 'dudu', 'maya', 'gili', 'yacht'] },
+    { id: 'jobs',    title: 'מקצועות',            icon: '👷', ids: ['chef', 'waiter', 'farmer', 'beekeeper', 'builder', 'mechanic', 'fire', 'police', 'lifeguard', 'sailor', 'pilot', 'scientist', 'detective', 'dj', 'boxer', 'astronaut'] },
+    { id: 'history', title: 'דמויות היסטוריות',   icon: '🏛️', ids: ['pharaoh', 'gladiator', 'samurai', 'knight', 'viking', 'ninja', 'pirate', 'sultan', 'king', 'cowboy', 'hunter', 'gangster'] },
+    { id: 'fantasy', title: 'פנטזיה ומיתולוגיה',  icon: '🧙', ids: ['wizard', 'vampire', 'icequeen', 'angel', 'firemage', 'thunder', 'phoenix', 'shadow', 'dragon', 'cosmic', 'voidlord', 'kebabgod'] },
+    { id: 'future',  title: 'גיבורים ועתיד',      icon: '🚀', ids: ['hero', 'cyborg', 'hacker'] },
+    { id: 'stars',   title: 'כוכבים',             icon: '⭐', ids: ['rocker', 'punk', 'hedgehog', 'deni'] }
+];
+
 function renderShop() {
     const grid = document.getElementById('shop-grid');
     if (!grid) return;
@@ -5082,33 +5108,66 @@ function renderShop() {
     const prevScroll = document.getElementById('screen-shop').scrollTop;
     grid.innerHTML = '';
 
-    const groups = [{ rarity: -1, title: 'ברירת מחדל', color: '#b9a38e' }];
-    SK_RARITY.forEach((r, i) => groups.push({ rarity: i, title: r.name, color: r.color, price: r.price, codeOnly: r.codeOnly }));
+    const byRarity = (a, b) => a.rarity - b.rarity;
+    const isSpecial = s => s.rarity >= 0 && SK_RARITY[s.rarity] && SK_RARITY[s.rarity].codeOnly;
+    const placed = new Set(SHOP_CATEGORIES.flatMap(c => c.ids));
+    const groups = [{ id: 'default', title: 'ברירת מחדל', icon: '🥙', color: '#b9a38e', skins: SV_SKINS.filter(s => s.rarity < 0) }];
+    SHOP_CATEGORIES.forEach(cat => groups.push({
+        id: cat.id, title: cat.title, icon: cat.icon, color: '#ffc233',
+        skins: SV_SKINS.filter(s => cat.ids.includes(s.id) && !isSpecial(s)).sort(byRarity)
+    }));
+    groups.push({ id: 'more', title: 'עוד סקינים', icon: '🎨', color: '#ffc233',
+                  skins: SV_SKINS.filter(s => s.rarity >= 0 && !isSpecial(s) && !placed.has(s.id)).sort(byRarity) });
+    // סקינים של מהדורה מיוחדת מופיעים רק אחרי שהושגו עם קוד
+    groups.push({ id: 'special', title: 'מהדורה מיוחדת', icon: '🎟', color: SK_RARITY[6].color,
+                  skins: SV_SKINS.filter(s => isSpecial(s) && owned.has(s.id)) });
+    const visible = groups.filter(g => g.skins.length);
 
-    groups.forEach(g => {
-        // סקינים של מהדורה מיוחדת מופיעים רק אחרי שהושגו עם קוד
-        const skins = SV_SKINS.filter(s => s.rarity === g.rarity && (!g.codeOnly || owned.has(s.id)));
-        if (!skins.length) return;
+    // קיצורי דרך לקטגוריות
+    const chips = document.createElement('div');
+    chips.className = 'shop-cats';
+    visible.filter(g => g.id !== 'default').forEach(g => {
+        const chip = document.createElement('button');
+        chip.className = 'shop-cat';
+        chip.textContent = g.icon + ' ' + g.title;
+        chip.onclick = () => {
+            const head = document.getElementById('shop-cat-' + g.id);
+            if (head) head.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+        chips.appendChild(chip);
+    });
+    grid.appendChild(chips);
+
+    visible.forEach(g => {
         const head = document.createElement('div');
         head.className = 'shop-group-head';
+        head.id = 'shop-cat-' + g.id;
         head.style.color = g.color;
         head.style.borderColor = g.color;
         const l = document.createElement('span');
-        l.textContent = g.title;
+        l.textContent = g.icon + ' ' + g.title;
         const r = document.createElement('span');
-        r.textContent = g.codeOnly ? '🎟 מהדורה מיוחדת' : g.price ? ('🪙 ' + g.price) : 'חינם';
+        r.className = 'shop-group-count';
+        const have = g.skins.filter(s => owned.has(s.id)).length;
+        r.textContent = g.id === 'default' ? 'חינם' : have + '/' + g.skins.length;
         head.appendChild(l);
         head.appendChild(r);
         grid.appendChild(head);
 
         const wrap = document.createElement('div');
         wrap.className = 'shop-cards';
-        skins.forEach(sk => {
+        g.skins.forEach(sk => {
+            const rar = SK_RARITY[sk.rarity];
             const card = document.createElement('div');
             card.className = 'shop-card r' + sk.rarity + (eq === sk.id ? ' equipped' : '');
-            card.style.setProperty('--rc', g.color);
+            card.style.setProperty('--rc', rar ? rar.color : '#b9a38e');
 
             card.appendChild(getPreview(sk));
+
+            const tag = document.createElement('div');
+            tag.className = 'shop-rarity';
+            tag.textContent = rar ? rar.name : 'ברירת מחדל';
+            card.appendChild(tag);
 
             const nm = document.createElement('div');
             nm.className = 'shop-name';
@@ -6562,7 +6621,7 @@ document.addEventListener('pointerdown', () => sfx.unlock(), { once: true });
 function haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* ignore */ } }
 
 /* ---------- אפקט לחיצה: ניצוצות + צליל + רטט ---------- */
-const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn';
+const PRESS_SELECTOR = '.btn, .game-card, .icon-btn, .sub-tab-btn, .coin-chip, .trivia-option, .goods-slot, .code-btn, .sound-btn, .shop-card .btn, .shop-cat';
 const BURST_COLORS = ['#ffd24a', '#ff9f1c', '#ff6a1a', '#fff2b0'];
 
 function burstAt(x, y, n, spread) {
