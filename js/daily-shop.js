@@ -452,6 +452,105 @@ function getPreview(sk) {
     return previewCache[sk.id];
 }
 
+// רקע לתצוגה של סקין לפי הנדירות: אגדי = קרני שמש זהובות, מיתי = גלקסיה ארגמנית,
+// מהדורה מיוחדת = נייר כסף הולוגרפי. סקין בעיפרון מקבל דף נייר. בכרטיס הסקין הרקע זז (t)
+function skPreviewBg(c, W, H, skin, t) {
+    const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+    const cx = W / 2, cy = H * 0.42, R = Math.hypot(W, H);
+    if (skin.pencil) {                                          // ציור בעיפרון - דף נייר
+        const bg = c.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#f3efe5'); bg.addColorStop(1, '#e2dccd');
+        c.fillStyle = bg; c.fillRect(0, 0, W, H);
+        for (let i = 0; i < 160; i++) {
+            c.fillStyle = i % 3 ? 'rgba(120,110,90,0.08)' : 'rgba(255,255,255,0.35)';
+            c.fillRect(hash(i) * W, hash(i + 500) * H, 1 + (i % 2), 1);
+        }
+        return;
+    }
+    const r = skin.rarity;
+    if (r === 4) {                                              // אגדי: קרני שמש זהובות שמסתובבות לאט
+        const bg = c.createRadialGradient(cx, cy, 10, cx, cy, R * 0.6);
+        bg.addColorStop(0, '#7a4a0c'); bg.addColorStop(0.45, '#3e2206'); bg.addColorStop(1, '#170c03');
+        c.fillStyle = bg; c.fillRect(0, 0, W, H);
+        c.save(); c.translate(cx, cy); c.rotate(t * 0.12);
+        const n = 14;
+        for (let i = 0; i < n; i++) {
+            const a = i * Math.PI * 2 / n, w = Math.PI / n * 0.55;
+            const g = c.createRadialGradient(0, 0, 0, 0, 0, R * 0.7);
+            g.addColorStop(0, 'rgba(255,214,90,0.32)'); g.addColorStop(1, 'rgba(255,170,30,0)');
+            c.fillStyle = g;
+            c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, a - w, a + w); c.closePath(); c.fill();
+        }
+        c.restore();
+        const glow = c.createRadialGradient(cx, cy, 0, cx, cy, W * 0.42);
+        glow.addColorStop(0, 'rgba(255,220,120,0.38)'); glow.addColorStop(1, 'rgba(255,190,60,0)');
+        c.fillStyle = glow; c.fillRect(0, 0, W, H);
+        for (let i = 0; i < 14; i++) {                          // ניצוצות זהב
+            const tw = 0.5 + 0.5 * Math.sin(t * 2.2 + i * 1.7);
+            c.fillStyle = 'rgba(255,230,150,' + (0.25 + 0.5 * tw) + ')';
+            c.beginPath(); c.arc(hash(i + 3) * W, hash(i + 40) * H * 0.9, 1 + tw * 1.6, 0, Math.PI * 2); c.fill();
+        }
+        return;
+    }
+    if (r === 5) {                                              // מיתי: גלקסיה ארגמנית-סגולה עם כוכבים מנצנצים
+        const bg = c.createLinearGradient(0, 0, W, H);
+        bg.addColorStop(0, '#1a0420'); bg.addColorStop(0.55, '#2c0618'); bg.addColorStop(1, '#0a0210');
+        c.fillStyle = bg; c.fillRect(0, 0, W, H);
+        for (const [x, y, rad, col, ph] of [[0.25, 0.3, 0.55, '255,60,110', 0], [0.78, 0.22, 0.45, '170,70,255', 2], [0.6, 0.75, 0.5, '255,90,60', 4]]) {
+            const dx = Math.sin(t * 0.3 + ph) * W * 0.04, dy = Math.cos(t * 0.25 + ph) * H * 0.03;
+            const g = c.createRadialGradient(x * W + dx, y * H + dy, 0, x * W + dx, y * H + dy, rad * W);
+            g.addColorStop(0, 'rgba(' + col + ',0.42)'); g.addColorStop(1, 'rgba(' + col + ',0)');
+            c.fillStyle = g; c.fillRect(0, 0, W, H);
+        }
+        for (let i = 0; i < 46; i++) {
+            const tw = 0.5 + 0.5 * Math.sin(t * 3 + i * 2.3);
+            c.fillStyle = 'rgba(255,240,250,' + (0.3 + 0.6 * tw * hash(i + 9)) + ')';
+            c.beginPath(); c.arc(hash(i) * W, hash(i + 100) * H, 0.6 + hash(i + 200) * 1.4, 0, Math.PI * 2); c.fill();
+        }
+        for (let i = 0; i < 4; i++) {                           // כוכבים גדולים בצורת ניצוץ
+            const x = hash(i + 300) * W, y = hash(i + 400) * H * 0.85, s = (4 + 3 * Math.sin(t * 2 + i * 1.9)) * W / 360;
+            c.fillStyle = 'rgba(255,200,230,0.85)';
+            c.beginPath(); c.moveTo(x, y - s * 2); c.quadraticCurveTo(x, y, x + s * 2, y); c.quadraticCurveTo(x, y, x, y + s * 2);
+            c.quadraticCurveTo(x, y, x - s * 2, y); c.quadraticCurveTo(x, y, x, y - s * 2); c.fill();
+        }
+        return;
+    }
+    if (r === 6) {                                              // מהדורה מיוחדת: נייר כסף הולוגרפי עם ברק שעובר עליו
+        const bg = c.createLinearGradient(0, 0, W, H);
+        bg.addColorStop(0, '#3a0838'); bg.addColorStop(0.5, '#1c0a36'); bg.addColorStop(1, '#081a3a');
+        c.fillStyle = bg; c.fillRect(0, 0, W, H);
+        const sh = (t * 0.15) % 1;
+        const holo = c.createLinearGradient(-W * sh, 0, W * (2 - sh), H);
+        ['255,94,196', '120,200,255', '140,255,190', '255,240,140', '190,130,255', '255,94,196'].forEach((col, i, a) =>
+            holo.addColorStop(i / (a.length - 1), 'rgba(' + col + ',0.2)'));
+        c.fillStyle = holo; c.fillRect(0, 0, W, H);
+        c.strokeStyle = 'rgba(255,255,255,0.07)'; c.lineWidth = 1;    // דוגמת יהלומים עדינה
+        const step = W / 9;
+        for (let x = -H; x < W + H; x += step) {
+            c.beginPath(); c.moveTo(x, 0); c.lineTo(x + H, H); c.stroke();
+            c.beginPath(); c.moveTo(x + H, 0); c.lineTo(x, H); c.stroke();
+        }
+        const bx = ((t * 0.35) % 1.6 - 0.3) * (W + H);            // פס ברק אלכסוני
+        const shine = c.createLinearGradient(bx - W * 0.25, 0, bx + W * 0.25, H * 0.4);
+        shine.addColorStop(0, 'rgba(255,255,255,0)'); shine.addColorStop(0.5, 'rgba(255,255,255,0.22)'); shine.addColorStop(1, 'rgba(255,255,255,0)');
+        c.fillStyle = shine; c.fillRect(0, 0, W, H);
+        for (let i = 0; i < 12; i++) {                          // נצנוצים
+            const tw = Math.max(0, Math.sin(t * 2.5 + i * 2.1));
+            if (tw < 0.2) continue;
+            const x = hash(i + 600) * W, y = hash(i + 700) * H, s = tw * 5 * W / 360;
+            c.fillStyle = 'rgba(255,255,255,' + (0.4 + 0.5 * tw) + ')';
+            c.beginPath(); c.moveTo(x, y - s * 2); c.quadraticCurveTo(x, y, x + s * 2, y); c.quadraticCurveTo(x, y, x, y + s * 2);
+            c.quadraticCurveTo(x, y, x - s * 2, y); c.quadraticCurveTo(x, y, x, y - s * 2); c.fill();
+        }
+        return;
+    }
+    const bg = c.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#1a0f0a');
+    bg.addColorStop(1, '#3a2012');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+}
+
 // opts.t = זמן (לאנימציה), opts.anim = פה שנפתח ולועס ועיניים שעוקבות, opts.k = רזולוציה (פיקסלים ליחידה)
 function drawSkinPreview(cv, skin, opts) {
     opts = opts || {};
@@ -459,18 +558,7 @@ function drawSkinPreview(cv, skin, opts) {
     const c = cv.getContext('2d');
     c.setTransform(k, 0, 0, k, 0, 0);
     c.clearRect(0, 0, W, H);
-    const bg = c.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, skin.pencil ? '#f3efe5' : '#1a0f0a');    // ציור בעיפרון - הרקע הוא דף נייר
-    bg.addColorStop(1, skin.pencil ? '#e2dccd' : '#3a2012');
-    c.fillStyle = bg;
-    c.fillRect(0, 0, W, H);
-    if (skin.pencil) {                                          // מרקם של נייר
-        for (let i = 0; i < 160; i++) {
-            const x = (i * 97.3) % W, y = (i * 53.7 + (i % 7) * 31) % H;
-            c.fillStyle = i % 3 ? 'rgba(120,110,90,0.08)' : 'rgba(255,255,255,0.35)';
-            c.fillRect(x, y, 1 + (i % 2), 1);
-        }
-    }
+    skPreviewBg(c, W, H, skin, opts.t !== undefined ? opts.t : 1.3);
 
     c.save();
     c.beginPath();
