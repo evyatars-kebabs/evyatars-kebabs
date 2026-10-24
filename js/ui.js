@@ -55,9 +55,43 @@ const sfx = (() => {
         s.start(t0); s.stop(t0 + dur + 0.05);
     }
 
+    // רעש מנוע שקט ומתמשך (לשליח הקבבים): שני מתנדים נמוכים, מסנן, ופעימות של מנוע
+    let eng = null;
+    function engineSet(level) {
+        const c = ac(); if (!c) return;
+        if (!eng) {
+            const g = c.createGain(); g.gain.value = 0.0001;
+            const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 320; f.Q.value = 2;
+            const o1 = c.createOscillator(); o1.type = 'sawtooth';
+            const o2 = c.createOscillator(); o2.type = 'square'; o2.detune.value = 9;
+            const lfo = c.createOscillator(); lfo.type = 'sine';
+            const lfoG = c.createGain(); lfoG.gain.value = 0.012;
+            const mix = c.createGain(); mix.gain.value = 0.5;
+            o1.connect(mix); o2.connect(mix); mix.connect(f); f.connect(g); g.connect(sfxBus);
+            lfo.connect(lfoG); lfoG.connect(g.gain);
+            o1.start(); o2.start(); lfo.start();
+            eng = { g, f, o1, o2, lfo };
+        }
+        const t = c.currentTime, k = Math.max(0, Math.min(1.3, level));
+        eng.o1.frequency.setTargetAtTime(44 + k * 34, t, 0.15);
+        eng.o2.frequency.setTargetAtTime(88 + k * 68, t, 0.15);
+        eng.lfo.frequency.setTargetAtTime(16 + k * 18, t, 0.15);
+        eng.f.frequency.setTargetAtTime(260 + k * 260, t, 0.15);
+        eng.g.gain.setTargetAtTime(0.022, t, 0.2);
+    }
+    function engineStop() {
+        if (!eng || !ctx) return;
+        const e = eng; eng = null;
+        const t = ctx.currentTime;
+        e.g.gain.setTargetAtTime(0.0001, t, 0.08);
+        [e.o1, e.o2, e.lfo].forEach(o => { try { o.stop(t + 0.4); } catch (err) { /* ignore */ } });
+    }
+
     return {
+        engine(level) { engineSet(level); },
+        engineStop() { engineStop(); },
         isMuted: () => muted,
-        toggle() { muted = !muted; store.set('kebab_muted', muted ? '1' : '0'); if (!muted) this.tap(); return muted; },
+        toggle() { muted = !muted; store.set('kebab_muted', muted ? '1' : '0'); if (muted) engineStop(); else this.tap(); return muted; },
         unlock() { if (!muted) ac(); },
         tap()   { tone(640, 0.06, 'triangle', 0.10); tone(960, 0.05, 'sine', 0.05, 0.02); },
         pop()   { tone(420, 0.09, 'sine', 0.16, 0, 760); },

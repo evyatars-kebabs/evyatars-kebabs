@@ -33,7 +33,7 @@ function dlvNewState() {
     return {
         running: false, started: false, paused: false, over: false, endT: 0, t: 0, playT: 0, last: 0,
         hearts: DLV_HEARTS, score: 0, delivered: 0, combo: 0, dist: 0, speed: 170,
-        lane: 1, laneX: dlvLaneX(1), vx: 0, tilt: 0, bump: 0, hurtT: 0, shake: 0, flash: 0, puffs: [], puffIn: 0, press: [0, 0, 0, 0],
+        air: null, lane: 1, laneX: dlvLaneX(1), vx: 0, tilt: 0, bump: 0, hurtT: 0, shake: 0, flash: 0, puffs: [], puffIn: 0, press: [0, 0, 0, 0],
         obstacles: [], customers: [], throws: [], pickups: [], fx: [],
         obsIn: 1.6, custIn: 1.2, pickIn: 14, scroll: 0,
         down: null,
@@ -44,6 +44,7 @@ function dlvNewState() {
 
 function dlvStop() {
     cancelAnimationFrame(dlvRaf);
+    if (typeof sfx !== 'undefined') sfx.engineStop();
     if (dlv) dlv.running = false;
 }
 
@@ -98,9 +99,9 @@ function dlvSprite(skinId, s) {
     dlvSprites[key] = cv;
     return cv;
 }
-function dlvDrawSprite(c, skinId, s, x, y) {           // x,y = מרכז הראש בערך
+function dlvDrawSprite(c, skinId, s, x, y, mult) {     // x,y = מרכז הראש בערך; mult = הגדלה בלי ליצור ספרייט חדש
     const sp = dlvSprite(skinId, s);
-    const w = sp.width / dlvPx, h = sp.height / dlvPx;
+    const m = mult || 1, w = sp.width / dlvPx * m, h = sp.height / dlvPx * m;
     c.drawImage(sp, x - w / 2, y - h * (350 - 34) / 720 - 0, w, h);
 }
 
@@ -111,7 +112,7 @@ function dlvSpawnObstacles() {
     const prevFree = dlv.lastFree || [0, 1, 2];
     const reachable = [0, 1, 2].filter(l => prevFree.some(f => Math.abs(f - l) <= 1));
     const keep = reachable[Math.floor(Math.random() * reachable.length)];          // הנתיב שנשאר פתוח בוודאות
-    const n = dlv.playT > 25 && Math.random() < 0.35 ? 2 : 1;
+    const n = dlv.playT > 8 && Math.random() < Math.min(0.65, 0.3 + dlv.playT * 0.006) ? 2 : 1;
     const blocked = [0, 1, 2].filter(l => l !== keep).sort(() => Math.random() - 0.5).slice(0, n);
     for (const lane of blocked) {
         const r = Math.random();
@@ -123,6 +124,9 @@ function dlvSpawnObstacles() {
         });
     }
     dlv.lastFree = [0, 1, 2].filter(l => !blocked.includes(l));
+    // לפעמים רמפה בנתיב הפתוח: לא פוגעת, רק מקפיצה את הקטנוע לאוויר
+    if (dlv.playT > 4 && Math.random() < 0.16 && !dlv.obstacles.some(o => o.type === 'ramp' && o.y < 200))
+        dlv.obstacles.push({ type: 'ramp', lane: keep, x: dlvLaneX(keep), y: -80, own: 0, color: '#2c6fd0', hit: false });
 }
 function dlvSpawnCustomer() {
     const side = Math.random() < 0.5 ? -1 : 1;
@@ -222,7 +226,7 @@ function dlvStep(dt) {
     if (!dlv.started) return;
     if (!dlv.over) {
         dlv.playT += dt;
-        dlv.speed = Math.min(440, 170 + dlv.playT * 5);
+        dlv.speed = Math.min(520, 200 + dlv.playT * 6.5);
         dlv.dist += dlv.speed * dt;
         const distPts = Math.floor(dlv.dist / 400);
         if (distPts > (dlv.distPts || 0)) { dlv.score += distPts - (dlv.distPts || 0); dlv.distPts = distPts; }
@@ -233,20 +237,38 @@ function dlvStep(dt) {
     if (!dlv.over) {
         dlv.obsIn -= dt;
         // רווח מינימלי בין שורות: מספיק זמן לעבור נתיב גם במהירות המקסימלית
-        if (dlv.obsIn <= 0) { dlvSpawnObstacles(); dlv.obsIn = Math.max(0.75, 1.7 - dlv.playT * 0.02) * (0.9 + Math.random() * 0.35); }
+        if (dlv.obsIn <= 0) { dlvSpawnObstacles(); dlv.obsIn = Math.max(0.72, 1.45 - dlv.playT * 0.025) * (0.9 + Math.random() * 0.3); }
         dlv.custIn -= dt;
         if (dlv.custIn <= 0) { dlvSpawnCustomer(); dlv.custIn = Math.max(1.5, 3.4 - dlv.playT * 0.025) * (0.8 + Math.random() * 0.4); }
         dlv.pickIn -= dt;
         if (dlv.pickIn <= 0) {
             if (dlv.hearts < DLV_HEARTS) dlv.pickups.push({ lane: Math.floor(Math.random() * 3), y: -40, got: false });
-            dlv.pickIn = 16 + Math.random() * 10;
+            dlv.pickIn = 24 + Math.random() * 12;
         }
     }
 
     const py = dlvPlayerY();
+    if (dlv.air) {
+        dlv.air.t += dt;
+        if (dlv.air.t >= dlv.air.dur) {                       // נחיתה
+            dlv.air = null; dlv.bump = 1; dlv.shake = 0.25;
+            sfx.pop(); haptic(25);
+        }
+    }
     for (const o of dlv.obstacles) {
         o.y += (v - o.own) * dt;
-        if (!o.hit && !dlv.over && dlv.hurtT <= 0) {
+        if (o.type === 'ramp') {
+            if (!o.hit && !dlv.over && !dlv.air && Math.abs(o.x - dlv.laneX) < DLV_LANE_W * 0.5 && Math.abs(o.y + 30 - py) < 26) {
+                o.hit = true;
+                dlv.air = { t: 0, dur: 1.05 };
+                dlv.score += 15;
+                dlv.fx.push({ x: dlv.laneX, y: py - 70, text: '🚀 קפיצה!', color: '#7fe0ff', size: 20, t: 0, life: 1 });
+                dlv.fx.push({ x: dlv.laneX, y: py - 46, text: '+15', color: '#7ee787', size: 18, t: 0, life: 1 });
+                sfx.whoosh(); sfx.good(); haptic([20, 30, 40]);
+            }
+            continue;
+        }
+        if (!o.hit && !dlv.over && dlv.hurtT <= 0 && !dlv.air) {
             const halfH = o.type === 'car' ? 34 : 16;
             if (Math.abs(o.x - dlv.laneX) < DLV_LANE_W * 0.55 && Math.abs(o.y - py) < halfH + 22) {
                 o.hit = true;
@@ -320,6 +342,8 @@ function dlvLoop(ts) {
     dlv.last = ts;
     dlvStep(dt);
     if (dlv && dlv.running) {
+        if (dlv.started && !dlv.paused && !dlv.over) sfx.engine(dlv.speed / 520 + (dlv.air ? 0.35 : 0));
+        else sfx.engineStop();
         dlvUpdateHud();
         dlvDraw();
         dlvRaf = requestAnimationFrame(dlvLoop);
@@ -335,6 +359,25 @@ function dlvDrawCar(c, o) {
     skR(c, -18, 16, 36, 12, 4, '#9cc8ea', SK_OUT, 1.5);                  // שמשה אחורית
     skR(c, -16, -4, 32, 18, 3, skShade(o.color, -0.15));                 // גג
     for (const s of [-1, 1]) { skE(c, s * 15, 36, 5, 3, '#ff3b2f'); skE(c, s * 15, -36, 5, 3, '#fff3b0'); }
+    c.restore();
+}
+// משאית רמפה: תא נהג קדימה, משטח ורמפה עם פסים צהובים-שחורים מאחור (לכיוון הקטנוע)
+function dlvDrawRamp(c, o, t) {
+    c.save(); c.translate(o.x, o.y);
+    c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(4, 12, 30, 56, 0, 0, Math.PI * 2); c.fill();
+    skR(c, -25, -52, 50, 30, 10, o.color, SK_OUT, 2.5);                         // תא הנהג
+    skR(c, -19, -46, 38, 12, 4, '#bfe3ff', SK_OUT, 1.5);
+    skR(c, -27, -22, 54, 44, 4, '#7a7f8c', SK_OUT, 2.5);                        // משטח
+    c.save(); c.beginPath(); c.moveTo(-27, 22); c.lineTo(27, 22); c.lineTo(23, 58); c.lineTo(-23, 58); c.closePath();
+    c.fillStyle = '#ffd23d'; c.fill(); c.clip();
+    c.fillStyle = '#1c1c22';
+    for (let i = -4; i < 8; i++) { c.beginPath(); c.moveTo(-40 + i * 14, 58); c.lineTo(-30 + i * 14, 58); c.lineTo(-10 + i * 14, 22); c.lineTo(-20 + i * 14, 22); c.closePath(); c.fill(); }
+    c.restore();
+    c.strokeStyle = SK_OUT; c.lineWidth = 2.5;
+    c.beginPath(); c.moveTo(-27, 22); c.lineTo(27, 22); c.lineTo(23, 58); c.lineTo(-23, 58); c.closePath(); c.stroke();
+    const pulse = 0.6 + 0.4 * Math.sin(t * 8);
+    c.fillStyle = 'rgba(255,255,255,' + pulse + ')'; c.font = 'bold 22px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('⬆', 0, 0);
     c.restore();
 }
 function dlvDraw() {
@@ -379,6 +422,7 @@ function dlvDraw() {
     // מכשולים
     for (const o of dlv.obstacles) {
         if (o.type === 'car') dlvDrawCar(c, o);
+        else if (o.type === 'ramp') dlvDrawRamp(c, o, t);
         else if (o.type === 'hole') {
             skE(c, o.x, o.y, 26, 14, '#1c1c22', '#55555f', 3);
             skE(c, o.x - 6, o.y - 3, 12, 5, 'rgba(255,255,255,0.08)');
@@ -412,7 +456,10 @@ function dlvDraw() {
     }
     const blink = dlv.hurtT > 0 && Math.floor(t * 12) % 2 === 0;
     if (!blink) {
-        const bob = Math.sin(dlv.scroll * 0.045) * 1.2 - dlv.bump * 4;
+        const airK = dlv.air ? Math.sin(Math.PI * Math.min(1, dlv.air.t / dlv.air.dur)) : 0;     // גובה הקפיצה
+        const bob = Math.sin(dlv.scroll * 0.045) * 1.2 - dlv.bump * 4 - airK * 34;
+        const grow = 1 + airK * 0.32;
+        if (airK > 0) { c.fillStyle = 'rgba(0,0,0,' + (0.3 - airK * 0.15) + ')'; c.beginPath(); c.ellipse(dlv.laneX + 6, py + 10, 28 * (1 - airK * 0.3), 56 * (1 - airK * 0.3), 0, 0, Math.PI * 2); c.fill(); }
         const steer = Math.max(-0.5, Math.min(0.5, dlv.vx * 0.004));
         const spin = (dlv.scroll * 0.5) % 7;
         const wheel = (wy, rot) => {                                      // גלגל עם חריצים שזזים = מסתובב
@@ -425,8 +472,8 @@ function dlvDraw() {
             skR(c, -2.5, -9, 5, 18, 2.5, '#b8bfcc');                       // חישוק
             c.restore();
         };
-        c.save(); c.translate(dlv.laneX, py + bob); c.rotate(dlv.tilt); c.scale(1.25, 1.25);
-        c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(5, 8, 24, 52, 0, 0, Math.PI * 2); c.fill();
+        c.save(); c.translate(dlv.laneX, py + bob); c.rotate(dlv.tilt); c.scale(1.25 * grow, 1.25 * grow);
+        if (!airK) { c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(5, 8, 24, 52, 0, 0, Math.PI * 2); c.fill(); }
         wheel(46, 0);                                                     // גלגל אחורי
         wheel(-42, steer);                                                // גלגל קדמי שמסתובב לכיוון הפנייה
         skR(c, -14, -30, 28, 56, 12, '#d6291f', SK_OUT, 2.5);             // גוף הקטנוע
@@ -450,7 +497,7 @@ function dlvDraw() {
             const yy = ((dlv.scroll * 1.4 + i * 37) % 120) + py - 40, side = i % 2 ? 1 : -1;
             c.beginPath(); c.moveTo(dlv.laneX + side * 34, yy); c.lineTo(dlv.laneX + side * 34, yy + 10 + sp * 18); c.stroke();
         }
-        dlvDrawSprite(c, dlv.skin, 0.1, dlv.laneX + dlv.tilt * 14, py - 22 + bob);
+        dlvDrawSprite(c, dlv.skin, 0.1, dlv.laneX + dlv.tilt * 14, py - 22 * grow + bob, grow);
     }
     // מנות באוויר
     for (const th of dlv.throws) {
