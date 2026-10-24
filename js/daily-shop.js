@@ -460,10 +460,17 @@ function drawSkinPreview(cv, skin, opts) {
     c.setTransform(k, 0, 0, k, 0, 0);
     c.clearRect(0, 0, W, H);
     const bg = c.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, skin.mono ? '#141414' : '#1a0f0a');      // סקין בשחור-לבן - גם הרקע אפור
-    bg.addColorStop(1, skin.mono ? '#333333' : '#3a2012');
+    bg.addColorStop(0, skin.pencil ? '#f3efe5' : '#1a0f0a');    // ציור בעיפרון - הרקע הוא דף נייר
+    bg.addColorStop(1, skin.pencil ? '#e2dccd' : '#3a2012');
     c.fillStyle = bg;
     c.fillRect(0, 0, W, H);
+    if (skin.pencil) {                                          // מרקם של נייר
+        for (let i = 0; i < 160; i++) {
+            const x = (i * 97.3) % W, y = (i * 53.7 + (i % 7) * 31) % H;
+            c.fillStyle = i % 3 ? 'rgba(120,110,90,0.08)' : 'rgba(255,255,255,0.35)';
+            c.fillRect(x, y, 1 + (i % 2), 1);
+        }
+    }
 
     c.save();
     c.beginPath();

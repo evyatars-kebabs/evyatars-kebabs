@@ -403,10 +403,12 @@ Object.entries(GENDER_FLIPS).forEach(([id, f]) => {
 ['rolazero', 'albanta'].forEach(id => { const sk = SV_SKINS.find(x => x.id === id); if (sk) sk.variantOf = 'bubacola'; });
 SKIN_GROUPS.bubacola = [{ id: 'bubacola', label: 'קולה' }, { id: 'rolazero', label: 'זירו' }, { id: 'albanta', label: 'פאנטה' }];
 
-// השוטר בשחור-לבן - כמו בסרט ישן. כל הצבעים הופכים לגווני אפור
+// השוטר בשחור-לבן - ציור בעיפרון על נייר: הצבעים הופכים לגווני אפור בהירים (כמו נייר),
+// והצללות, קווקווים וקווי מתאר כפולים מצוירים מעל בעיפרון כהה (skPencilExtra)
 function skGrayCopy(v) {
     if (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)) {
-        const [r, g, b] = skHex(v), y = Math.round(0.299 * r + 0.587 * g + 0.114 * b).toString(16).padStart(2, '0');
+        const [r, g, b] = skHex(v), L = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        const y = Math.round(255 * (0.66 + 0.3 * L)).toString(16).padStart(2, '0');
         return '#' + y + y + y;
     }
     if (Array.isArray(v)) return v.map(skGrayCopy);
@@ -415,9 +417,10 @@ function skGrayCopy(v) {
 }
 (() => {
     const base = SV_SKINS.find(x => x.id === 'police');
-    const bw = skGrayCopy(base);
-    SV_SKINS.push(Object.assign(bw, { id: 'police_bw', name: 'השוטר בשחור-לבן', rarity: 2, mono: true,
-        aura: { color: '#d8d8d8', alpha: 0.25 }, extra: skOldFilmExtra }));
+    const sk = skGrayCopy(base), lead = '#3c3c40';                // שיער, שפם וגבות - בעיפרון כהה
+    sk.hair = Object.assign({}, sk.hair, { color: lead }); sk.beard = Object.assign({}, sk.beard, { color: lead }); sk.brow = lead;
+    SV_SKINS.push(Object.assign(sk, { id: 'police_bw', name: 'השוטר בשחור-לבן', rarity: 2, mono: true, pencil: true,
+        extra: skPencilExtra }));
 })();
 
 // גרסאות צ'דר לסקינים של מהדורה מיוחדת - נפתחות עם אותו קוד
