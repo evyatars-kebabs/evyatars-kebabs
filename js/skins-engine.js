@@ -1185,13 +1185,14 @@ function skMouthBack(c, sk, st) {
     c.translate(st.x, st.y);
     skMono(c, sk);
     const hw = st.hw, ry = st.ry;
-    skE(c, 0, 0, hw, ry, '#3a0a12');
+    skE(c, 0, 0, hw, ry, sk.mouthIn || '#3a0a12', sk.mouthIn ? SK_OUT : null, 2.5);
     // שיניים עליונות
     c.save();
     c.beginPath(); c.ellipse(0, 0, hw - 2, ry - 1, 0, 0, Math.PI * 2); c.clip();
     skR(c, -hw + 6, -ry - 2, (hw - 6) * 2, ry * 0.62, 5, '#ffffff', 'rgba(0,0,0,0.25)', 1.5);
-    c.fillStyle = '#ec7a89';
+    c.fillStyle = sk.mouthIn || '#ec7a89';
     c.beginPath(); c.ellipse(0, ry * 0.78, hw * 0.58, ry * 0.58, 0, 0, Math.PI * 2); c.fill();
+    if (sk.mouthIn) { c.strokeStyle = SK_OUT; c.lineWidth = 2; c.stroke(); }       // ציור קווי - לשון בקו בלבד
     c.restore();
     const lip = sk.lips || '#c4575f';
     c.strokeStyle = lip; c.lineWidth = 7; c.lineCap = 'round';
@@ -1415,63 +1416,39 @@ function skSmallCrown(c, sk, st) {
     c.restore();
 }
 
-// ציור בעיפרון: קווקווי הצללה בצד המוצל, קווקוו צפוף על הכובע הכהה וקווי מתאר כפולים.
-// הקווים "רועדים" קצת 4 פעמים בשנייה, כמו אנימציה שצוירה ביד
+// ציור קווי בעיפרון: רק קווי מתאר, בלי מילוי והצללה. הקווים מצוירים פעמיים, קצת לא מדויק כמו סקיצה,
+// ו"רועדים" 4 פעמים בשנייה כמו אנימציה שצוירה ביד
 const SK_PENCIL = 'rgba(38, 38, 42, ';
 function skPencilExtra(c, sk, st) {
     const f = Math.floor(st.t * 4);
     const rnd = n => { const x = Math.sin(f * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
     const j = (n, a) => (rnd(n) - 0.5) * a;
-    const hatch = (x0, x1, y0, y1, gap, dir, alpha, lw, seed) => {
-        c.strokeStyle = SK_PENCIL + alpha + ')'; c.lineWidth = lw; c.lineCap = 'round';
-        const h = y1 - y0;
-        for (let x = x0 - h, i = 0; x < x1 + h; x += gap, i++) {
-            c.beginPath();
-            c.moveTo(x + j(seed + i, 3), dir > 0 ? y1 : y0);
-            c.lineTo(x + h + j(seed + i + 50, 3), dir > 0 ? y0 : y1);
-            c.stroke();
-        }
-    };
-    const head = () => { c.beginPath(); c.ellipse(SK_HEAD.cx, SK_HEAD.cy, SK_HEAD.rx, SK_HEAD.ry, 0, 0, Math.PI * 2); };
+    const paper = sk.tone, out = SK_OUT;
     c.save();
-    // צל בצד ימין של הפנים (חרמש)
-    c.save(); head(); c.clip();
-    c.beginPath(); c.moveTo(30, -140); c.quadraticCurveTo(4, -34, 30, 70); c.lineTo(110, 70); c.lineTo(110, -140); c.closePath(); c.clip();
-    hatch(0, 110, -140, 70, 6, 1, 0.32, 1.1, 1);
-    c.restore();
-    // צל מתחת לסנטר על הצוואר ועל החולצה
-    c.save(); skTorsoPath(c); c.clip();
-    c.beginPath(); c.ellipse(0, 70, 70, 30, 0, 0, Math.PI * 2); c.clip();
-    hatch(-80, 80, 40, 100, 5, -1, 0.38, 1.1, 3);
-    c.restore();
-    // צד ימין של הגוף
-    c.save(); skTorsoPath(c); c.clip();
-    c.beginPath(); c.moveTo(66, 80); c.quadraticCurveTo(84, 200, 70, 340); c.lineTo(130, 340); c.lineTo(130, 80); c.closePath(); c.clip();
-    hatch(60, 130, 80, 340, 6, 1, 0.3, 1.1, 5);
-    c.restore();
-    // הכובע הכהה - קווקוו צפוף בשני כיוונים
-    if (sk.hat && sk.hat.type === 'police') {
-        c.save(); c.beginPath(); c.roundRect(-76, -148, 152, 66, 12); c.clip();
-        hatch(-80, 80, -150, -80, 5, 1, 0.55, 1.2, 9);
-        hatch(-80, 80, -150, -80, 6, -1, 0.4, 1.1, 11);
-        c.restore();
-        c.save(); c.beginPath(); c.ellipse(0, -86, 96, 18, 0, 0, Math.PI * 2); c.clip();
-        hatch(-100, 100, -106, -66, 4, 1, 0.6, 1.2, 13);
-        c.restore();
-    }
-    // קווי מתאר כפולים ולא מדויקים, כמו סקיצה
     c.lineCap = 'round'; c.lineJoin = 'round';
+    // קווי מתאר כפולים ולא מדויקים
     for (let k = 0; k < 2; k++) {
-        c.strokeStyle = SK_PENCIL + (k ? 0.28 : 0.4) + ')'; c.lineWidth = k ? 1 : 1.6;
+        c.strokeStyle = SK_PENCIL + (k ? 0.3 : 0.42) + ')'; c.lineWidth = k ? 1 : 1.6;
         c.save(); c.translate(j(20 + k, 5), j(30 + k, 5)); c.rotate(j(40 + k, 0.03));
-        head(); c.stroke();
+        c.beginPath(); c.ellipse(SK_HEAD.cx, SK_HEAD.cy, SK_HEAD.rx, SK_HEAD.ry, 0, 0, Math.PI * 2); c.stroke();
         skTorsoPath(c); c.stroke();
         c.restore();
     }
-    // קווי בנייה קלים (קו אמצע וקו עיניים) שנשארו מהסקיצה
-    c.strokeStyle = SK_PENCIL + '0.16)'; c.lineWidth = 1;
-    c.beginPath(); c.moveTo(j(60, 4), -128); c.lineTo(j(61, 4), 58); c.stroke();
-    c.beginPath(); c.moveTo(-84, -52 + j(62, 4)); c.lineTo(84, -52 + j(63, 4)); c.stroke();
+    if (sk.pencilHat === 'police') {                  // כובע שוטר - רק קווים
+        skR(c, -76, -148, 152, 66, 12, paper, out, 3);
+        c.strokeStyle = out; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(-74, -106); c.lineTo(74, -106); c.stroke();
+        skE(c, 0, -86, 96, 18, paper, out, 3);
+        skP(c, [[-14, -142], [14, -142], [18, -116], [0, -104], [-18, -116]], paper, out, 2);
+        c.strokeStyle = out; c.lineWidth = 1.6; c.beginPath();
+        for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 3 : 7; c[i ? 'lineTo' : 'moveTo'](Math.cos(a) * r, -125 + Math.sin(a) * r); }
+        c.closePath(); c.stroke();
+        c.strokeStyle = SK_PENCIL + '0.35)'; c.lineWidth = 1.2;                    // קו שני לא מדויק על הכובע
+        c.save(); c.translate(j(50, 5), j(51, 4));
+        c.beginPath(); c.roundRect(-76, -148, 152, 66, 12); c.stroke();
+        c.beginPath(); c.ellipse(0, -86, 96, 18, 0, 0, Math.PI * 2); c.stroke();
+        c.restore();
+    }
     c.restore();
 }
 
