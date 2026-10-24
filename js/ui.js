@@ -213,9 +213,7 @@ const REDEEM_CODES = {
     'WIZMICK6611':       { skin: 'wizmouse' },
     'NIRHANA7':          { skin: 'nir' },
     'IMASHANY1':         { skin: 'shany' },
-    'DANCERELLA12':      { skin: 'ella' },
-    'MRKEBABTHEDEV22':   { skin: 'mrkebab' },
-    'ERLINGNICE':        { skin: 'haaland' }
+    'DANCERELLA12':      { skin: 'ella' }
 };
 // קודי פיתוח: כל קוד אפשר להפעיל שוב ושוב, ללא הגבלה
 function applyReward(reward) {

@@ -1331,44 +1331,6 @@ function skCoachPolo(c, sk, st) {
     c.restore();
 }
 
-// הלאנד: חולצת כדורגל - שוליים לצווארון ה-V, פסים בצדדים, סמל קטן ומספר 9 (sk.kit = צבעים)
-function skHaalandExtra(c, sk, st) {
-    const K = sk.kit;
-    // שוליים לצווארון (מתחת לסנטר בלבד)
-    for (const [w, col] of [[7, SK_OUT], [5, K.trim]]) {
-        c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round';
-        c.beginPath(); c.moveTo(-26, 64); c.lineTo(0, 116); c.lineTo(26, 64); c.stroke();
-    }
-    c.save(); skTorsoPath(c); c.clip();
-    // פסים בצדי החולצה ובכתפיים
-    c.strokeStyle = K.side; c.lineWidth = 8;
-    for (const sd of [-1, 1]) {
-        c.beginPath(); c.moveTo(sd * 70, 80); c.quadraticCurveTo(sd * 110, 92, sd * 122, 130); c.stroke();
-        c.beginPath(); c.moveTo(sd * 116, 150); c.lineTo(sd * 112, 340); c.stroke();
-    }
-    c.restore();
-    // סמל הקבוצה בצד שמאל של החולצה
-    c.save(); c.translate(52, 132);
-    if (K.crest === 'city') {
-        skE(c, 0, 0, 14, 14, '#1c2c5b', SK_OUT, 2);
-        skE(c, 0, 0, 10, 10, '#6cabdd');
-        skP(c, [[-5, 4], [0, -7], [5, 4]], '#ffd23d', '#1c2c5b', 1);
-        c.strokeStyle = '#ffffff'; c.lineWidth = 1.2; c.beginPath(); c.arc(0, 0, 12, 0, Math.PI * 2); c.stroke();
-    } else {
-        skP(c, [[-12, -12], [12, -12], [12, 4], [0, 14], [-12, 4]], '#ffffff', SK_OUT, 2);
-        c.fillStyle = '#c8102e'; c.fillRect(-9, -9, 18, 15);
-        c.fillStyle = '#ffffff'; c.fillRect(-9, -3, 18, 4); c.fillRect(-4, -9, 6, 15);
-        c.fillStyle = '#00205b'; c.fillRect(-9, -2, 18, 2); c.fillRect(-2.5, -9, 3, 15);
-    }
-    c.restore();
-    // מספר 9 קטן בצד השני
-    c.save();
-    c.font = 'bold 26px "Arial Black", Arial, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.lineWidth = 4; c.strokeStyle = K.numOutline; c.lineJoin = 'round';
-    c.strokeText('9', -52, 134); c.fillStyle = K.num; c.fillText('9', -52, 134);
-    c.restore();
-}
-
 function skSmallCrown(c, sk, st) {
     c.save();
     c.translate(10, -108); c.rotate(0.14); c.scale(0.3, 0.3);        // בסיס הכתר (y≈-100) יושב על השיער

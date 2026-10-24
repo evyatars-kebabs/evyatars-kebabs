@@ -251,15 +251,6 @@ const SV_SKINS = [
     { id: 'vader', name: 'סטארוורס', rarity: 6, tone: '#2a2c34', lips: '#3a3d48', blush: false,
       outfit: { base: '#141418', collar: 'high' }, cape: { color: '#16161c' },
       aura: { color: '#ff2a2a', alpha: 0.3 }, drawBack: skVaderBack },
-    { id: 'haaland', name: 'הלאנד', rarity: 6, tone: '#f3d2b6', hair: { style: 'bun', color: '#e2c27a' }, brow: '#c8a060',
-      beard: { style: 'stubble', color: '#c8a060' }, lips: '#c8807a', eyes: { iris: '#4a7ab8' },
-      outfit: { base: '#6cabdd', collar: 'v', inner: '#f3d2b6' },
-      kit: { crest: 'city', trim: '#ffffff', side: '#1c2c5b', num: '#ffffff', numOutline: '#1c2c5b' },
-      aura: { color: '#8fd0ff', alpha: 0.4 }, fx: { type: 'sparkles', count: 14, speed: 0.5 }, extra: skHaalandExtra },
-    { id: 'mrkebab', name: 'מר קבב', rarity: 6, tone: '#e6b892', hair: { style: 'short', color: '#2e1d12' }, brow: '#1e130b',
-      lips: '#c27a72', eyes: { iris: '#3a2414' }, glasses: { type: 'shades' }, blush: false,
-      outfit: { base: '#ffffff' }, aura: { color: '#ffc233', alpha: 0.35, rings: true }, fx: { type: 'sparkles', count: 14, speed: 0.4 },
-      drawBack: skMrKebabBack, drawFront: skMrKebabFront },
     { id: 'ella', name: 'אלה הרקדנית', rarity: 6, tone: '#f1c8a6', hair: { style: 'parted', color: '#5a3a22' }, brow: '#3a2414',
       lips: '#e08a92', eyes: { iris: '#3a2414' }, look: 'f', lashes: true, earring: false,
       outfit: { base: '#f4a6c4', collar: 'v', inner: '#f1c8a6' }, aura: { color: '#ffb6d6', alpha: 0.4 },
@@ -407,15 +398,6 @@ const CHEDDAR_VARIANTS = {
     yuvaldog: { name: 'הכלב של יובל צ\'דר', pal: DOG_CHEDDAR, tone: '#ffd877', brow: '#8a4a04', lips: '#7a3e02',
                 eyes: { iris: '#7a3e02' }, outfit: { base: '#e8961c', collar: 'crew' }, aura: { color: '#ffc83d', alpha: 0.35 } }
 };
-// הלאנד בחולצת נבחרת נורבגיה - אותו קוד
-(() => {
-    const base = SV_SKINS.find(x => x.id === 'haaland');
-    SV_SKINS.push(Object.assign({}, base, { id: 'haaland_nor', name: 'הלאנד - נורבגיה', variantOf: 'haaland',
-        outfit: { base: '#c8102e', collar: 'v', inner: '#f3d2b6' },
-        kit: { crest: 'norway', trim: '#ffffff', side: '#00205b', num: '#ffffff', numOutline: '#00205b' },
-        aura: { color: '#ff5a5a', alpha: 0.4 } }));
-    SKIN_GROUPS.haaland = [{ id: 'haaland', label: '🩵 סיטי' }, { id: 'haaland_nor', label: '🇳🇴 נורבגיה' }];
-})();
 // מיקי הקוסם - גרסה של מיקי המכשף, נפתחת באותו קוד
 (() => {
     const base = SV_SKINS.find(x => x.id === 'wizmouse');

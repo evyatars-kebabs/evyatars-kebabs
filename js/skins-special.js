@@ -627,29 +627,6 @@ function skMouseBack(c, sk, st) {
     skEyes(c, sk, st);
 }
 // טוקסידו: דשים שחורים מבריקים מעל חולצה לבנה, פפיון אדום וכפתורים
-// מר קבב: טוקסידו, משקפי שמש, שיער חום פרוע עם נפח וזיפים קלים, וסיכת שיפוד זהב על הדש
-function skMrKebabBack(c, sk, st) {
-    const t = st.t;
-    skAuraBack(c, sk, t);
-    skOutfit(c, sk, t);
-    skTuxedo(c);
-    // סיכת שיפוד מזהב על הדש
-    c.save(); c.translate(-48, 128); c.rotate(-0.5);
-    c.strokeStyle = '#7a5a10'; c.lineWidth = 3.5; c.beginPath(); c.moveTo(0, -16); c.lineTo(0, 16); c.stroke();
-    c.strokeStyle = '#f1c40f'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, -16); c.lineTo(0, 16); c.stroke();
-    for (const [y, col] of [[-8, '#c97a32'], [0, '#e8402a'], [8, '#c97a32']]) skR(c, -6, y - 3.5, 12, 7, 3, col, '#3a1a08', 1.2);
-    const tw = Math.max(0, Math.sin(t * 2.2));
-    if (tw > 0.75) skStar(c, 5, -14, 2 + (tw - 0.75) * 14, '#ffffff', t * 3);
-    c.restore();
-    skHead(c, sk);
-    skFaceMarks(c, sk, t);
-    skEyes(c, sk, st);
-}
-function skMrKebabFront(c, sk, st) {
-    skDeniHair(c, sk);
-    skGlasses(c, sk);
-}
-
 // טוקסידו: ז'קט שחור שמכסה את הכתפיים, מחשוף V צר עם חולצה לבנה, דשי סאטן, פפיון אדום וממחטה
 function skTuxedo(c) {
     c.save(); skTorsoPath(c); c.clip();
@@ -883,7 +860,7 @@ function skDeniBack(c, sk, st) {
     c.restore();
     skEyes(c, sk, st);
 }
-// השיער של דני: גלי עם נפח למעלה וצדדים קצרים (משמש גם את מר קבב)
+// השיער של דני: גלי עם נפח למעלה וצדדים קצרים
 function skDeniHair(c, sk) {
     const col = sk.hair.color, hl = skShade(col, 0.25);
     // שיער גלי עם נפח למעלה וצדדים קצרים
