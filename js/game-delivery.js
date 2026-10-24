@@ -155,7 +155,7 @@ function dlvArrive(th) {
     const c = th.target;
     if (th.item === c.want) {
         c.state = 'happy'; c.mood = 1;
-        dlv.combo = Math.min(dlv.combo + 1, 5);
+        dlv.combo++;                                    // הרצף לא מוגבל
         dlv.delivered++;
         const pts = 10 * dlv.combo * (c.vip ? 2 : 1);
         dlv.score += pts;
