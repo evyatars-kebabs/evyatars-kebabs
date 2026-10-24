@@ -263,8 +263,13 @@ function svUpdateHud() {
     if (t !== sv.shownTime) { sv.shownTime = t; document.getElementById('sv-timer').textContent = t; }
     if (sv.score !== sv.shownScore) { sv.shownScore = sv.score; document.getElementById('sv-score').textContent = sv.score; }
     const mult = sv.streak >= 6 ? 3 : (sv.streak >= 3 ? 2 : 1);
-    const combo = sv.streak >= 2 ? ('🔥 ' + sv.streak + (mult > 1 ? '  x' + mult : '')) : '';
-    if (combo !== sv.shownCombo) { sv.shownCombo = combo; document.getElementById('sv-combo').textContent = combo; }
+    // רצף והכפלה כשני חלקים נפרדים - כשהם צמודים בטקסט מימין לשמאל זה נראה כמו "3.10"
+    const combo = sv.streak >= 2 ? sv.streak + '|' + mult : '';
+    if (combo !== sv.shownCombo) {
+        sv.shownCombo = combo;
+        document.getElementById('sv-combo').innerHTML = !combo ? '' : '<span>🔥 רצף ' + sv.streak + '</span>' +
+            (mult > 1 ? '<span class="hud-mult">ניקוד <bdi dir="ltr">×' + mult + '</bdi></span>' : '');
+    }
 }
 
 function svLoop(ts) {

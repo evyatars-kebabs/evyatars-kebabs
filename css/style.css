@@ -863,6 +863,8 @@
         .hud-pill.danger { color: #ff5a4d; border-color: #ff5a4d; animation: dangerPulse .5s ease-in-out infinite alternate; }
         @keyframes dangerPulse { from { transform: scale(1); box-shadow: 0 0 0 rgba(255, 90, 77, 0); } to { transform: scale(1.08); box-shadow: 0 0 14px rgba(255, 90, 77, 0.6); } }
         .hud-combo { color: #ff9a3d; font-weight: 700; font-size: 0.95rem; min-height: 1.2em; text-shadow: 0 0 10px rgba(255, 140, 40, 0.6); animation: comboPop .25s ease-out; }
+        .hud-combo { display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .hud-combo .hud-mult { background: rgba(255, 123, 61, 0.18); border: 1px solid rgba(255, 123, 61, 0.55); border-radius: 999px; padding: 0 8px; font-size: 0.85rem; }
         @keyframes comboPop { from { transform: scale(1.4); } to { transform: scale(1); } }
 
         /* אזורי משחק */
