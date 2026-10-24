@@ -456,6 +456,13 @@ const CHEDDAR_VARIANTS = {
                           { id: 'lebron_cavs', label: 'קליבלנד' }, { id: 'lebron_sixers', label: 'פילדלפיה' }];
 })();
 
+// טראמפ עם כובע / בלי כובע - נפתחים באותו קוד
+(() => {
+    const base = SV_SKINS.find(x => x.id === 'trump');
+    SV_SKINS.push(Object.assign({}, base, { id: 'trump_hat', name: 'טראמפ עם כובע', variantOf: 'trump', maga: true }));
+    SKIN_GROUPS.trump = [{ id: 'trump', label: 'רגיל' }, { id: 'trump_hat', label: '🧢 כובע' }];
+})();
+
 // דני בגופיית נבחרת ישראל
 (() => {
     const base = SV_SKINS.find(x => x.id === 'deni');

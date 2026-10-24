@@ -1017,6 +1017,33 @@ function skTrumpBack(c, sk, st) {
     for (const sd of [-1, 1]) skE(c, sd * 34, -60, 26, 18, skA(skShade(tone, 0.25), 0.55));
     skEyes(c, sk, st);
 }
+// כובע בייסבול אדום עם הכיתוב הלבן (גרסת הכובע של טראמפ)
+function skMagaCap(c) {
+    const out = SK_OUT;
+    const red = '#c8102e', rdk = '#8a0a1e';
+    const dome = new Path2D();
+    dome.moveTo(-90, -104);
+    dome.bezierCurveTo(-96, -160, -50, -184, 0, -184);
+    dome.bezierCurveTo(50, -184, 96, -160, 90, -104);
+    dome.closePath();
+    const dg = c.createLinearGradient(0, -184, 0, -100);
+    dg.addColorStop(0, '#e2283e'); dg.addColorStop(1, red);
+    c.fillStyle = dg; c.fill(dome); c.strokeStyle = out; c.lineWidth = 3; c.stroke(dome);
+    c.strokeStyle = rdk; c.lineWidth = 2;                                    // תפרים
+    for (const x of [-34, 34]) { c.beginPath(); c.moveTo(x * 0.3, -183); c.quadraticCurveTo(x, -150, x * 1.15, -106); c.stroke(); }
+    skE(c, 0, -183, 7, 4, red, out, 2);                                       // כפתור עליון
+    // מצחייה קדמית
+    c.beginPath(); c.moveTo(-92, -104); c.quadraticCurveTo(0, -116, 92, -104); c.quadraticCurveTo(70, -80, 0, -78); c.quadraticCurveTo(-70, -80, -92, -104); c.closePath();
+    c.fillStyle = rdk; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-70, -96); c.quadraticCurveTo(0, -104, 70, -96); c.stroke();
+    c.save();
+    c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = 'bold 15px "Arial Black", Arial, sans-serif';
+    c.fillText('MAKE AMERICA', 0, -142);
+    c.fillText('GREAT AGAIN', 0, -124);
+    c.restore();
+}
 function skTrumpFront(c, sk, st) {
     const col = sk.hair.color, hl = skShade(col, 0.3), dk = skShade(col, -0.3), out = SK_OUT;
     const t = st.t, flap = Math.sin(t * 2.2) * 3;
@@ -1042,6 +1069,7 @@ function skTrumpFront(c, sk, st) {
         }
     }
     c.restore();
+    if (sk.maga) { skMagaCap(c); return; }                                   // עם הכובע - כל השיער נכנס פנימה
     // הבלורית: גל גדול שמסתלסל מימין לשמאל מעל המצח
     const hair = new Path2D();
     hair.moveTo(90, -96);
@@ -1063,30 +1091,6 @@ function skTrumpFront(c, sk, st) {
         c.beginPath(); c.moveTo(84 - i * 8, y0); c.bezierCurveTo(40, y0 - 22 + i * 2, -30, y1 - 10, -84 + i * 10 + flap, y1 + 6); c.stroke();
     }
     c.restore();
-    // כובע בייסבול אדום עם הכיתוב הלבן
-    const red = '#c8102e', rdk = '#8a0a1e';
-    const dome = new Path2D();
-    dome.moveTo(-90, -104);
-    dome.bezierCurveTo(-96, -160, -50, -184, 0, -184);
-    dome.bezierCurveTo(50, -184, 96, -160, 90, -104);
-    dome.closePath();
-    const dg = c.createLinearGradient(0, -184, 0, -100);
-    dg.addColorStop(0, '#e2283e'); dg.addColorStop(1, red);
-    c.fillStyle = dg; c.fill(dome); c.strokeStyle = out; c.lineWidth = 3; c.stroke(dome);
-    c.strokeStyle = rdk; c.lineWidth = 2;                                    // תפרים
-    for (const x of [-34, 34]) { c.beginPath(); c.moveTo(x * 0.3, -183); c.quadraticCurveTo(x, -150, x * 1.15, -106); c.stroke(); }
-    skE(c, 0, -183, 7, 4, red, out, 2);                                       // כפתור עליון
-    // מצחייה קדמית
-    c.beginPath(); c.moveTo(-92, -104); c.quadraticCurveTo(0, -116, 92, -104); c.quadraticCurveTo(70, -80, 0, -78); c.quadraticCurveTo(-70, -80, -92, -104); c.closePath();
-    c.fillStyle = rdk; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
-    c.strokeStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 2;
-    c.beginPath(); c.moveTo(-70, -96); c.quadraticCurveTo(0, -104, 70, -96); c.stroke();
-    c.save();
-    c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.font = 'bold 15px "Arial Black", Arial, sans-serif';
-    c.fillText('MAKE AMERICA', 0, -142);
-    c.fillText('GREAT AGAIN', 0, -124);
-    c.restore();
 }
 
 // שלוקלוס - שלוק (ארטיק קרח בשקית פלסטיק ארוכה) גיבור יווני: זר דפנה מזהב, גלימה, ושרירים
@@ -1101,21 +1105,18 @@ function skShlukBack(c, sk, st) {
     // זרועות שריריות בתנוחת "כוח"
     const arm = sd => {
         c.save(); c.scale(sd, 1);
-        const a = new Path2D();
-        a.moveTo(70, 40); a.quadraticCurveTo(110, 20, 132, 46);                 // כתף
-        a.quadraticCurveTo(150, 70, 140, 96);                                   // מרפק
-        a.quadraticCurveTo(160, 40, 154, -6);                                   // אמה למעלה
-        a.lineTo(120, -6);
-        a.quadraticCurveTo(122, 50, 116, 72);
-        a.quadraticCurveTo(96, 84, 70, 86);
-        a.closePath();
-        const g = c.createLinearGradient(70, 0, 150, 0); g.addColorStop(0, ice[1]); g.addColorStop(1, ice[0]);
-        c.fillStyle = g; c.fill(a); c.strokeStyle = out; c.lineWidth = 3; c.stroke(a);
-        c.strokeStyle = skA(ice[2], 0.7); c.lineWidth = 2.5;                    // שריר הזרוע
-        c.beginPath(); c.moveTo(96, 44); c.quadraticCurveTo(118, 22, 130, 52); c.stroke();
-        skE(c, 137, -14, 17, 15, ice[0], out, 3);                                // אגרוף
+        const limb = () => { c.beginPath(); c.moveTo(66, 58); c.lineTo(134, 70); c.lineTo(140, -4); };
+        c.lineCap = 'round'; c.lineJoin = 'round';
+        limb(); c.strokeStyle = out; c.lineWidth = 40; c.stroke();
+        limb(); c.strokeStyle = ice[1]; c.lineWidth = 34; c.stroke();
+        c.strokeStyle = skA('#ffffff', 0.3); c.lineWidth = 6;                   // ברק
+        c.beginPath(); c.moveTo(80, 50); c.lineTo(126, 58); c.lineTo(130, 4); c.stroke();
+        skE(c, 104, 50, 22, 15, ice[0], null, 0, 0.15);                         // שריר הזרוע
+        c.strokeStyle = skA(ice[2], 0.8); c.lineWidth = 2.5;
+        c.beginPath(); c.moveTo(86, 46); c.quadraticCurveTo(104, 30, 124, 50); c.stroke();
+        skE(c, 140, -14, 19, 16, ice[0], out, 3);                                // אגרוף
         c.strokeStyle = skA(ice[2], 0.7); c.lineWidth = 2;
-        c.beginPath(); c.moveTo(126, -20); c.lineTo(148, -20); c.moveTo(126, -11); c.lineTo(148, -11); c.stroke();
+        c.beginPath(); c.moveTo(128, -20); c.lineTo(152, -20); c.moveTo(128, -11); c.lineTo(152, -11); c.stroke();
         c.restore();
     };
     arm(-1); arm(1);
