@@ -1423,7 +1423,6 @@ function skPencilExtra(c, sk, st) {
     const f = Math.floor(st.t * 4);
     const rnd = n => { const x = Math.sin(f * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
     const j = (n, a) => (rnd(n) - 0.5) * a;
-    const paper = sk.tone, out = SK_OUT;
     c.save();
     c.lineCap = 'round'; c.lineJoin = 'round';
     // קווי מתאר כפולים ולא מדויקים
@@ -1432,21 +1431,6 @@ function skPencilExtra(c, sk, st) {
         c.save(); c.translate(j(20 + k, 5), j(30 + k, 5)); c.rotate(j(40 + k, 0.03));
         c.beginPath(); c.ellipse(SK_HEAD.cx, SK_HEAD.cy, SK_HEAD.rx, SK_HEAD.ry, 0, 0, Math.PI * 2); c.stroke();
         skTorsoPath(c); c.stroke();
-        c.restore();
-    }
-    if (sk.pencilHat === 'police') {                  // כובע שוטר - רק קווים
-        skR(c, -76, -148, 152, 66, 12, paper, out, 3);
-        c.strokeStyle = out; c.lineWidth = 2;
-        c.beginPath(); c.moveTo(-74, -106); c.lineTo(74, -106); c.stroke();
-        skE(c, 0, -86, 96, 18, paper, out, 3);
-        skP(c, [[-14, -142], [14, -142], [18, -116], [0, -104], [-18, -116]], paper, out, 2);
-        c.strokeStyle = out; c.lineWidth = 1.6; c.beginPath();
-        for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 3 : 7; c[i ? 'lineTo' : 'moveTo'](Math.cos(a) * r, -125 + Math.sin(a) * r); }
-        c.closePath(); c.stroke();
-        c.strokeStyle = SK_PENCIL + '0.35)'; c.lineWidth = 1.2;                    // קו שני לא מדויק על הכובע
-        c.save(); c.translate(j(50, 5), j(51, 4));
-        c.beginPath(); c.roundRect(-76, -148, 152, 66, 12); c.stroke();
-        c.beginPath(); c.ellipse(0, -86, 96, 18, 0, 0, Math.PI * 2); c.stroke();
         c.restore();
     }
     c.restore();

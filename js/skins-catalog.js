@@ -406,17 +406,6 @@ Object.entries(GENDER_FLIPS).forEach(([id, f]) => {
 ['rolazero', 'albanta'].forEach(id => { const sk = SV_SKINS.find(x => x.id === id); if (sk) sk.variantOf = 'bubacola'; });
 SKIN_GROUPS.bubacola = [{ id: 'bubacola', label: 'קולה' }, { id: 'rolazero', label: 'זירו' }, { id: 'albanta', label: 'פאנטה' }];
 
-// השוטר בשחור-לבן - ציור קווי בעיפרון על נייר: הכול בצבע הנייר, ורק קווי המתאר מצוירים (skPencilExtra)
-(() => {
-    const base = SV_SKINS.find(x => x.id === 'police');
-    const paper = '#f6f4ee', lead = '#36363a';
-    SV_SKINS.push(Object.assign({}, base, { id: 'police_bw', name: 'השוטר בשחור-לבן', rarity: 2, mono: true, pencil: true,
-        tone: paper, lips: lead, brow: lead, eyes: { iris: lead }, blush: false,
-        hair: { style: 'bald', color: paper }, beard: { style: 'mustache', color: paper }, mouthIn: paper,
-        hat: null, pencilHat: 'police', outfit: { base: paper, badge: paper, collar: 'tie', tie: paper },
-        extra: skPencilExtra }));
-})();
-
 // גרסאות צ'דר לסקינים של מהדורה מיוחדת - נפתחות עם אותו קוד
 const CHEDDAR_VARIANTS = {
     vader: { name: 'סטארוורס צ\'דר', pal: VADER_CHEDDAR, tone: '#e8961c', lips: '#c46e08',
