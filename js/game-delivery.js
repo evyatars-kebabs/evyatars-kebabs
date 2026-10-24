@@ -516,14 +516,16 @@ function dlvDraw() {
         try { cv.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
         dlv.down = { x: p.x, y: p.y, x0: p.x, swiped: false };
     });
-    // החלקה רגישה: מעבר נתיב כבר בזמן התנועה (בלי לחכות שהאצבע תעזוב), ואפשר להמשיך להחליק לנתיב הבא
+    // החלקה רגישה: מעבר נתיב כבר בזמן התנועה (בלי לחכות שהאצבע תעזוב).
+    // כל החלקה מזיזה נתיב אחד בלבד - כדי שאפשר יהיה לעצור בנתיב האמצעי; החלקה חזרה לכיוון השני באותה תנועה מחזירה נתיב
     cv.addEventListener('pointermove', e => {
         if (!dlv || !dlv.down || dlv.over) return;
         const p = pt(e), d = dlv.down;
         const dx = p.x - d.x, dy = p.y - d.y;
         if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 0.7) {
-            moveLane(dx > 0 ? 1 : -1);
-            d.x = p.x; d.y = p.y; d.swiped = true;
+            const dir = dx > 0 ? 1 : -1;
+            if (dir !== d.dir) { moveLane(dir); d.dir = dir; d.swiped = true; }
+            d.x = p.x; d.y = p.y;
         }
     });
     cv.addEventListener('pointerup', e => {
