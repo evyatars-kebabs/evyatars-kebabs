@@ -105,19 +105,24 @@ function dlvDrawSprite(c, skinId, s, x, y) {           // x,y = מרכז הרא�
 }
 
 /* ---------- יצירת מכשולים, לקוחות ולבבות ---------- */
+// שורת מכשולים. תמיד אפשר לשרוד: לפחות נתיב אחד פנוי, והנתיב הפנוי במרחק של נתיב אחד לכל היותר
+// מנתיב פנוי בשורה הקודמת - כך תמיד יש מסלול שעובר בין השורות בתזוזה של נתיב אחד בכל פעם
 function dlvSpawnObstacles() {
-    const lanes = [0, 1, 2];
-    const n = dlv.playT > 25 && Math.random() < 0.35 ? 2 : 1;     // אף פעם לא חוסמים את כל שלושת הנתיבים
-    for (let i = 0; i < n; i++) {
-        const lane = lanes.splice(Math.floor(Math.random() * lanes.length), 1)[0];
+    const prevFree = dlv.lastFree || [0, 1, 2];
+    const reachable = [0, 1, 2].filter(l => prevFree.some(f => Math.abs(f - l) <= 1));
+    const keep = reachable[Math.floor(Math.random() * reachable.length)];          // הנתיב שנשאר פתוח בוודאות
+    const n = dlv.playT > 25 && Math.random() < 0.35 ? 2 : 1;
+    const blocked = [0, 1, 2].filter(l => l !== keep).sort(() => Math.random() - 0.5).slice(0, n);
+    for (const lane of blocked) {
         const r = Math.random();
         const type = r < 0.55 ? 'car' : r < 0.8 ? 'hole' : 'cone';
         dlv.obstacles.push({
-            type, lane, x: dlvLaneX(lane), y: -70 - i * 30,
-            own: type === 'car' ? 40 + Math.random() * 60 : 0,      // מכונית נוסעת קדימה לאט יותר מאיתנו
+            type, lane, x: dlvLaneX(lane), y: -70,
+            own: 0,                     // כל המכשולים נעים באותה מהירות, כדי ששורות לא יתקרבו זו לזו ויחסמו יחד את כל הכביש
             color: DLV_CAR_COLORS[Math.floor(Math.random() * DLV_CAR_COLORS.length)], hit: false
         });
     }
+    dlv.lastFree = [0, 1, 2].filter(l => !blocked.includes(l));
 }
 function dlvSpawnCustomer() {
     const side = Math.random() < 0.5 ? -1 : 1;
@@ -227,7 +232,8 @@ function dlvStep(dt) {
 
     if (!dlv.over) {
         dlv.obsIn -= dt;
-        if (dlv.obsIn <= 0) { dlvSpawnObstacles(); dlv.obsIn = Math.max(0.6, 1.7 - dlv.playT * 0.02) * (0.75 + Math.random() * 0.5); }
+        // רווח מינימלי בין שורות: מספיק זמן לעבור נתיב גם במהירות המקסימלית
+        if (dlv.obsIn <= 0) { dlvSpawnObstacles(); dlv.obsIn = Math.max(0.75, 1.7 - dlv.playT * 0.02) * (0.9 + Math.random() * 0.35); }
         dlv.custIn -= dt;
         if (dlv.custIn <= 0) { dlvSpawnCustomer(); dlv.custIn = Math.max(1.5, 3.4 - dlv.playT * 0.025) * (0.8 + Math.random() * 0.4); }
         dlv.pickIn -= dt;
