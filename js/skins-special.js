@@ -1209,6 +1209,24 @@ function skDeniBack(c, sk, st) {
 // השיער של דני: גלי עם נפח למעלה וצדדים קצרים
 function skDeniHair(c, sk) {
     const col = sk.hair.color, hl = skShade(col, 0.25);
+    // בסיס מלא מתחת לגלים: מכסה את כל החלק העליון של הראש ויורד בצדדים עד האוזניים
+    const base = new Path2D();
+    base.moveTo(-94, -24);
+    base.bezierCurveTo(-104, -112, -62, -166, 0, -168);
+    base.bezierCurveTo(62, -166, 104, -112, 94, -24);
+    base.lineTo(84, -30);
+    base.quadraticCurveTo(84, -80, 64, -94);
+    base.quadraticCurveTo(0, -106, -64, -94);
+    base.quadraticCurveTo(-84, -80, -84, -30);
+    base.closePath();
+    c.fillStyle = skShade(col, -0.12); c.fill(base);
+    c.strokeStyle = SK_OUT; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(base);
+    c.save(); c.clip(base);
+    c.strokeStyle = skA(hl, 0.45); c.lineWidth = 2; c.lineCap = 'round';           // שיער קצר בצדדים
+    for (const sd of [-1, 1]) for (let i = 0; i < 3; i++) {
+        c.beginPath(); c.moveTo(sd * (70 + i * 7), -96 + i * 6); c.quadraticCurveTo(sd * (94 + i), -70, sd * (90 + i * 2), -34 - i * 4); c.stroke();
+    }
+    c.restore();
     // שיער גלי עם נפח למעלה וצדדים קצרים
     const hair = new Path2D();
     hair.moveTo(-90, -44);
