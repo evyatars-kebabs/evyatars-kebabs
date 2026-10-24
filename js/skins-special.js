@@ -830,9 +830,15 @@ function skNirFront(c, sk, st) {
     }
 }
 
-// לברון - גופיית הלייקרס מספר 23, זקן מלא קצר וכתר זהב עם שיפודי קבב קטנים במקום יהלומים
+// לברון - גופיית הלייקרס מספר 23 (וגרסאות במיאמי, קליבלנד ופילדלפיה), זקן מלא קצר וכתר זהב עם שיפודי קבב קטנים במקום יהלומים
 const LEBRON_LAKERS = { base: '#fdb927', stripes: [[30, '#552583'], [10, '#ffffff']], trim: ['#552583', '#ffffff'],
     text: 'LAKERS', textCol: '#552583', numFill: '#552583', numStroke: '#ffffff', num: '23' };
+const LEBRON_HEAT = { base: '#121214', stripes: [[30, '#d6243a'], [10, '#f9a01b']], trim: ['#d6243a', '#f9a01b'],
+    text: 'HEAT', textCol: '#ffffff', numFill: '#d6243a', numStroke: '#ffffff', num: '6' };
+const LEBRON_CAVS = { base: '#6f263d', stripes: [[30, '#ffb81c'], [10, '#041e42']], trim: ['#ffb81c', '#041e42'],
+    text: 'CAVS', textCol: '#ffb81c', numFill: '#ffb81c', numStroke: '#041e42', num: '23' };
+const LEBRON_SIXERS = { base: '#006bb6', stripes: [[30, '#ed174c'], [10, '#ffffff']], trim: ['#ed174c', '#ffffff'],
+    text: 'SIXERS', textCol: '#ffffff', numFill: '#ffffff', numStroke: '#ed174c', num: '23' };
 
 // שיפוד קבב קטן: מקל עץ עם נתחי בשר, בצל, עגבנייה ופלפל
 function skMiniKebab(c, x, y, len, rot) {
@@ -877,7 +883,7 @@ function skKebabCrown(c, t) {
 }
 
 function skLebronBack(c, sk, st) {
-    skJerseyBody(c, sk, st.t, LEBRON_LAKERS);
+    skJerseyBody(c, sk, st.t, sk.jersey || LEBRON_LAKERS);
     skHead(c, sk);
     skJawShadow(c, sk);
     skEyes(c, sk, st);

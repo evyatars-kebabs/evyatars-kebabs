@@ -437,6 +437,17 @@ const CHEDDAR_VARIANTS = {
     SKIN_GROUPS.nir = [{ id: 'nir', label: 'רגיל' }, { id: 'nir_champ', label: '👑 אלוף' }];
 })();
 
+// לברון בקבוצות נוספות - נפתחות באותו קוד
+(() => {
+    const base = SV_SKINS.find(x => x.id === 'lebron');
+    const teams = [['lebron_heat', 'לברון - מיאמי', LEBRON_HEAT, '#d6243a'], ['lebron_cavs', 'לברון - קליבלנד', LEBRON_CAVS, '#ffb81c'],
+                   ['lebron_sixers', 'לברון - פילדלפיה', LEBRON_SIXERS, '#2a8ae0']];
+    teams.forEach(([id, name, jersey, col]) => SV_SKINS.push(Object.assign({}, base, { id, name, variantOf: 'lebron', jersey,
+        aura: { color: col, alpha: 0.48, rings: true } })));
+    SKIN_GROUPS.lebron = [{ id: 'lebron', label: 'לייקרס' }, { id: 'lebron_heat', label: 'מיאמי' },
+                          { id: 'lebron_cavs', label: 'קליבלנד' }, { id: 'lebron_sixers', label: 'פילדלפיה' }];
+})();
+
 // דני בגופיית נבחרת ישראל
 (() => {
     const base = SV_SKINS.find(x => x.id === 'deni');
