@@ -1,7 +1,7 @@
 /* ============================================================
    משחק: שליח הקבבים
    רוכבים על קטנוע בכביש עם 3 נתיבים: מחליקים / מקישים ימינה ושמאלה כדי לעבור נתיב
-   ולהתחמק ממכוניות ובורות, וגוררים מהסרגל למטה את המנה שהלקוח על המדרכה ביקש.
+   ולהתחמק ממכוניות ובורות, ולוחצים בסרגל למטה על המנה שהלקוח על המדרכה ביקש.
    3 לבבות: מאבדים לב על התנגשות או על מנה לא נכונה.
    ============================================================ */
 const DLV_W = 360;
@@ -33,10 +33,10 @@ function dlvNewState() {
     return {
         running: false, started: false, paused: false, over: false, endT: 0, t: 0, playT: 0, last: 0,
         hearts: DLV_HEARTS, score: 0, delivered: 0, combo: 0, dist: 0, speed: 170,
-        lane: 1, laneX: dlvLaneX(1), tilt: 0, hurtT: 0, shake: 0, flash: 0,
+        lane: 1, laneX: dlvLaneX(1), vx: 0, tilt: 0, bump: 0, hurtT: 0, shake: 0, flash: 0, puffs: [], puffIn: 0, press: [0, 0, 0, 0],
         obstacles: [], customers: [], throws: [], pickups: [], fx: [],
         obsIn: 1.6, custIn: 1.2, pickIn: 14, scroll: 0,
-        selected: -1, aim: null, down: null,
+        down: null,
         pool: [], skin: 'classic',
         shownScore: -1, shownHearts: -1, shownCombo: '#'
     };
@@ -131,28 +131,22 @@ function dlvSpawnCustomer() {
     });
 }
 
-/* ---------- מסירה ---------- */
-// הלקוח שהכי מתאים לנקודה (הקשה) או לכיוון הגרירה
-function dlvTargetFor(p, from) {
-    const waiting = dlv.customers.filter(c => c.state === 'wait' && c.y > 30 && c.y < dlvPlayerY() + 30);
-    if (!waiting.length) return null;
-    let best = null, bestD = Infinity;
-    for (const c of waiting) {
-        let d;
-        if (from) {                                     // לפי הזווית בין כיוון הגרירה לכיוון הלקוח
-            const a1 = Math.atan2(p.y - from.y, p.x - from.x), a2 = Math.atan2(c.y - from.y, c.x - from.x);
-            d = Math.abs(Math.atan2(Math.sin(a1 - a2), Math.cos(a1 - a2)));
-            if (d > 0.6) continue;
-        } else {
-            d = Math.hypot(p.x - c.x, p.y - (c.y - 10));
-            if (d > 60) continue;
-        }
-        if (d < bestD) { bestD = d; best = c; }
+/* ---------- מסירה: לחיצה על מנה שולחת אותה ללקוח שמחכה לה ---------- */
+function dlvServe(item) {
+    const py = dlvPlayerY();
+    const waiting = dlv.customers.filter(c => c.state === 'wait' && c.y > 30 && c.y < py + 30);
+    dlv.press[item] = 1;
+    if (!waiting.length) {
+        sfx.miss();
+        dlv.fx.push({ x: DLV_W / 2, y: py - 70, text: 'אין לקוח בטווח', color: '#d9c4a8', size: 14, t: 0, life: 0.8 });
+        return;
     }
-    return best;
+    // קודם לקוח שמחכה בדיוק למנה הזאת (הקרוב ביותר לקטנוע); אם אין - הלקוח הקרוב ביותר יקבל מנה לא נכונה
+    const near = (a, b) => Math.abs(a.y - py) - Math.abs(b.y - py);
+    const match = waiting.filter(c => c.want === item).sort(near)[0];
+    dlvThrow(item, match || waiting.sort(near)[0]);
 }
 function dlvThrow(item, target) {
-    if (!target) { sfx.miss(); return; }
     target.state = 'incoming';
     dlv.throws.push({ item, target, x0: dlv.laneX, y0: dlvPlayerY() - 20, t: 0, dur: 0.32 });
     sfx.whoosh();
@@ -200,10 +194,22 @@ function dlvStep(dt) {
         dlv.speed = Math.max(0, dlv.speed - 400 * dt);
         if (dlv.endT > 1.6) { dlvEnd(); return; }
     }
-    // תנועה חלקה בין נתיבים
+    // מעבר נתיב עם קפיץ (קצת חורג וחוזר), נטייה לצד ותנודה קלה
     const tx = dlvLaneX(dlv.lane);
-    dlv.tilt += ((tx - dlv.laneX) * 0.012 - dlv.tilt) * Math.min(1, dt * 10);
-    dlv.laneX += (tx - dlv.laneX) * Math.min(1, dt * 12);
+    for (let i = 0, n = 4; i < n; i++) {
+        const h = dt / n;
+        dlv.vx += ((tx - dlv.laneX) * 300 - dlv.vx * 25) * h;
+        dlv.laneX += dlv.vx * h;
+    }
+    dlv.tilt = Math.max(-0.45, Math.min(0.45, dlv.vx * 0.0028));
+    dlv.bump = Math.max(0, dlv.bump - dt * 3);
+    dlv.press = dlv.press.map(v => Math.max(0, v - dt * 5));
+    for (const pf of dlv.puffs) { pf.t += dt; pf.y += (dlv.speed * 0.55 + 30) * dt; pf.x += pf.vx * dt; }
+    dlv.puffs = dlv.puffs.filter(pf => pf.t < 0.6);
+    if (dlv.started && !dlv.over && !dlv.paused) {
+        dlv.puffIn -= dt;
+        if (dlv.puffIn <= 0) { dlv.puffs.push({ x: dlv.laneX + (Math.random() - 0.5) * 6, y: dlvPlayerY() + 70, vx: (Math.random() - 0.5) * 30, t: 0 }); dlv.puffIn = 0.07; }
+    }
     dlv.hurtT = Math.max(0, dlv.hurtT - dt);
     dlv.shake = Math.max(0, dlv.shake - dt * 2);
     dlv.flash = Math.max(0, dlv.flash - dt * 2);
@@ -394,30 +400,57 @@ function dlvDraw() {
     }
     // השליח על הקטנוע
     const py = dlvPlayerY();
+    for (const pf of dlv.puffs) {                                         // עשן מהאגזוז
+        const k = pf.t / 0.6;
+        skE(c, pf.x, pf.y, 4 + k * 9, 4 + k * 9, 'rgba(220,220,230,' + (0.45 * (1 - k)) + ')');
+    }
     const blink = dlv.hurtT > 0 && Math.floor(t * 12) % 2 === 0;
     if (!blink) {
-        c.save(); c.translate(dlv.laneX, py); c.rotate(dlv.tilt * 0.4); c.scale(1.25, 1.25);
-        c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(4, 34, 22, 9, 0, 0, Math.PI * 2); c.fill();
-        skR(c, -7, 10, 14, 30, 6, '#1c1c22', SK_OUT, 2);                  // גלגל אחורי (מבט מלמעלה)
-        skR(c, -16, -6, 32, 34, 10, '#d6291f', SK_OUT, 2.5);              // גוף הקטנוע
-        skR(c, -20, 10, 40, 26, 6, '#ffd23d', SK_OUT, 2.5);               // ארגז משלוחים
-        c.fillStyle = '#7a3a08'; c.font = 'bold 11px "Secular One", Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
-        c.fillText('קבב', 0, 23);
+        const bob = Math.sin(dlv.scroll * 0.045) * 1.2 - dlv.bump * 4;
+        const steer = Math.max(-0.5, Math.min(0.5, dlv.vx * 0.004));
+        const spin = (dlv.scroll * 0.5) % 7;
+        const wheel = (wy, rot) => {                                      // גלגל עם חריצים שזזים = מסתובב
+            c.save(); c.translate(0, wy); c.rotate(rot);
+            skR(c, -8, -15, 16, 30, 7, '#16161c', SK_OUT, 2);
+            c.save(); c.beginPath(); c.roundRect ? c.roundRect(-7, -14, 14, 28, 6) : c.rect(-7, -14, 14, 28); c.clip();
+            c.fillStyle = '#4a4a56';
+            for (let y = -21 + spin; y < 16; y += 7) c.fillRect(-7, y, 14, 2.5);
+            c.restore();
+            skR(c, -2.5, -9, 5, 18, 2.5, '#b8bfcc');                       // חישוק
+            c.restore();
+        };
+        c.save(); c.translate(dlv.laneX, py + bob); c.rotate(dlv.tilt); c.scale(1.25, 1.25);
+        c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(5, 8, 24, 52, 0, 0, Math.PI * 2); c.fill();
+        wheel(46, 0);                                                     // גלגל אחורי
+        wheel(-42, steer);                                                // גלגל קדמי שמסתובב לכיוון הפנייה
+        skR(c, -14, -30, 28, 56, 12, '#d6291f', SK_OUT, 2.5);             // גוף הקטנוע
+        skR(c, -9, -16, 18, 10, 4, 'rgba(255,255,255,0.25)');
+        c.save(); c.translate(0, -30); c.rotate(steer);                   // כידון
+        c.strokeStyle = SK_OUT; c.lineWidth = 6; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(-17, 0); c.lineTo(17, 0); c.stroke();
+        c.strokeStyle = '#b8bfcc'; c.lineWidth = 3.5; c.beginPath(); c.moveTo(-17, 0); c.lineTo(17, 0); c.stroke();
+        skE(c, -18, 0, 4, 4, '#1c1c22'); skE(c, 18, 0, 4, 4, '#1c1c22');
         c.restore();
-        dlvDrawSprite(c, dlv.skin, 0.12, dlv.laneX, py - 26);
+        skGlow(c, 0, -62, 24, '#fff3b0', 0.45);                           // פנס
+        skE(c, 0, -57, 5, 3, '#fff3b0', SK_OUT, 1.5);
+        skR(c, -20, 14, 40, 28, 6, '#ffd23d', SK_OUT, 2.5);               // ארגז משלוחים
+        c.fillStyle = '#7a3a08'; c.font = 'bold 11px "Secular One", Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText('קבב', 0, 28);
+        c.restore();
+        // קווי מהירות בצדדים
+        c.strokeStyle = 'rgba(255,255,255,0.35)'; c.lineWidth = 2;
+        const sp = Math.min(1, dlv.speed / 440);
+        for (let i = 0; i < 4; i++) {
+            const yy = ((dlv.scroll * 1.4 + i * 37) % 120) + py - 40, side = i % 2 ? 1 : -1;
+            c.beginPath(); c.moveTo(dlv.laneX + side * 34, yy); c.lineTo(dlv.laneX + side * 34, yy + 10 + sp * 18); c.stroke();
+        }
+        dlvDrawSprite(c, dlv.skin, 0.1, dlv.laneX + dlv.tilt * 14, py - 22 + bob);
     }
     // מנות באוויר
     for (const th of dlv.throws) {
         const k = Math.min(1, th.t / th.dur), tg = th.target;
         const x = th.x0 + (tg.x - th.x0) * k, y = th.y0 + (tg.y - 30 - th.y0) * k - Math.sin(k * Math.PI) * 60;
         c.save(); c.translate(x, y); c.rotate(k * 8); drawEmoji(c, DLV_ITEMS[th.item].emoji, 24); c.restore();
-    }
-    // קו כיוון בזמן גרירה
-    if (dlv.aim && dlv.aim.moved) {
-        c.strokeStyle = 'rgba(255,210,61,0.8)'; c.lineWidth = 4; c.setLineDash([8, 8]); c.lineCap = 'round';
-        c.beginPath(); c.moveTo(dlv.aim.from.x, dlv.aim.from.y); c.lineTo(dlv.aim.to.x, dlv.aim.to.y); c.stroke(); c.setLineDash([]);
-        const tg = dlvTargetFor(dlv.aim.to, dlv.aim.from);
-        if (tg) { c.strokeStyle = '#ffd23d'; c.lineWidth = 3; c.beginPath(); c.arc(tg.x, tg.y - 14, 34, 0, Math.PI * 2); c.stroke(); }
     }
     // טקסטים צפים
     for (const f of dlv.fx) {
@@ -436,11 +469,13 @@ function dlvDraw() {
     c.fillStyle = '#1a0f09'; c.fillRect(0, H - DLV_BAR, DLV_W, DLV_BAR);
     c.fillStyle = 'rgba(255,194,51,0.4)'; c.fillRect(0, H - DLV_BAR, DLV_W, 2);
     DLV_ITEMS.forEach((it, i) => {
-        const r = dlvBtnRect(i), on = dlv.selected === i;
+        const r = dlvBtnRect(i), pr = dlv.press[i], on = pr > 0.05;
+        c.save(); c.translate(r.x + r.w / 2, r.y + r.h / 2); c.scale(1 - pr * 0.1, 1 - pr * 0.1); c.translate(-(r.x + r.w / 2), -(r.y + r.h / 2));
         skR(c, r.x, r.y, r.w, r.h, 14, on ? '#ffc233' : '#2e1d14', on ? '#fff3b0' : '#5a3a2a', on ? 3 : 2);
         c.save(); c.translate(r.x + r.w / 2, r.y + r.h / 2 - 7); drawEmoji(c, it.emoji, 30); c.restore();
         c.fillStyle = on ? '#2a1204' : '#d9c4a8'; c.font = 'bold 11px Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
         c.fillText(it.name, r.x + r.w / 2, r.y + r.h - 9);
+        c.restore();
     });
 
     // הוראות לפני ההתחלה / השהיה
@@ -452,7 +487,7 @@ function dlvDraw() {
         c.fillStyle = '#f3e3cf'; c.font = '15px Rubik, sans-serif';
         const lines = dlv.paused ? ['הקישו כדי להמשיך'] : [
             '👈 החליקו או הקישו ימינה ושמאלה 👉', 'כדי לעבור נתיב ולהתחמק ממכוניות ובורות',
-            '', 'גררו מהסרגל למטה את המנה', 'שהלקוח על המדרכה ביקש (או בחרו מנה והקישו עליו)',
+            '', 'לחצו בסרגל למטה על המנה', 'שהלקוח על המדרכה ביקש - והיא תעוף אליו',
             '', '❤️ טעות במנה או התנגשות = מאבדים לב', '', 'הקישו כדי להתחיל'];
         lines.forEach((l, i) => c.fillText(l, DLV_W / 2, H * 0.34 + i * 24));
     }
@@ -468,7 +503,7 @@ function dlvDraw() {
     };
     const moveLane = d => {
         const n = Math.max(0, Math.min(2, dlv.lane + d));
-        if (n !== dlv.lane) { dlv.lane = n; sfx.tap(); }
+        if (n !== dlv.lane) { dlv.lane = n; dlv.bump = 1; sfx.whoosh(); haptic(8); }
     };
     cv.addEventListener('pointerdown', e => {
         if (!dlv || !dlv.running || dlv.over) return;
@@ -476,45 +511,30 @@ function dlvDraw() {
         if (!dlv.started) { dlv.started = true; return; }
         if (dlv.paused) { dlv.paused = false; dlv.last = performance.now(); return; }
         const p = pt(e);
-        try { cv.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
         const btn = DLV_ITEMS.findIndex((it, i) => dlvIn(p, dlvBtnRect(i)));
-        if (btn >= 0) {                                   // גרירה מהסרגל = זריקת מנה
-            dlv.selected = btn;
-            const r = dlvBtnRect(btn);
-            dlv.aim = { item: btn, from: { x: r.x + r.w / 2, y: r.y }, to: p, moved: false };
-            sfx.pop();
-            return;
-        }
-        dlv.down = { p, t: performance.now() };
+        if (btn >= 0) { dlvServe(btn); return; }           // לחיצה על מנה = משלוח
+        try { cv.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        dlv.down = { x: p.x, y: p.y, x0: p.x, swiped: false };
     });
+    // החלקה רגישה: מעבר נתיב כבר בזמן התנועה (בלי לחכות שהאצבע תעזוב), ואפשר להמשיך להחליק לנתיב הבא
     cv.addEventListener('pointermove', e => {
-        if (!dlv || !dlv.aim) return;
-        const p = pt(e);
-        dlv.aim.to = p;
-        if (Math.hypot(p.x - dlv.aim.from.x, p.y - dlv.aim.from.y) > 28) dlv.aim.moved = true;
+        if (!dlv || !dlv.down || dlv.over) return;
+        const p = pt(e), d = dlv.down;
+        const dx = p.x - d.x, dy = p.y - d.y;
+        if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 0.7) {
+            moveLane(dx > 0 ? 1 : -1);
+            d.x = p.x; d.y = p.y; d.swiped = true;
+        }
     });
     cv.addEventListener('pointerup', e => {
         if (!dlv || !dlv.running || dlv.over) return;
-        const p = pt(e);
-        if (dlv.aim) {
-            const a = dlv.aim;
-            dlv.aim = null;
-            if (a.moved && p.y < dlvH - DLV_BAR) { dlvThrow(a.item, dlvTargetFor(p, a.from)); dlv.selected = -1; }
-            return;                                       // הקשה בלבד: המנה נשארת בחורה
-        }
         const d = dlv.down;
         dlv.down = null;
-        if (!d) return;
-        const dx = p.x - d.p.x, dy = p.y - d.p.y;
-        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) { moveLane(dx > 0 ? 1 : -1); return; }   // החלקה
-        // הקשה: על לקוח עם מנה בחורה = מסירה, אחרת מעבר נתיב לכיוון ההקשה
-        if (dlv.selected >= 0) {
-            const tg = dlvTargetFor(d.p, null);
-            if (tg) { dlvThrow(dlv.selected, tg); dlv.selected = -1; return; }
-        }
-        if (d.p.x < dlv.laneX - 12) moveLane(-1); else if (d.p.x > dlv.laneX + 12) moveLane(1);
+        if (!d || d.swiped) return;
+        // הקשה: מעבר נתיב לכיוון ההקשה
+        if (d.x0 < dlv.laneX - 10) moveLane(-1); else if (d.x0 > dlv.laneX + 10) moveLane(1);
     });
-    cv.addEventListener('pointercancel', () => { if (dlv) { dlv.aim = null; dlv.down = null; } });
+    cv.addEventListener('pointercancel', () => { if (dlv) dlv.down = null; });
 })();
 
 function loadDeliveryLeaderboard() {
