@@ -313,7 +313,8 @@ function goodsSwap(a, b) {
     goodsBoard[a.shelf][a.slot] = temp;
 }
 
-// גרירה: מחזיקים מוצר וגוררים אותו לתא אחר כדי להחליף ביניהם. הקשה רגילה (בלי תזוזה) עובדת כמו קודם
+// גרירה: מחזיקים מוצר וגוררים אותו לתא אחר כדי להחליף ביניהם. הקשה רגילה (בלי תזוזה) עובדת כמו קודם.
+// לא מציירים את הלוח מחדש באמצע גרירה - בטלפונים (במיוחד אייפון) מחיקת התא שמתחת לאצבע עוצרת את האירועים
 (function bindGoodsDrag() {
     const board = document.getElementById('goods-board');
     if (!board) return;
@@ -323,23 +324,26 @@ function goodsSwap(a, b) {
         const s = el && el.closest ? el.closest('.goods-slot') : null;
         return s && board.contains(s) ? { el: s, shelf: +s.dataset.shelf, slot: +s.dataset.slot } : null;
     };
-    const clearOver = () => board.querySelectorAll('.goods-slot.drop-over').forEach(e => e.classList.remove('drop-over'));
+    const same = (a, b) => a && b && a.shelf === b.shelf && a.slot === b.slot;
+    const clearMarks = () => board.querySelectorAll('.drop-over, .drag-src').forEach(e => e.classList.remove('drop-over', 'drag-src'));
+    const dropGhost = () => document.querySelectorAll('.goods-ghost').forEach(g => g.remove());
     board.addEventListener('pointerdown', e => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (drag) return;                                  // אצבע שנייה - מתעלמים
+        dropGhost(); clearMarks();
         const s = slotAt(e.clientX, e.clientY);
         if (!s || goodsLocked || goodsTimer <= 0) return;
-        drag = { from: s, x0: e.clientX, y0: e.clientY, moving: false, ghost: null };
+        drag = { id: e.pointerId, from: s, x0: e.clientX, y0: e.clientY, moving: false, ghost: null };
         try { board.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
     });
-    board.addEventListener('pointermove', e => {
-        if (!drag) return;
+    const move = e => {
+        if (!drag || e.pointerId !== drag.id) return;
         if (!drag.moving) {
-            if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 8 || !goodsBoard[drag.from.shelf][drag.from.slot]) return;
+            if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 12 || !goodsBoard[drag.from.shelf][drag.from.slot] || goodsLocked) return;
             drag.moving = true;
             startGoodsTimer();
-            selectedGoodsSlot = null;
-            renderGoodsBoard();
-            const src = board.querySelector('.goods-slot[data-shelf="' + drag.from.shelf + '"][data-slot="' + drag.from.slot + '"]');
-            if (src) src.classList.add('drag-src');
+            if (selectedGoodsSlot) { selectedGoodsSlot = null; board.querySelectorAll('.goods-slot.selected').forEach(el => el.classList.remove('selected')); }
+            drag.from.el.classList.add('drag-src');
             const g = document.createElement('div');
             g.className = 'goods-ghost';
             g.textContent = goodsBoard[drag.from.shelf][drag.from.slot];
@@ -347,31 +351,37 @@ function goodsSwap(a, b) {
             drag.ghost = g;
             sfx.pop();
         }
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         drag.ghost.style.transform = 'translate(' + (e.clientX - 28) + 'px,' + (e.clientY - 34) + 'px) scale(1.25)';
-        clearOver();
+        board.querySelectorAll('.drop-over').forEach(el => el.classList.remove('drop-over'));
         const over = slotAt(e.clientX, e.clientY);
-        if (over && !(over.shelf === drag.from.shelf && over.slot === drag.from.slot)) over.el.classList.add('drop-over');
-    });
+        if (over && !same(over, drag.from)) over.el.classList.add('drop-over');
+    };
     const finish = (e, cancel) => {
-        if (!drag) return;
+        if (!drag || e.pointerId !== drag.id) return;
         const d = drag; drag = null;
-        clearOver();
-        if (d.ghost) d.ghost.remove();
-        if (!d.moving) {                                   // הקשה רגילה
-            if (!cancel) handleGoodsClick(d.from.shelf, d.from.slot);
+        try { board.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        dropGhost(); clearMarks();
+        if (cancel) return;
+        const to = d.moving ? slotAt(e.clientX, e.clientY) : d.from;
+        if (!d.moving || same(to, d.from)) {               // הקשה (גם עם רעידה קטנה של האצבע)
+            handleGoodsClick(d.from.shelf, d.from.slot);
             return;
         }
-        const to = cancel ? null : slotAt(e.clientX, e.clientY);
-        if (to && !(to.shelf === d.from.shelf && to.slot === d.from.slot) && !goodsLocked && goodsTimer > 0) {
+        if (to && !goodsLocked && goodsTimer > 0) {
             goodsSwap(d.from, to);
             sfx.tap();
             checkGoodsMatches();
         }
         renderGoodsBoard();
     };
-    board.addEventListener('pointerup', e => finish(e, false));
-    board.addEventListener('pointercancel', e => finish(e, true));
+    // מאזינים גם על החלון, כדי שגרירה לעולם לא "תיתקע" אם אירוע הלך לאיבוד
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', e => finish(e, false));
+    window.addEventListener('pointercancel', e => finish(e, true));
+    // אייפונים ישנים שמתעלמים מ-touch-action: לא לגלול את הדף בזמן גרירה
+    board.addEventListener('touchmove', e => { if (drag && e.cancelable) e.preventDefault(); }, { passive: false });
+    window.addEventListener('blur', () => { if (drag) { drag = null; dropGhost(); clearMarks(); } });
 })();
 
 // זיהוי שלישיות: נועלים את הלוח, מנגנים אנימציה (הקלאס נשמר ב-render), ואז מרוקנים
