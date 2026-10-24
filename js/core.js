@@ -301,13 +301,87 @@ const firebaseConfig = {
             container.appendChild(li);
         };
 
+        const makeRow = row => {
+            const li = document.createElement('li');
+            li.className = 'leaderboard-item' + (row.rank && row.rank <= 3 ? ' r' + row.rank : '') + (row.id === playerId ? ' me' : '');
+            li.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
+                                                 known: row.rank ? { col: collectionName, score: row.score, rank: row.rank, coins: row.coins } : null });
+
+            const left = document.createElement('span');
+            const strong = document.createElement('strong');
+            strong.textContent = !row.rank ? '#…' : row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : '#' + row.rank;
+            left.appendChild(strong);
+            const av = lbAvatar(row.id === playerId ? currentSkinId() : row.skin);
+            if (av) {
+                const img = document.createElement('img');
+                img.className = 'lb-skin'; img.src = av; img.alt = ''; img.loading = 'lazy';
+                left.appendChild(img);
+            }
+            // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
+            left.appendChild(document.createTextNode(' ' + safeName(row.name) + (row.id === playerId ? ' (אתה)' : '')));
+
+            const right = document.createElement('span');
+            right.style.cssText = 'color: var(--accent-gold); font-weight: bold;';
+            right.textContent = row.score + " נק'";
+
+            li.appendChild(left);
+            li.appendChild(right);
+            return { li, strong };
+        };
+        const note = (text, btnText, onBtn) => {
+            const li = document.createElement('li');
+            li.className = 'lb-search-note';
+            li.textContent = text;
+            if (btnText) {
+                li.appendChild(document.createElement('br'));
+                const b = document.createElement('button');
+                b.className = 'sub-tab-btn'; b.textContent = btnText; b.onclick = onBtn;
+                li.appendChild(b);
+            }
+            return li;
+        };
+
+        // חיפוש מחוץ לטבלה שנטענה: שמות שמתחילים במה שהוקלד (עד 10 תוצאות), והמקום של כל אחד בספירה
+        const serverSearch = (q, shownIds, noteLi) => {
+            noteLi.textContent = 'מחפשים בכל השחקנים...';
+            db.collection(collectionName).where('name', '>=', q).where('name', '<=', q + '\uf8ff').limit(10).get({ source: 'server' })
+                .then(snap => {
+                    if (isStale() || lbSearchQuery().raw !== q) return;
+                    const found = [];
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        if (typeof d.score !== 'number' || shownIds.has(doc.id) || isRudeName(d.name)) return;
+                        found.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score,
+                                     skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic', coins: typeof d.coins === 'number' ? d.coins : null });
+                    });
+                    found.sort((a, b) => b.score - a.score);
+                    if (!found.length) { noteLi.textContent = 'לא נמצאו עוד שחקנים ששמם מתחיל ב-"' + q + '"'; return; }
+                    noteLi.textContent = 'תוצאות מכל השחקנים:';
+                    let after = noteLi;
+                    found.forEach(row => {
+                        const { li, strong } = makeRow(row);
+                        after.after(li); after = li;
+                        countAbove(collectionName, row.score).then(rank => {
+                            if (!rank) return;
+                            row.rank = rank;
+                            strong.textContent = rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : '#' + rank;
+                        }).catch(() => { strong.textContent = '#?'; });
+                    });
+                })
+                .catch(err => {
+                    console.error('חיפוש שחקנים נכשל:', err.code || '', err.message || err);
+                    noteLi.textContent = err.code === 'resource-exhausted' ? 'השרת הגיע למגבלת השימוש היומית. נסו מחר.' : 'החיפוש נכשל. בדקו את החיבור לאינטרנט.';
+                });
+        };
+
         const render = rows => {
             container.innerHTML = '';
             const frag = document.createDocumentFragment();
+            const q = lbSearchQuery();
 
             const myIdx = rows.findIndex(r => r.id === playerId);
             const myBest = parseInt(store.get(LB_LOCAL_KEY[collectionName])) || 0;
-            if (myIdx >= 0 || myBest > 0) {
+            if (!q.norm && (myIdx >= 0 || myBest > 0)) {
                 const me = document.createElement('li');
                 me.className = 'lb-me';
                 const a = document.createElement('span');
@@ -318,35 +392,17 @@ const firebaseConfig = {
                 frag.appendChild(me);
             }
 
-            rows.forEach((row, i) => {
-                const li = document.createElement('li');
-                li.className = 'leaderboard-item' + (row.rank <= 3 ? ' r' + row.rank : '') + (row.id === playerId ? ' me' : '');
-                li.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
-                                                     known: { col: collectionName, score: row.score, rank: row.rank, coins: row.coins } });
-
-                const left = document.createElement('span');
-                const strong = document.createElement('strong');
-                strong.textContent = row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : '#' + row.rank;
-                left.appendChild(strong);
-                const av = lbAvatar(row.id === playerId ? currentSkinId() : row.skin);
-                if (av) {
-                    const img = document.createElement('img');
-                    img.className = 'lb-skin'; img.src = av; img.alt = ''; img.loading = 'lazy';
-                    left.appendChild(img);
-                }
-                // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
-                left.appendChild(document.createTextNode(' ' + safeName(row.name) + (row.id === playerId ? ' (אתה)' : '')));
-
-                const right = document.createElement('span');
-                right.style.cssText = 'color: var(--accent-gold); font-weight: bold;';
-                right.textContent = row.score + " נק'";
-
-                li.appendChild(left);
-                li.appendChild(right);
-                frag.appendChild(li);
-            });
+            const shown = q.norm ? rows.filter(r => lbNormName(safeName(r.name)).includes(q.norm)) : rows;
+            shown.forEach(row => frag.appendChild(makeRow(row).li));
             container.appendChild(frag);
-            if (rows.length === 0) showMsg('אין עדיין שיאים. היו הראשונים!', '#b9a38e', false);
+            if (!q.norm) { if (rows.length === 0) showMsg('אין עדיין שיאים. היו הראשונים!', '#b9a38e', false); return; }
+            // בחיפוש: אם יש עוד שחקנים מעבר למה שנטען, אפשר לחפש גם ביניהם
+            const more = rows.length >= LB_LIMIT;
+            const text = shown.length ? '' : (more ? 'לא נמצא ב-' + LB_LIMIT + ' המובילים' : 'לא נמצא שחקן בשם הזה');
+            if (more) {
+                const n = note(text, '🔎 חיפוש בכל השחקנים', () => serverSearch(q.raw, new Set(shown.map(r => r.id)), n));
+                container.appendChild(n);
+            } else if (text) container.appendChild(note(text));
         };
 
         if (!db) {
@@ -722,6 +778,21 @@ const firebaseConfig = {
     }
     renderAccountUI();
 
+
+	/* --- חיפוש שחקן בטבלה לפי שם --- */
+	// השוואה בלי הבדלי אותיות גדולות/קטנות, ניקוד ורווחים כפולים
+	function lbNormName(s) { return String(s || '').toLowerCase().replace(/[\u0591-\u05C7]/g, '').replace(/\s+/g, ' ').trim(); }
+	function lbSearchQuery() {
+		const el = document.getElementById('lb-search');
+		const raw = el ? el.value.trim().slice(0, 20) : '';
+		return { raw, norm: lbNormName(raw) };
+	}
+	// מסננים את הטבלה שכבר נטענה (בלי קריאות נוספות מהשרת)
+	function lbSearchChanged() {
+		const active = document.querySelector('#screen-leaderboard .sub-tab-btn.active');
+		const type = active ? active.id.replace('sub-btn-', '') : 'shvartz';
+		(LB_TABS[type] || LB_TABS.shvartz)();
+	}
 
 	/* --- החלפה בין טבלאות השיאים בתוך המסך --- */
 	const LB_TABS = {
