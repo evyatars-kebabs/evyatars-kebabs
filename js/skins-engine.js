@@ -1287,7 +1287,7 @@ function skMonaFront(c, sk, st) {
 }
 
 // כתר זהב קטן ומוטה על הראש
-// התינוק של במבה: תלתל אחד על הראש, לחיים שמנמנות, טיטול, שקית חטיפי בוטנים ובמבות שמרחפות סביבו
+// התינוק של במבה: תלתל אחד על הראש, לחיים ורודות, אוברול תינוקות, שקית חטיפי בוטנים ובמבות שמרחפות סביבו
 function skBambaPuff(c, x, y, r, rot) {
     c.save(); c.translate(x, y); c.rotate(rot);
     c.beginPath(); c.moveTo(-r * 1.6, -r * 0.5);
@@ -1308,16 +1308,16 @@ function skBambaBabyExtra(c, sk, st) {
     c.beginPath(); c.moveTo(-2, -126); c.bezierCurveTo(-6, -160, 26, -168, 26, -146); c.bezierCurveTo(26, -132, 8, -132, 10, -144); c.stroke();
     c.strokeStyle = '#d99a52'; c.lineWidth = 2;
     c.beginPath(); c.moveTo(-1, -132); c.bezierCurveTo(-4, -156, 22, -162, 22, -148); c.stroke();
-    // פופיק וקפלי תינוק
-    c.strokeStyle = skA(skShade(tone, -0.3), 0.7); c.lineWidth = 2.5;
-    for (const sd of [-1, 1]) { c.beginPath(); c.arc(sd * 34, 104, 20, sd < 0 ? 0.2 : Math.PI - 1.1, sd < 0 ? 1.1 : Math.PI - 0.2); c.stroke(); }
-    c.beginPath(); c.arc(0, 214, 5, 0, Math.PI * 2); c.stroke();
-    // טיטול
+    // אוברול תינוקות: צווארון עגול, כפתורי לחיצה והדפס במבות קטן
     c.save(); skTorsoPath(c); c.clip();
-    c.beginPath(); c.moveTo(-130, 250); c.quadraticCurveTo(0, 236, 130, 250); c.lineTo(130, 340); c.lineTo(-130, 340); c.closePath();
-    c.fillStyle = '#ffffff'; c.fill(); c.strokeStyle = 'rgba(120,140,170,0.6)'; c.lineWidth = 2.5; c.stroke();
-    for (const sd of [-1, 1]) skR(c, sd * 92 - 12, 252, 24, 16, 4, '#8fc6ff', 'rgba(60,90,140,0.6)', 1.5);
+    for (const [x, y, r] of [[-70, 200, 0.4], [-30, 250, -0.6], [40, 220, 0.9], [-80, 290, -0.2], [20, 300, 0.3], [84, 280, -0.8]])
+        skBambaPuff(c, x, y, 6, r);
     c.restore();
+    for (const sd of [-1, 1]) {
+        c.beginPath(); c.moveTo(0, 74); c.quadraticCurveTo(sd * 34, 104, sd * 58, 76); c.quadraticCurveTo(sd * 40, 58, sd * 10, 60); c.closePath();
+        c.fillStyle = '#ffffff'; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2.2; c.stroke();
+    }
+    for (const y of [116, 146, 176]) skE(c, 0, y, 5, 5, '#8fc6ff', 'rgba(60,90,140,0.7)', 1.5);
     // שקית במבה ביד
     c.save(); c.translate(70, 150); c.rotate(-0.18 + Math.sin(t * 2) * 0.05);
     c.beginPath(); c.moveTo(-30, -44);

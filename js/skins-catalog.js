@@ -138,7 +138,7 @@ const SV_SKINS = [
       beard: { style: 'goatee', color: '#1a1410' }, wings: { type: 'dragon', color: '#2d6a3a' },
       outfit: { base: '#2f7a42', pattern: 'scales', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.45, runes: true }, fx: { type: 'embers', count: 22, speed: 0.45 } },
     { id: 'bambababy', name: 'התינוק של במבה', rarity: 5, tone: '#f8d2ae', hair: { style: 'bald', color: '#a8662a' }, brow: '#c8945a',
-      lips: '#e8707e', eyes: { iris: '#5a3a1e' }, outfit: { base: '#f8d2ae' },
+      lips: '#e8707e', eyes: { iris: '#5a3a1e' }, outfit: { base: '#fff0b0' },
       aura: { color: '#ffd23d', alpha: 0.45, rings: true }, fx: { type: 'sparkles', count: 16, speed: 0.4 }, extra: skBambaBabyExtra },
     { id: 'deni', name: 'דני', rarity: 5, tone: '#e9c09a', hair: { style: 'short', color: '#2e1d12' }, brow: '#1e130b',
       beard: { color: '#24160c' }, lips: '#b8676a', blush: false, eyes: { iris: '#4a3020' },
