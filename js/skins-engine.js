@@ -1301,11 +1301,8 @@ function skBambaPuff(c, x, y, r, rot) {
 }
 function skBambaBabyExtra(c, sk, st) {
     const t = st.t, tone = sk.tone;
-    // לחיים שמנמנות וסומק
-    for (const sd of [-1, 1]) {
-        skE(c, sd * 62, -8, 24, 20, skShade(tone, 0.05));
-        skE(c, sd * 60, -12, 15, 9, 'rgba(255,110,120,0.4)');
-    }
+    // סומק ורוד על הלחיים (בלי כתמי צבע עור שנראים כמו זקן)
+    for (const sd of [-1, 1]) skE(c, sd * 58, -14, 17, 11, 'rgba(255,110,120,0.38)');
     // תלתל אחד על הראש
     c.strokeStyle = '#a8662a'; c.lineWidth = 6; c.lineCap = 'round';
     c.beginPath(); c.moveTo(-2, -126); c.bezierCurveTo(-6, -160, 26, -168, 26, -146); c.bezierCurveTo(26, -132, 8, -132, 10, -144); c.stroke();
