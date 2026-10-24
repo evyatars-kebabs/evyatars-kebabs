@@ -1390,6 +1390,43 @@ function skSmallCrown(c, sk, st) {
     c.restore();
 }
 
+// מק מילר: כובע גרב עם שיער שמציץ מתחתיו, שרשרת זהב דקה ובועות שמרחפות סביבו
+function skMacExtra(c, sk, st) {
+    const t = st.t, hair = sk.hair.color, knit = '#c98a2e';
+    // קווצות שיער מתחת לכובע
+    for (const sd of [-1, 1]) {
+        for (const [x, y, r] of [[84, -98, 0.3], [92, -78, 0.5], [70, -104, 0.1]])
+            skE(c, sd * x, y, 9, 15, hair, SK_OUT, 1.8, sd * r);
+    }
+    // כובע גרב סרוג
+    c.beginPath();
+    c.moveTo(-94, -110); c.bezierCurveTo(-100, -184, 100, -184, 94, -110); c.closePath();
+    const g = c.createLinearGradient(0, -178, 0, -110);
+    g.addColorStop(0, skShade(knit, 0.12)); g.addColorStop(1, skShade(knit, -0.12));
+    c.fillStyle = g; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 3; c.stroke();
+    c.save(); c.clip();
+    c.strokeStyle = skA(skShade(knit, -0.35), 0.5); c.lineWidth = 2;
+    for (let x = -84; x <= 84; x += 12) { c.beginPath(); c.moveTo(x, -178); c.quadraticCurveTo(x * 1.05, -140, x * 1.08, -110); c.stroke(); }
+    c.restore();
+    skR(c, -98, -124, 196, 22, 10, skShade(knit, -0.08), SK_OUT, 2.5);      // שוליים מקופלים
+    c.strokeStyle = skA(skShade(knit, -0.4), 0.55); c.lineWidth = 2;
+    for (let x = -88; x <= 88; x += 8) { c.beginPath(); c.moveTo(x, -121); c.lineTo(x, -105); c.stroke(); }
+    // שרשרת זהב דקה
+    c.strokeStyle = '#8a6410'; c.lineWidth = 4;
+    c.beginPath(); c.moveTo(-34, 60); c.quadraticCurveTo(0, 104, 34, 60); c.stroke();
+    c.strokeStyle = '#f1c40f'; c.lineWidth = 2.4;
+    c.beginPath(); c.moveTo(-34, 60); c.quadraticCurveTo(0, 104, 34, 60); c.stroke();
+    // בועות מים שעולות סביבו
+    for (let i = 0; i < 9; i++) {
+        const ph = (t * 0.25 + i / 9) % 1;
+        const x = Math.sin(i * 2.4) * 132 + Math.sin(t * 1.5 + i) * 8, y = 200 - ph * 380, r = 4 + (i % 3) * 3;
+        c.globalAlpha = Math.min(1, (1 - ph) * 1.6);
+        skE(c, x, y, r, r, 'rgba(160,215,255,0.18)', 'rgba(200,235,255,0.85)', 1.6);
+        skE(c, x - r * 0.35, y - r * 0.35, r * 0.25, r * 0.25, 'rgba(255,255,255,0.9)');
+    }
+    c.globalAlpha = 1;
+}
+
 function skFridaExtra(c, sk, st) {
     const t = st.t, hair = sk.hair.color;
     // שיער אסוף לאחור עם שביל באמצע - המצח והגבות גלויים

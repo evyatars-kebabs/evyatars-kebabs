@@ -213,7 +213,8 @@ const REDEEM_CODES = {
     'WIZMICK6611':       { skin: 'wizmouse' },
     'NIRHANA7':          { skin: 'nir' },
     'IMASHANY1':         { skin: 'shany' },
-    'DANCERELLA12':      { skin: 'ella' }
+    'DANCERELLA12':      { skin: 'ella' },
+    'MACMILLER30':       { skin: 'macmiller' }
 };
 // קודי פיתוח: שמורים רק כטביעת אצבע (SHA-256) של הקוד - הקוד עצמו לא מופיע בקבצים,
 // והבדיקה נעשית במכשיר, בלי קריאה מהשרת (עובד גם כשנגמרה המכסה היומית של Firebase)
