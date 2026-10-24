@@ -1429,6 +1429,66 @@ function skMacExtra(c, sk, st) {
     skP(c, [[6, 150], [13, 155], [12, 160], [6, 156]], '#f1c40f', '#8a6410', 1);
 }
 
+// אווטאר (נאבי): פסים כהים ונקודות זוהרות על הפנים, אוזניים מחודדות, צמה ארוכה עם חרוזים,
+// שרשרת שבטית וחולצת עור קלועה. sk.navi = 'm' / 'f'
+function skNaviExtra(c, sk, st) {
+    const t = st.t, tone = sk.tone, dark = skShade(tone, -0.4), H = SK_HEAD, fem = sk.navi === 'f';
+    // פסים כהים על המצח, הלחיים והאף
+    c.save();
+    c.beginPath(); c.ellipse(H.cx, H.cy, H.rx - 2, H.ry - 2, 0, 0, Math.PI * 2); c.clip();
+    c.strokeStyle = skA(dark, 0.55); c.lineWidth = 4; c.lineCap = 'round';
+    for (const sd of [-1, 1]) {
+        for (const [x0, y0, x1, y1] of [[70, -80, 54, -70], [80, -50, 62, -44], [82, -20, 64, -18], [76, 10, 58, 6]]) {
+            c.beginPath(); c.moveTo(sd * x0, y0); c.quadraticCurveTo(sd * (x0 + x1) / 2, y0 + 6, sd * x1, y1); c.stroke();
+        }
+    }
+    for (const [x0, y0, x1, y1] of [[-14, -118, -6, -98], [14, -118, 6, -98], [0, -126, 0, -104]]) {
+        c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+    }
+    c.restore();
+    // נקודות ביולומינסנטיות שמנצנצות
+    const glow = 0.55 + 0.45 * Math.sin(t * 3);
+    for (const [x, y] of [[-8, -48], [8, -48], [-5, -40], [5, -40], [-48, -96], [-40, -102], [48, -96], [40, -102], [-62, -30], [62, -30], [-58, -22], [58, -22]]) {
+        skE(c, x, y, 2.6, 2.6, 'rgba(190,240,255,' + (0.5 + glow * 0.5) + ')');
+    }
+    // אוזניים מחודדות וגבוהות
+    for (const sd of [-1, 1]) {
+        const flick = Math.sin(t * 1.7 + sd) * 0.05;
+        c.save(); c.translate(sd * 86, -36); c.rotate(sd * (0.25 + flick));
+        c.beginPath(); c.moveTo(0, 22); c.quadraticCurveTo(sd * 24, -6, sd * 12, -72); c.quadraticCurveTo(sd * -6, -30, sd * -6, 6); c.closePath();
+        c.fillStyle = tone; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2.5; c.stroke();
+        c.strokeStyle = skA(dark, 0.6); c.lineWidth = 2;
+        c.beginPath(); c.moveTo(sd * 2, 8); c.quadraticCurveTo(sd * 12, -20, sd * 9, -54); c.stroke();
+        c.restore();
+    }
+    // צמה ארוכה עם חרוזים על הכתף
+    const bx = fem ? -98 : 98, sw = Math.sin(t * 2) * 3;
+    for (let i = 0; i < 9; i++) {
+        const y = -6 + i * 20;
+        skE(c, bx + Math.sin(i * 0.6) * 6 + sw * (i / 9), y, 11 - i * 0.5, 12, i % 2 ? sk.hair.color : skShade(sk.hair.color, 0.2), SK_OUT, 1.8);
+    }
+    for (const [i, col] of [[3, '#f2c14e'], [6, '#e8402a'], [8, '#7fe0ff']]) skE(c, bx + Math.sin(i * 0.6) * 6 + sw * (i / 9), -6 + i * 20 + 10, 5, 4, col, SK_OUT, 1);
+    // חולצת עור קלועה
+    c.save(); skTorsoPath(c); c.clip();
+    c.strokeStyle = skA('#3a2414', 0.55); c.lineWidth = 2;
+    for (let y = 120; y < 340; y += 16) { c.beginPath(); c.moveTo(-124, y); c.quadraticCurveTo(0, y + 8, 124, y); c.stroke(); }
+    for (const x of [-60, 60]) { c.beginPath(); c.moveTo(x, 90); c.lineTo(x * 0.9, 340); c.stroke(); }
+    c.restore();
+    // שרשרת שבטית: חרוזים, שיניים ונוצה
+    const beads = fem ? 15 : 11;
+    for (let i = 0; i < beads; i++) {
+        const a = Math.PI * 0.1 + i * (Math.PI * 0.8 / (beads - 1));
+        const x = Math.cos(a) * (fem ? 58 : 48), y = 60 + Math.sin(a) * (fem ? 44 : 36);
+        if (i % 3 === 1) skP(c, [[x - 4, y], [x + 4, y], [x, y + 14]], '#f4ecd0', SK_OUT, 1.2);
+        else skE(c, x, y, 5, 5, ['#e8402a', '#f2c14e', '#2ea0a0'][i % 3], SK_OUT, 1.2);
+    }
+    if (fem) {                                                          // סרט חרוזים על המצח
+        c.strokeStyle = '#3a2414'; c.lineWidth = 3;
+        c.beginPath(); c.moveTo(-88, -92); c.quadraticCurveTo(0, -128, 88, -92); c.stroke();
+        for (let i = 0; i < 7; i++) { const x = -60 + i * 20, y = -104 - Math.sin(i / 6 * Math.PI) * 14; skE(c, x, y, 4, 4, ['#e8402a', '#f2c14e', '#7fe0ff'][i % 3], SK_OUT, 1); }
+    }
+}
+
 function skFridaExtra(c, sk, st) {
     const t = st.t, hair = sk.hair.color;
     // שיער אסוף לאחור עם שביל באמצע - המצח והגבות גלויים

@@ -214,7 +214,9 @@ const REDEEM_CODES = {
     'NIRHANA7':          { skin: 'nir' },
     'IMASHANY1':         { skin: 'shany' },
     'DANCERELLA12':      { skin: 'ella' },
-    'MACMILLER30':       { skin: 'macmiller' }
+    'MACMILLER30':       { skin: 'macmiller' },
+    // סקין רגיל מהחנות (אגדי) - הקוד נותן אותו בחינם, אבל אפשר גם לקנות אותו
+    'AVATARBL88':        { skin: 'avatar' }
 };
 // קודי פיתוח: שמורים רק כטביעת אצבע (SHA-256) של הקוד - הקוד עצמו לא מופיע בקבצים,
 // והבדיקה נעשית במכשיר, בלי קריאה מהשרת (עובד גם כשנגמרה המכסה היומית של Firebase)

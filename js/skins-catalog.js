@@ -130,6 +130,11 @@ const SV_SKINS = [
     { id: 'spidey', name: 'ספיידי', rarity: 4, tone: '#f0c8a0', lips: '#b8576a', blush: false,
       aura: { color: '#ff3040', alpha: 0.4 }, fx: { type: 'sparkles', count: 12, speed: 0.5 }, drawBack: skSpideyBack },
 
+    { id: 'avatar', name: 'האווטאר', rarity: 4, tone: '#4f8fe0', hair: { style: 'slick', color: '#14110f' }, brow: '#1e3a7a',
+      lips: '#2a4a8a', eyes: { iris: '#f2c14e' }, blush: false, navi: 'm',
+      outfit: { base: '#8a6440', collar: 'none' }, aura: { color: '#7fe0ff', alpha: 0.4 }, fx: { type: 'sparkles', count: 16, speed: 0.35 },
+      extra: skNaviExtra },
+
     /* ---------- מיתי ---------- */
     { id: 'cosmic', name: 'קיסר הגלקסיה', rarity: 5, tone: '#e6c6e8', hair: { style: 'galaxy', color: '#3b2a9c' }, eyes: { glow: '#35e0ff' }, brow: '#cfd8ff', hat: { type: 'cosmiccrown' },
       outfit: { base: '#1a1450', pattern: 'stars', collar: 'high' }, cape: { color: '#2a1a78', stars: true },
@@ -404,6 +409,13 @@ const CHEDDAR_VARIANTS = {
     yuvaldog: { name: 'הכלב של יובל צ\'דר', pal: DOG_CHEDDAR, tone: '#ffd877', brow: '#8a4a04', lips: '#7a3e02',
                 eyes: { iris: '#7a3e02' }, outfit: { base: '#e8961c', collar: 'crew' }, aura: { color: '#ffc83d', alpha: 0.35 } }
 };
+// האווטארית - גרסה נשית של האווטאר (קונים פעם אחת ומקבלים את שתיהן)
+(() => {
+    const base = SV_SKINS.find(x => x.id === 'avatar');
+    SV_SKINS.push(Object.assign({}, base, { id: 'avatar_f', name: 'האווטארית', variantOf: 'avatar', navi: 'f', look: 'f', lashes: true,
+        tone: '#5a98e8', hair: { style: 'long', color: '#14110f' }, lips: '#3a5ab0', outfit: { base: '#9a7048', collar: 'none' } }));
+    SKIN_GROUPS.avatar = [{ id: 'avatar', label: '♂ בן' }, { id: 'avatar_f', label: '♀ בת' }];
+})();
 // מיקי הקוסם - גרסה של מיקי המכשף, נפתחת באותו קוד
 (() => {
     const base = SV_SKINS.find(x => x.id === 'wizmouse');
