@@ -1287,6 +1287,61 @@ function skMonaFront(c, sk, st) {
 }
 
 // כתר זהב קטן ומוטה על הראש
+// התינוק של במבה: תלתל אחד על הראש, לחיים שמנמנות, טיטול, שקית חטיפי בוטנים ובמבות שמרחפות סביבו
+function skBambaPuff(c, x, y, r, rot) {
+    c.save(); c.translate(x, y); c.rotate(rot);
+    c.beginPath(); c.moveTo(-r * 1.6, -r * 0.5);
+    c.bezierCurveTo(-r * 1.2, -r * 1.3, r * 1.2, -r * 0.6, r * 1.6, -r * 0.2);
+    c.bezierCurveTo(r * 1.8, r * 0.6, r * 0.2, r * 1.1, -r * 1.4, r * 0.6);
+    c.closePath();
+    c.fillStyle = '#f2c14e'; c.fill(); c.strokeStyle = '#a8761c'; c.lineWidth = 1.4; c.stroke();
+    c.fillStyle = 'rgba(160,100,20,0.45)';
+    for (const [dx, dy] of [[-0.6, 0], [0.3, -0.2], [0.8, 0.3]]) { c.beginPath(); c.arc(dx * r, dy * r, r * 0.15, 0, Math.PI * 2); c.fill(); }
+    c.restore();
+}
+function skBambaBabyExtra(c, sk, st) {
+    const t = st.t, tone = sk.tone;
+    // לחיים שמנמנות וסומק
+    for (const sd of [-1, 1]) {
+        skE(c, sd * 62, -8, 24, 20, skShade(tone, 0.05));
+        skE(c, sd * 60, -12, 15, 9, 'rgba(255,110,120,0.4)');
+    }
+    // תלתל אחד על הראש
+    c.strokeStyle = '#a8662a'; c.lineWidth = 6; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-2, -126); c.bezierCurveTo(-6, -160, 26, -168, 26, -146); c.bezierCurveTo(26, -132, 8, -132, 10, -144); c.stroke();
+    c.strokeStyle = '#d99a52'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-1, -132); c.bezierCurveTo(-4, -156, 22, -162, 22, -148); c.stroke();
+    // פופיק וקפלי תינוק
+    c.strokeStyle = skA(skShade(tone, -0.3), 0.7); c.lineWidth = 2.5;
+    for (const sd of [-1, 1]) { c.beginPath(); c.arc(sd * 34, 104, 20, sd < 0 ? 0.2 : Math.PI - 1.1, sd < 0 ? 1.1 : Math.PI - 0.2); c.stroke(); }
+    c.beginPath(); c.arc(0, 214, 5, 0, Math.PI * 2); c.stroke();
+    // טיטול
+    c.save(); skTorsoPath(c); c.clip();
+    c.beginPath(); c.moveTo(-130, 250); c.quadraticCurveTo(0, 236, 130, 250); c.lineTo(130, 340); c.lineTo(-130, 340); c.closePath();
+    c.fillStyle = '#ffffff'; c.fill(); c.strokeStyle = 'rgba(120,140,170,0.6)'; c.lineWidth = 2.5; c.stroke();
+    for (const sd of [-1, 1]) skR(c, sd * 92 - 12, 252, 24, 16, 4, '#8fc6ff', 'rgba(60,90,140,0.6)', 1.5);
+    c.restore();
+    // שקית במבה ביד
+    c.save(); c.translate(70, 150); c.rotate(-0.18 + Math.sin(t * 2) * 0.05);
+    c.beginPath(); c.moveTo(-30, -44);
+    for (let i = 0; i <= 6; i++) c.lineTo(-30 + i * 10, -44 + (i % 2 ? -5 : 0));
+    c.lineTo(30, 40); c.quadraticCurveTo(0, 48, -30, 40); c.closePath();
+    const bg = c.createLinearGradient(-30, 0, 30, 0);
+    bg.addColorStop(0, '#b3121f'); bg.addColorStop(0.5, '#e8283a'); bg.addColorStop(1, '#a00f1c');
+    c.fillStyle = bg; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2.5; c.stroke();
+    skE(c, 0, 4, 22, 15, '#ffd23d', '#a8761c', 1.5);
+    skBambaPuff(c, -4, 4, 7, -0.3); skBambaPuff(c, 8, 8, 5, 0.6);
+    c.strokeStyle = 'rgba(255,255,255,0.35)'; c.lineWidth = 3; c.beginPath(); c.moveTo(-22, -34); c.lineTo(-20, 30); c.stroke();
+    skBambaPuff(c, -10, -52, 8, 0.4); skBambaPuff(c, 10, -56, 7, -0.5);                // במבות שיוצאות מהשקית
+    skE(c, -30, 22, 16, 13, tone, SK_OUT, 2.5);                                            // יד שמנמנה
+    c.restore();
+    // במבות שמרחפות סביב
+    for (let i = 0; i < 6; i++) {
+        const a = t * 0.6 + i * (Math.PI * 2 / 6), r = 136 + Math.sin(t * 2 + i) * 8;
+        skBambaPuff(c, Math.cos(a) * r, -40 + Math.sin(a) * r * 0.75, 7, a + t);
+    }
+}
+
 // חולצת פולו כחולה של מאמן כדורסל: צווארון, כפתורים, לוגו לבן וסמל קבוצה עם כדור כתום
 function skCoachPolo(c, sk, st) {
     const navy = '#1d2b5e', trim = '#2c3f80';

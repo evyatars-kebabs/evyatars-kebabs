@@ -215,6 +215,20 @@ const REDEEM_CODES = {
     'IMASHANY1':         { skin: 'shany' },
     'DANCERELLA12':      { skin: 'ella' }
 };
+// קודי פיתוח: שמורים רק כטביעת אצבע (SHA-256) של הקוד - הקוד עצמו לא מופיע בקבצים,
+// והבדיקה נעשית במכשיר, בלי קריאה מהשרת (עובד גם כשנגמרה המכסה היומית של Firebase)
+const DEV_CODE_HASHES = {
+    '130f07b8829bbcb406ba10bd4fa53490dd768c1e15b813f0a9486f948bffccf6': { coins: 100 },
+    '4e992ef896aa5617497a158d9f15c24edd9a4f2a6b056b1ab4dd7a6fe513d015': { coins: 1000 },
+    '4349294fed6a3a5825057d55ccb800ee336727c380564f9a95796ac7a700060b': { coins: 10000 },
+    'fafdaaf4023195a7a1b13aec563884075beacaedab5cd9ef3703504ebcb5b094': { wipe: true }   // מוחק את כל המטבעות והסקינים
+};
+function sha256Hex(text) {
+    if (!window.crypto || !crypto.subtle) return Promise.resolve('');
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+        .then(buf => [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, '0')).join(''))
+        .catch(() => '');
+}
 // קודי פיתוח: כל קוד אפשר להפעיל שוב ושוב, ללא הגבלה
 function applyReward(reward) {
     if (reward.wipe === true) {                       // איפוס מלא של המלאי
@@ -241,13 +255,20 @@ function redeemCode(raw) {
     const code = String(raw || '').trim().toUpperCase();
     if (!code) return { ok: false, msg: 'הכניסו קוד' };
     if (REDEEM_CODES[code]) return applyReward(REDEEM_CODES[code]);
-    if (!db || !/^[A-Z0-9_-]{1,64}$/.test(code)) return { ok: false, msg: 'הקוד לא נמצא' };
-    return db.collection('codes').doc(code).get().then(doc => {
-        if (!doc.exists) return { ok: false, msg: 'הקוד לא נמצא' };
-        return applyReward(doc.data() || {});
-    }).catch(err => {
-        console.error('שגיאה בבדיקת קוד:', err.code || '', err.message || err);
-        return { ok: false, msg: 'לא הצלחנו לבדוק את הקוד. בדקו את החיבור ונסו שוב' };
+    if (!/^[A-Z0-9_-]{1,64}$/.test(code)) return { ok: false, msg: 'הקוד לא נמצא' };
+    return sha256Hex(code).then(h => {
+        if (DEV_CODE_HASHES[h]) return applyReward(DEV_CODE_HASHES[h]);
+        // קודים נוספים שנשמרו ב-Firestore (אוסף codes)
+        if (!db) return { ok: false, msg: 'הקוד לא נמצא' };
+        return db.collection('codes').doc(code).get({ source: 'server' }).then(doc => {
+            if (!doc.exists) return { ok: false, msg: 'הקוד לא נמצא' };
+            return applyReward(doc.data() || {});
+        }).catch(err => {
+            console.error('שגיאה בבדיקת קוד:', err.code || '', err.message || err);
+            return { ok: false, msg: err && err.code === 'resource-exhausted'
+                ? 'השרת הגיע למגבלת השימוש היומית. נסו שוב מחר'
+                : 'לא הצלחנו לבדוק את הקוד. בדקו את החיבור ונסו שוב' };
+        });
     });
 }
 
