@@ -1408,7 +1408,7 @@ function skSmallCrown(c, sk, st) {
     c.restore();
 }
 
-// מק מילר: שרשרת דקה עם תליון זהב קטן על חולצת טי לבנה רחבה
+// מק מילר: שרשרת דקה עם תליון תו מוזיקלי מזהב על חולצת טי לבנה רחבה
 function skMacExtra(c, sk, st) {
     // קפלים בחולצה הלבנה
     c.save(); skTorsoPath(c); c.clip();
@@ -1422,8 +1422,11 @@ function skMacExtra(c, sk, st) {
     c.beginPath(); c.moveTo(-34, 78); c.quadraticCurveTo(-8, 142, 2, 150); c.quadraticCurveTo(12, 142, 34, 78); c.stroke();
     c.strokeStyle = '#f1c40f'; c.lineWidth = 1.4;
     c.beginPath(); c.moveTo(-34, 78); c.quadraticCurveTo(-8, 142, 2, 150); c.quadraticCurveTo(12, 142, 34, 78); c.stroke();
-    skR(c, -2, 150, 8, 18, 2, '#f1c40f', '#8a6410', 1.2);
-    skR(c, -5, 155, 14, 4, 1.5, '#f1c40f', '#8a6410', 1);
+    // תליון תו מוזיקלי מזהב
+    skE(c, -1, 166, 6, 4.5, '#f1c40f', '#8a6410', 1.2, -0.4);
+    skR(c, 3.5, 150, 2.6, 16, 1, '#f1c40f');
+    c.strokeStyle = '#8a6410'; c.lineWidth = 1; c.strokeRect(3.5, 150, 2.6, 16);
+    skP(c, [[6, 150], [13, 155], [12, 160], [6, 156]], '#f1c40f', '#8a6410', 1);
 }
 
 function skFridaExtra(c, sk, st) {
