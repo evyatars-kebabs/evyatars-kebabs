@@ -463,6 +463,16 @@ const CHEDDAR_VARIANTS = {
     SKIN_GROUPS.trump = [{ id: 'trump', label: 'רגיל' }, { id: 'trump_hat', label: '🧢 כובע' }];
 })();
 
+// שלוקלוס בעוד טעמים - קנייה (או הקוד) פותחת את כל הצבעים
+(() => {
+    const base = SV_SKINS.find(x => x.id === 'shluk');
+    SV_SKINS.push(Object.assign({}, base, { id: 'shluk_yellow', name: 'שלוקלוס הצהוב', variantOf: 'shluk', ice: ['#fff27a', '#ffd21a', '#d89a06'],
+        brow: '#7a4a04', lips: '#8a5a06', eyes: { iris: '#4a2e04' }, aura: { color: '#ffe066', alpha: 0.45 } }));
+    SV_SKINS.push(Object.assign({}, base, { id: 'shluk_purple', name: 'שלוקלוס הסגול', variantOf: 'shluk', ice: ['#c88aff', '#8a2be2', '#5a138a'],
+        brow: '#2a0a4a', lips: '#3a0a5a', eyes: { iris: '#1e0a36' }, aura: { color: '#c08aff', alpha: 0.45 } }));
+    SKIN_GROUPS.shluk = [{ id: 'shluk', label: 'אדום' }, { id: 'shluk_yellow', label: 'צהוב' }, { id: 'shluk_purple', label: 'סגול' }];
+})();
+
 // דני בגופיית נבחרת ישראל
 (() => {
     const base = SV_SKINS.find(x => x.id === 'deni');

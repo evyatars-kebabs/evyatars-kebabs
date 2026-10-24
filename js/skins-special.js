@@ -1148,7 +1148,7 @@ function skShlukBack(c, sk, st) {
     c.strokeStyle = out; c.lineWidth = 2; c.beginPath(); c.moveTo(60, -176); c.lineTo(52, -168); c.stroke();
     // תווית
     skR(c, -50, 96, 100, 46, 12, '#ffffff', out, 2.5);
-    c.save(); c.fillStyle = ice[1]; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.save(); c.fillStyle = ice[2]; c.textAlign = 'center'; c.textBaseline = 'middle';
     c.font = 'bold 28px "Secular One", Arial, sans-serif'; c.fillText('שלוק', 0, 120); c.restore();
     // חגורת זהב
     skR(c, -80, 62, 160, 16, 4, '#e8b923', out, 2);
