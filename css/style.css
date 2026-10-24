@@ -595,6 +595,10 @@
             touch-action: none;
         }
         #kvk-canvas { display: block; touch-action: none; }
+
+        /* משחק: שליח הקבבים */
+        #delivery-wrap { position: relative; flex: 1 1 0; min-height: 380px; margin-top: 6px; overflow: hidden; touch-action: none; border-radius: 16px; }
+        #delivery-canvas { display: block; touch-action: none; border-radius: 16px; }
         .kv-pause-btn {
             width: 42px; height: 38px; flex-shrink: 0; border-radius: 999px; border: 1px solid var(--border-color);
             background: rgba(0, 0, 0, 0.38); color: var(--accent-gold); font-size: 1.05rem; cursor: pointer;

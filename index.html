@@ -46,9 +46,15 @@
         <div id="daily-box" class="daily-box"></div>
         <h2 style="font-weight: 400; text-align: center; margin-bottom: 15px; font-size: 1rem; color: #b9a38e;">בחר מסלול משחק</h2>
         
+        <div class="game-card" onclick="startDeliveryGame()">
+            <div class="gc-icon">🛵</div>
+            <div class="gc-body"><h3>שליח הקבבים <span class="new-badge">חדש</span></h3><p>התחמקו ממכוניות ובורות ומסרו לכל לקוח בדיוק את המנה שהזמין!</p></div>
+            <div class="gc-go">◀</div>
+        </div>
+
         <div class="game-card" onclick="startKvkGame()">
             <div class="gc-icon">🧟</div>
-            <div class="gc-body"><h3>קבבים מול קולסקים <span class="new-badge">חדש</span></h3><p>הציבו קבבים על הגריל ועצרו את הקולסקים לפני שהם מגיעים לקבביה!</p></div>
+            <div class="gc-body"><h3>קבבים מול קולסקים</h3><p>הציבו קבבים על הגריל ועצרו את הקולסקים לפני שהם מגיעים לקבביה!</p></div>
             <div class="gc-go">◀</div>
         </div>
 
@@ -109,6 +115,15 @@
             <div class="hud-pill"><small>ניקוד</small><span id="sv-score">0</span></div>
         </div>
         <div id="shvartz-wrap"><canvas id="shvartz-canvas"></canvas></div>
+    </div>
+
+    <div id="screen-delivery" class="screen">
+        <div class="hud">
+            <div class="hud-pill"><small>לבבות</small><span id="dlv-hearts">❤️❤️❤️</span></div>
+            <div id="dlv-combo" class="hud-combo"></div>
+            <div class="hud-pill"><small>ניקוד</small><span id="dlv-score">0</span></div>
+        </div>
+        <div id="delivery-wrap"><canvas id="delivery-canvas"></canvas></div>
     </div>
 
     <div id="screen-ninja" class="screen">
@@ -175,12 +190,17 @@
 		<h2>🏆 טבלת אלופי הקבב</h2>
 
 		<div class="sub-tabs">
+			<button id="sub-btn-delivery" class="sub-tab-btn" onclick="switchLeaderboardTab('delivery')">🛵 שליח</button>
 			<button id="sub-btn-shvartz" class="sub-tab-btn active" onclick="switchLeaderboardTab('shvartz')">🥙 שוורץ</button>
 			<button id="sub-btn-goods" class="sub-tab-btn" onclick="switchLeaderboardTab('goods')">🥫 מדפים</button>
 			<button id="sub-btn-ninja" class="sub-tab-btn" onclick="switchLeaderboardTab('ninja')">🥷 נינג'ה</button>
 			<button id="sub-btn-kvk" class="sub-tab-btn" onclick="switchLeaderboardTab('kvk')">🍢 קולסקים</button>
 		</div>
 
+
+		<div id="sub-screen-delivery" class="leaderboard-sub-screen" style="display: none;">
+			<ul id="delivery-leaderboard-container" class="leaderboard-list"></ul>
+		</div>
 
 		<div id="sub-screen-ninja" class="leaderboard-sub-screen" style="display: none;">
 			<ul id="ninja-leaderboard-container" class="leaderboard-list"></ul>
@@ -240,6 +260,7 @@
 <script src="js/daily-shop.js"></script>
 <script src="js/game-ninja.js"></script>
 <script src="js/game-kvk.js"></script>
+<script src="js/game-delivery.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/sw-register.js"></script>
 </body>

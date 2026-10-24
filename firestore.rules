@@ -6,7 +6,7 @@ service cloud.firestore {
 
     // ---------- טבלאות השיאים ----------
     function isBoard(col) {
-      return col in ['leaderboard', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja', 'leaderboard_kvk'];
+      return col in ['leaderboard', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja', 'leaderboard_kvk', 'leaderboard_delivery'];
     }
     // רשומה בטבלה: שם, ניקוד, זמן, הסקין שנבחר ויתרת המטבעות (לפרופיל)
     function validEntry(d) {
