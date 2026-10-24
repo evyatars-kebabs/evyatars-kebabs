@@ -403,6 +403,23 @@ Object.entries(GENDER_FLIPS).forEach(([id, f]) => {
 ['rolazero', 'albanta'].forEach(id => { const sk = SV_SKINS.find(x => x.id === id); if (sk) sk.variantOf = 'bubacola'; });
 SKIN_GROUPS.bubacola = [{ id: 'bubacola', label: 'קולה' }, { id: 'rolazero', label: 'זירו' }, { id: 'albanta', label: 'פאנטה' }];
 
+// השוטר בשחור-לבן - כמו בסרט ישן. כל הצבעים הופכים לגווני אפור
+function skGrayCopy(v) {
+    if (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)) {
+        const [r, g, b] = skHex(v), y = Math.round(0.299 * r + 0.587 * g + 0.114 * b).toString(16).padStart(2, '0');
+        return '#' + y + y + y;
+    }
+    if (Array.isArray(v)) return v.map(skGrayCopy);
+    if (v && typeof v === 'object') { const o = {}; for (const k in v) o[k] = skGrayCopy(v[k]); return o; }
+    return v;
+}
+(() => {
+    const base = SV_SKINS.find(x => x.id === 'police');
+    const bw = skGrayCopy(base);
+    SV_SKINS.push(Object.assign(bw, { id: 'police_bw', name: 'השוטר בשחור-לבן', rarity: 2, mono: true,
+        aura: { color: '#d8d8d8', alpha: 0.25 }, extra: skOldFilmExtra }));
+})();
+
 // גרסאות צ'דר לסקינים של מהדורה מיוחדת - נפתחות עם אותו קוד
 const CHEDDAR_VARIANTS = {
     vader: { name: 'סטארוורס צ\'דר', pal: VADER_CHEDDAR, tone: '#e8961c', lips: '#c46e08',

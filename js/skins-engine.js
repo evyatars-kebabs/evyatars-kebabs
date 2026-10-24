@@ -1154,10 +1154,14 @@ function skFxFront(c, sk, t) {
 
 /* ---------------- הרכבה: דמות אנושית מלאה ---------------- */
 // st: { x, y (מרכז הפה), hw, ry, chew, t, tx, ty, surprised, mx, my }
+// סקין בשחור-לבן: מסנן אפור על כל הציור (הצבעים עצמם כבר אפורים, למקרה שהדפדפן לא תומך במסנן)
+function skMono(c, sk) { if (sk.mono) c.filter = 'grayscale(1) contrast(1.12)'; }
+
 function skDrawHumanBack(c, sk, st) {
     const t = st.t;
     c.save();
     c.translate(st.x, st.y);
+    skMono(c, sk);
     if (sk.drawBack) { sk.drawBack(c, sk, st); c.restore(); return; }     // סקין מיוחד עם ציור משלו
     skAuraBack(c, sk, t);
     skWings(c, sk, t);
@@ -1179,6 +1183,7 @@ function skDrawHumanBack(c, sk, st) {
 function skMouthBack(c, sk, st) {
     c.save();
     c.translate(st.x, st.y);
+    skMono(c, sk);
     const hw = st.hw, ry = st.ry;
     skE(c, 0, 0, hw, ry, '#3a0a12');
     // שיניים עליונות
@@ -1197,6 +1202,7 @@ function skMouthBack(c, sk, st) {
 function skMouthFront(c, sk, st) {
     c.save();
     c.translate(st.x, st.y);
+    skMono(c, sk);
     const lip = sk.lips || '#c4575f';
     c.strokeStyle = skShade(lip, -0.12); c.lineWidth = 9; c.lineCap = 'round';
     c.beginPath(); c.ellipse(0, 0, st.hw, st.ry, 0, 0, Math.PI); c.stroke();
@@ -1209,6 +1215,7 @@ function skDrawHumanFront(c, sk, st) {
     const t = st.t;
     c.save();
     c.translate(st.x, st.y);
+    skMono(c, sk);
     if (sk.drawBack) { if (sk.drawFront) sk.drawFront(c, sk, st); c.restore(); return; }
     skMustache(c, sk);
     skGlasses(c, sk);
@@ -1405,6 +1412,24 @@ function skSmallCrown(c, sk, st) {
     c.save();
     c.translate(10, -108); c.rotate(0.14); c.scale(0.3, 0.3);        // בסיס הכתר (y≈-100) יושב על השיער
     skHatOver(c, { hat: { type: 'crown' } }, st.t);
+    c.restore();
+}
+
+// סרט ישן: שריטות אנכיות מהבהבות וגרעיניות קלה
+function skOldFilmExtra(c, sk, st) {
+    const f = Math.floor(st.t * 12);                       // משתנה 12 פעמים בשנייה, כמו מקרן
+    const rnd = n => { const x = Math.sin(f * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+    c.save();
+    c.strokeStyle = 'rgba(255,255,255,0.35)'; c.lineWidth = 1.4;
+    for (let i = 0; i < 2; i++) {
+        if (rnd(i) < 0.45) continue;
+        const x = -120 + rnd(i + 5) * 240;
+        c.beginPath(); c.moveTo(x, -200 + rnd(i + 9) * 60); c.lineTo(x + (rnd(i + 3) - 0.5) * 8, 120 + rnd(i + 7) * 120); c.stroke();
+    }
+    for (let i = 0; i < 26; i++) {
+        c.fillStyle = rnd(i + 20) > 0.5 ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.3)';
+        c.fillRect(-140 + rnd(i + 40) * 280, -200 + rnd(i + 70) * 420, 2, 2);
+    }
     c.restore();
 }
 
@@ -1706,6 +1731,7 @@ function skNewtonExtra(c, sk, st) {
 function skDrawHumanFx(c, sk, st) {
     c.save();
     c.translate(st.x, st.y);
+    skMono(c, sk);
     skFxFront(c, sk, st.t);
     c.restore();
 }

@@ -460,8 +460,8 @@ function drawSkinPreview(cv, skin, opts) {
     c.setTransform(k, 0, 0, k, 0, 0);
     c.clearRect(0, 0, W, H);
     const bg = c.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#1a0f0a');
-    bg.addColorStop(1, '#3a2012');
+    bg.addColorStop(0, skin.mono ? '#141414' : '#1a0f0a');      // סקין בשחור-לבן - גם הרקע אפור
+    bg.addColorStop(1, skin.mono ? '#333333' : '#3a2012');
     c.fillStyle = bg;
     c.fillRect(0, 0, W, H);
 
@@ -505,7 +505,7 @@ function drawSkinPreview(cv, skin, opts) {
 const SHOP_CATEGORIES = [
     { id: 'food',    title: 'אוכל ושתייה',        icon: '🍢', ids: ['kebab', 'laffa', 'bubacola', 'rolazero', 'albanta', 'bambababy'] },
     { id: 'hood',    title: 'אנשי השכונה',        icon: '🏘️', ids: ['danny', 'noa', 'yosi', 'roei', 'michal', 'avi', 'yuval', 'shira', 'omer', 'tamar', 'itay', 'dudu', 'maya', 'gili', 'yacht'] },
-    { id: 'jobs',    title: 'מקצועות',            icon: '👷', ids: ['chef', 'waiter', 'farmer', 'beekeeper', 'builder', 'mechanic', 'fire', 'police', 'lifeguard', 'sailor', 'pilot', 'scientist', 'detective', 'dj', 'boxer', 'astronaut'] },
+    { id: 'jobs',    title: 'מקצועות',            icon: '👷', ids: ['chef', 'waiter', 'farmer', 'beekeeper', 'builder', 'mechanic', 'fire', 'police', 'police_bw', 'lifeguard', 'sailor', 'pilot', 'scientist', 'detective', 'dj', 'boxer', 'astronaut'] },
     { id: 'history', title: 'דמויות היסטוריות',   icon: '🏛️', ids: ['pharaoh', 'gladiator', 'samurai', 'knight', 'viking', 'ninja', 'pirate', 'sultan', 'king', 'cowboy', 'hunter', 'gangster', 'einstein', 'newton', 'rhodes', 'frida', 'monalisa'] },
     { id: 'fantasy', title: 'פנטזיה ומיתולוגיה',  icon: '🧙', ids: ['wizard', 'vampire', 'icequeen', 'angel', 'firemage', 'thunder', 'phoenix', 'shadow', 'dragon', 'cosmic', 'voidlord', 'kebabgod', 'avatar'] },
     { id: 'future',  title: 'גיבורים ועתיד',      icon: '🚀', ids: ['hero', 'cyborg', 'hacker'] },
