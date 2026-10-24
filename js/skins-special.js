@@ -830,6 +830,72 @@ function skNirFront(c, sk, st) {
     }
 }
 
+// לברון - גופיית הלייקרס מספר 23, זקן מלא קצר וכתר זהב עם שיפודי קבב קטנים במקום יהלומים
+const LEBRON_LAKERS = { base: '#fdb927', stripes: [[30, '#552583'], [10, '#ffffff']], trim: ['#552583', '#ffffff'],
+    text: 'LAKERS', textCol: '#552583', numFill: '#552583', numStroke: '#ffffff', num: '23' };
+
+// שיפוד קבב קטן: מקל עץ עם נתחי בשר, בצל, עגבנייה ופלפל
+function skMiniKebab(c, x, y, len, rot) {
+    c.save(); c.translate(x, y); c.rotate(rot);
+    c.lineCap = 'round';
+    c.strokeStyle = SK_OUT; c.lineWidth = 5;
+    c.beginPath(); c.moveTo(0, -len / 2 - 4); c.lineTo(0, len / 2 + 4); c.stroke();
+    c.strokeStyle = '#c8955a'; c.lineWidth = 2.6;
+    c.beginPath(); c.moveTo(0, -len / 2 - 4); c.lineTo(0, len / 2 + 4); c.stroke();
+    const pieces = ['#7a3a16', '#f4ead2', '#7a3a16', '#d6291f', '#7a3a16', '#3f9a3a'];
+    const n = Math.max(3, Math.round(len / 8)), step = len / n;
+    for (let i = 0; i < n; i++) {
+        const py = -len / 2 + step * (i + 0.5), col = pieces[i % pieces.length];
+        const meat = col === '#7a3a16';
+        const hw = meat ? 8.5 : 7;
+        skR(c, -hw, py - step * 0.46, hw * 2, step * 0.92, 3, col, SK_OUT, 1.6);
+        if (meat) { c.fillStyle = 'rgba(255,190,120,0.45)'; c.fillRect(-5, py - step * 0.3, 2.5, step * 0.45); }   // ברק של צלייה
+    }
+    c.restore();
+}
+
+function skKebabCrown(c, t) {
+    const out = SK_OUT, gold = '#f1c40f';
+    c.beginPath();
+    c.moveTo(-70, -104); c.lineTo(-76, -170); c.lineTo(-40, -138); c.lineTo(-18, -186); c.lineTo(0, -140); c.lineTo(18, -186); c.lineTo(40, -138); c.lineTo(76, -170); c.lineTo(70, -104); c.closePath();
+    const g = c.createLinearGradient(0, -190, 0, -100);
+    g.addColorStop(0, '#fff0a0'); g.addColorStop(0.5, gold); g.addColorStop(1, '#b8860b');
+    c.fillStyle = g; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke();
+    // נתחי בשר עגולים בקצות השפיצים
+    for (const [x, y] of [[-76, -172], [-18, -188], [18, -188], [76, -172]]) {
+        skE(c, x, y, 6.5, 6, '#7a3a16', out, 1.5);
+        skE(c, x - 2, y - 2, 2.2, 1.6, 'rgba(255,190,120,0.6)');
+    }
+    // שלושה שיפודים קטנים במקום היהלומים
+    skMiniKebab(c, 0, -134, 48, 0);
+    skMiniKebab(c, -40, -128, 36, -0.3);
+    skMiniKebab(c, 40, -128, 36, 0.3);
+    skR(c, -72, -108, 144, 12, 3, '#b8860b', out, 2);
+    // נצנוץ זהב
+    const tw = Math.max(0, Math.sin(t * 2.6));
+    if (tw > 0.55) skStar(c, -52, -150, 3 + (tw - 0.55) * 14, '#ffffff', t * 3);
+}
+
+function skLebronBack(c, sk, st) {
+    skJerseyBody(c, sk, st.t, LEBRON_LAKERS);
+    skHead(c, sk);
+    skJawShadow(c, sk);
+    skEyes(c, sk, st);
+    skBeardBack(c, sk, st.t);
+}
+function skLebronFront(c, sk, st) {
+    // שפם דק שמתחבר לזקן
+    c.lineCap = 'round';
+    for (const [w, col] of [[12, SK_OUT], [8, sk.beard.color]]) {
+        c.strokeStyle = col; c.lineWidth = w;
+        c.beginPath(); c.moveTo(-50, -4); c.quadraticCurveTo(-30, -24, 0, -20); c.quadraticCurveTo(30, -24, 50, -4); c.stroke();
+    }
+    skHairFront(c, sk, st.t);
+    c.save(); c.translate(0, -36); c.scale(0.9, 0.9);
+    skKebabCrown(c, st.t);
+    c.restore();
+}
+
 function skDeniBack(c, sk, st) {
     const t = st.t, J = sk.jersey || DENI_PORTLAND;
     skJerseyBody(c, sk, t, J);

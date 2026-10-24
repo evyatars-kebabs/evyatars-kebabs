@@ -249,6 +249,7 @@ const REDEEM_CODES = {
     'IMASHANY1':         { skin: 'shany' },
     'DANCERELLA12':      { skin: 'ella' },
     'MACMILLER30':       { skin: 'macmiller' },
+    'KINGJAMES23':       { skin: 'lebron' },
     // סקין רגיל מהחנות (אגדי) - הקוד נותן אותו בחינם, אבל אפשר גם לקנות אותו
     'AVATARBL88':        { skin: 'avatar' }
 };
