@@ -503,6 +503,22 @@ const SK_BG = {
         c.beginPath(); c.moveTo(W * 0.06, H); c.quadraticCurveTo(W * 0.14, H * 0.6, W * 0.08, H * 0.3); c.stroke();
         c.fillStyle = '#2a9a3a';
         for (let i = 0; i < 6; i++) { c.save(); c.translate(W * 0.08, H * 0.3); c.rotate(-Math.PI + i * 0.55 + Math.sin(t + i) * 0.05); c.beginPath(); c.ellipse(26, 0, 28, 7, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
+        // דגל ארצות הברית קטן על מוט בחול, מתנופף ברוח
+        const px = W * 0.8, top = H * 0.34, fw = W * 0.17, fh = fw * 0.55;
+        c.strokeStyle = '#d8d8d8'; c.lineWidth = 3; c.beginPath(); c.moveTo(px, H * 0.8); c.lineTo(px, top - 4); c.stroke();
+        c.fillStyle = '#ffd23d'; c.beginPath(); c.arc(px, top - 5, 3, 0, Math.PI * 2); c.fill();
+        const cols = 24, sw = fw / cols;
+        for (let i = 0; i < cols; i++) {
+            const x = px + 1.5 + i * sw, dy = Math.sin(t * 4 - i * 0.45) * (i / cols) * 5;
+            for (let k = 0; k < 13; k++) {
+                c.fillStyle = k % 2 ? '#ffffff' : '#c8102e';
+                c.fillRect(x, top + dy + k * fh / 13, sw + 0.6, fh / 13 + 0.6);
+            }
+            if (i < cols * 0.42) {
+                c.fillStyle = '#1f3a8a'; c.fillRect(x, top + dy, sw + 0.6, fh * 7 / 13);
+                if (i % 2 === 1) { c.fillStyle = '#ffffff'; for (let k = 0; k < 4; k++) c.fillRect(x + sw * 0.3, top + dy + 2 + k * fh * 7 / 13 / 4.2 + (i % 4 ? 2 : 0), 1.3, 1.3); }
+            }
+        }
         c.save(); c.translate(W * 0.88, H * 0.86);                 // שמשייה
         c.strokeStyle = '#ffffff'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, 30); c.lineTo(0, -40); c.stroke();
         for (let i = 0; i < 4; i++) { c.fillStyle = i % 2 ? '#ffffff' : '#e8262a'; c.beginPath(); c.moveTo(0, -40); c.arc(0, -40, 36, Math.PI + i * Math.PI / 4, Math.PI + (i + 1) * Math.PI / 4); c.fill(); }
