@@ -486,6 +486,28 @@ const SK_BG = {
             c.beginPath(); c.moveTo(x + 5, y); c.lineTo(x + 5, y - 20); c.quadraticCurveTo(x + 12, y - 14, x + 13, y - 8); c.stroke();
         }
     },
+    trump(c, W, H, t) {                                         // טראמפ: חוף ים עם שמש, גלים ודקל
+        bgLinear(c, W, H, ['#4ab4ff', '#bfe8ff']);
+        bgGlow(c, W * 0.82, H * 0.13, 70, '255,240,160', 0.6);
+        c.fillStyle = '#ffe680'; c.beginPath(); c.arc(W * 0.82, H * 0.13, 24, 0, Math.PI * 2); c.fill();
+        bgCloud(c, W * 0.2 + Math.sin(t * 0.3) * 8, H * 0.12, 18, 'rgba(255,255,255,0.95)');
+        const sea = H * 0.56;
+        c.fillStyle = '#1e8ad0'; c.fillRect(0, sea, W, H * 0.2);
+        c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 2;
+        for (let r = 0; r < 4; r++) {
+            const y = sea + 8 + r * 12, off = (t * 20 + r * 30) % 40;
+            c.beginPath(); for (let x = -40 + off; x < W + 40; x += 40) { c.moveTo(x, y); c.quadraticCurveTo(x + 10, y - 4, x + 20, y); } c.stroke();
+        }
+        c.fillStyle = '#f2d59a'; c.beginPath(); c.moveTo(0, H); c.lineTo(0, H * 0.76); c.quadraticCurveTo(W / 2, H * 0.72, W, H * 0.76); c.lineTo(W, H); c.fill();
+        c.strokeStyle = '#7a4a1a'; c.lineWidth = 7;                 // דקל
+        c.beginPath(); c.moveTo(W * 0.06, H); c.quadraticCurveTo(W * 0.14, H * 0.6, W * 0.08, H * 0.3); c.stroke();
+        c.fillStyle = '#2a9a3a';
+        for (let i = 0; i < 6; i++) { c.save(); c.translate(W * 0.08, H * 0.3); c.rotate(-Math.PI + i * 0.55 + Math.sin(t + i) * 0.05); c.beginPath(); c.ellipse(26, 0, 28, 7, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
+        c.save(); c.translate(W * 0.88, H * 0.86);                 // שמשייה
+        c.strokeStyle = '#ffffff'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, 30); c.lineTo(0, -40); c.stroke();
+        for (let i = 0; i < 4; i++) { c.fillStyle = i % 2 ? '#ffffff' : '#e8262a'; c.beginPath(); c.moveTo(0, -40); c.arc(0, -40, 36, Math.PI + i * Math.PI / 4, Math.PI + (i + 1) * Math.PI / 4); c.fill(); }
+        c.restore();
+    },
     nir(c, W, H, t) { bgCourt(c, W, H, t, '#0038b8', '#0038b8', '#ffffff'); },
     wizmouse(c, W, H, t) {                                      // מיקי המכשף: טירה בלילה, ירח וקסם מסתחרר
         bgLinear(c, W, H, ['#0a0a30', '#1e1a5a', '#2a1a5a']);

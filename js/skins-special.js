@@ -975,6 +975,78 @@ function skTupacFront(c, sk, st) {
     skPencilExtra(c, sk, st);
 }
 
+// טראמפ - שיזוף כתום, תסרוקת בלונדינית מתנופפת וביקיני שחור (קריקטורה של חוף)
+function skTrumpBack(c, sk, st) {
+    const tone = sk.tone, out = SK_OUT;
+    skAuraBack(c, sk, st.t);
+    skR(c, -28, 26, 56, 56, 12, skShade(tone, -0.12), null);       // צוואר
+    skTorsoPath(c);
+    const g = c.createLinearGradient(-124, 0, 124, 0);
+    g.addColorStop(0, skShade(tone, -0.22)); g.addColorStop(0.5, tone); g.addColorStop(1, skShade(tone, -0.22));
+    c.fillStyle = g; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    c.save(); skTorsoPath(c); c.clip();
+    // כרס עגולה, קפל בטן וטבור
+    c.strokeStyle = skA(skShade(tone, -0.45), 0.6); c.lineWidth = 2.5; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-96, 150); c.quadraticCurveTo(0, 120, 96, 150); c.stroke();
+    c.beginPath(); c.moveTo(-104, 206); c.quadraticCurveTo(0, 240, 104, 206); c.stroke();
+    skE(c, 0, 196, 4, 6, skShade(tone, -0.35));
+    for (const sd of [-1, 1]) { c.beginPath(); c.moveTo(sd * 112, 100); c.quadraticCurveTo(sd * 100, 150, sd * 114, 200); c.stroke(); }
+    // חלק עליון של הביקיני: שני משולשים, שרוך לצוואר ורצועה מסביב לגב
+    const blk = '#141416', shine = 'rgba(255,255,255,0.22)';
+    c.strokeStyle = blk; c.lineWidth = 4;
+    c.beginPath(); c.moveTo(-104, 124); c.lineTo(104, 124); c.stroke();
+    for (const sd of [-1, 1]) {
+        c.beginPath(); c.moveTo(sd * 26, 48); c.lineTo(sd * 44, 92); c.stroke();               // שרוך לצוואר
+        skP(c, [[sd * 12, 128], [sd * 44, 88], [sd * 80, 128]], blk, out, 2.5);
+        c.strokeStyle = shine; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(sd * 36, 116); c.lineTo(sd * 46, 100); c.stroke();
+        c.strokeStyle = blk; c.lineWidth = 4;
+    }
+    skE(c, 0, 127, 5, 4, blk, out, 1.5);                                                        // קשר באמצע
+    // תחתון הביקיני
+    const bot = new Path2D();
+    bot.moveTo(-116, 266); bot.quadraticCurveTo(0, 274, 116, 266);              // נמוך - רק החגורה מציצה מעל הדלפק במשחק
+    bot.lineTo(116, 286); bot.quadraticCurveTo(40, 292, 22, 340); bot.lineTo(-22, 340); bot.quadraticCurveTo(-40, 292, -116, 286);
+    bot.closePath();
+    c.fillStyle = blk; c.fill(bot); c.strokeStyle = out; c.lineWidth = 2.5; c.stroke(bot);
+    for (const sd of [-1, 1]) skE(c, sd * 108, 274, 6, 5, blk, out, 1.5);                     // קשרים בצדדים
+    c.restore();
+    skTorsoPath(c); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    skHead(c, sk);
+    // סימני משקפי שמש (עור בהיר סביב העיניים)
+    for (const sd of [-1, 1]) skE(c, sd * 34, -60, 26, 18, skA(skShade(tone, 0.25), 0.55));
+    skEyes(c, sk, st);
+}
+function skTrumpFront(c, sk, st) {
+    const col = sk.hair.color, hl = skShade(col, 0.3), dk = skShade(col, -0.3), out = SK_OUT;
+    const t = st.t, flap = Math.sin(t * 2.2) * 3;
+    // צדדים מסורקים לאחור
+    for (const sd of [-1, 1]) {
+        skP(c, [[sd * 80, -112], [sd * 96, -84], [sd * 92, -40], [sd * 84, -48], [sd * 80, -84]], col, out, 2.5);
+    }
+    // הבלורית: גל גדול שמסתלסל מימין לשמאל מעל המצח
+    const hair = new Path2D();
+    hair.moveTo(90, -96);
+    hair.bezierCurveTo(98, -142, 50, -170, -6, -168);
+    hair.bezierCurveTo(-60, -168, -100, -146, -108 + flap, -118);
+    hair.bezierCurveTo(-112 + flap, -104, -104 + flap, -94, -92, -96);           // הקצה המסולסל בחזית
+    hair.bezierCurveTo(-80, -114, -50, -124, -20, -118);
+    hair.bezierCurveTo(10, -112, 50, -118, 70, -106);
+    hair.quadraticCurveTo(82, -98, 90, -96);
+    hair.closePath();
+    const g = c.createLinearGradient(0, -170, 0, -96);
+    g.addColorStop(0, hl); g.addColorStop(1, col);
+    c.fillStyle = g; c.fill(hair);
+    c.strokeStyle = out; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(hair);
+    c.save(); c.clip(hair);
+    c.strokeStyle = skA(dk, 0.8); c.lineWidth = 2.2; c.lineCap = 'round';
+    for (let i = 0; i < 5; i++) {                                   // קווי סירוק שמתפזרים קדימה
+        const y0 = -104 - i * 12, y1 = -112 - i * 10;
+        c.beginPath(); c.moveTo(84 - i * 8, y0); c.bezierCurveTo(40, y0 - 22 + i * 2, -30, y1 - 10, -84 + i * 10 + flap, y1 + 6); c.stroke();
+    }
+    c.restore();
+}
+
 function skDeniBack(c, sk, st) {
     const t = st.t, J = sk.jersey || DENI_PORTLAND;
     skJerseyBody(c, sk, t, J);
