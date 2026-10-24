@@ -253,7 +253,8 @@ const REDEEM_CODES = {
     'TUPACONPAPER2':     { skin: 'tupac' },
     'TRUMPBIKINI47':     { skin: 'trump' },
     // סקין רגיל מהחנות (אגדי) - הקוד נותן אותו בחינם, אבל אפשר גם לקנות אותו
-    'AVATARBL88':        { skin: 'avatar' }
+    'AVATARBL88':        { skin: 'avatar' },
+    'SHLUK7':            { skin: 'shluk' }
 };
 // קודי פיתוח: שמורים רק כטביעת אצבע (SHA-256) של הקוד - הקוד עצמו לא מופיע בקבצים,
 // והבדיקה נעשית במכשיר, בלי קריאה מהשרת (עובד גם כשנגמרה המכסה היומית של Firebase)

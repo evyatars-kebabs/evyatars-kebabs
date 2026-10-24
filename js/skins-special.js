@@ -1063,6 +1063,116 @@ function skTrumpFront(c, sk, st) {
         c.beginPath(); c.moveTo(84 - i * 8, y0); c.bezierCurveTo(40, y0 - 22 + i * 2, -30, y1 - 10, -84 + i * 10 + flap, y1 + 6); c.stroke();
     }
     c.restore();
+    // כובע בייסבול אדום עם הכיתוב הלבן
+    const red = '#c8102e', rdk = '#8a0a1e';
+    const dome = new Path2D();
+    dome.moveTo(-90, -104);
+    dome.bezierCurveTo(-96, -160, -50, -184, 0, -184);
+    dome.bezierCurveTo(50, -184, 96, -160, 90, -104);
+    dome.closePath();
+    const dg = c.createLinearGradient(0, -184, 0, -100);
+    dg.addColorStop(0, '#e2283e'); dg.addColorStop(1, red);
+    c.fillStyle = dg; c.fill(dome); c.strokeStyle = out; c.lineWidth = 3; c.stroke(dome);
+    c.strokeStyle = rdk; c.lineWidth = 2;                                    // תפרים
+    for (const x of [-34, 34]) { c.beginPath(); c.moveTo(x * 0.3, -183); c.quadraticCurveTo(x, -150, x * 1.15, -106); c.stroke(); }
+    skE(c, 0, -183, 7, 4, red, out, 2);                                       // כפתור עליון
+    // מצחייה קדמית
+    c.beginPath(); c.moveTo(-92, -104); c.quadraticCurveTo(0, -116, 92, -104); c.quadraticCurveTo(70, -80, 0, -78); c.quadraticCurveTo(-70, -80, -92, -104); c.closePath();
+    c.fillStyle = rdk; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-70, -96); c.quadraticCurveTo(0, -104, 70, -96); c.stroke();
+    c.save();
+    c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = 'bold 15px "Arial Black", Arial, sans-serif';
+    c.fillText('MAKE AMERICA', 0, -142);
+    c.fillText('GREAT AGAIN', 0, -124);
+    c.restore();
+}
+
+// שלוקלוס - שלוק (ארטיק קרח בשקית פלסטיק ארוכה) גיבור יווני: זר דפנה מזהב, גלימה, ושרירים
+function skShlukBack(c, sk, st) {
+    const t = st.t, out = SK_OUT, ice = sk.ice || ['#ff6a86', '#e8143c', '#a80a2a'];
+    skAuraBack(c, sk, t);
+    // גלימה כחולה מאחור
+    const sw = Math.sin(t * 1.8) * 8;
+    c.beginPath(); c.moveTo(-70, -60); c.quadraticCurveTo(-150 - sw, 140, -130 - sw, 340); c.lineTo(130 + sw, 340); c.quadraticCurveTo(150 + sw, 140, 70, -60); c.closePath();
+    c.fillStyle = '#1f4fa8'; c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+    c.strokeStyle = '#ffd23d'; c.lineWidth = 4; c.beginPath(); c.moveTo(-128 - sw, 330); c.lineTo(128 + sw, 330); c.stroke();
+    // זרועות שריריות בתנוחת "כוח"
+    const arm = sd => {
+        c.save(); c.scale(sd, 1);
+        const a = new Path2D();
+        a.moveTo(70, 40); a.quadraticCurveTo(110, 20, 132, 46);                 // כתף
+        a.quadraticCurveTo(150, 70, 140, 96);                                   // מרפק
+        a.quadraticCurveTo(160, 40, 154, -6);                                   // אמה למעלה
+        a.lineTo(120, -6);
+        a.quadraticCurveTo(122, 50, 116, 72);
+        a.quadraticCurveTo(96, 84, 70, 86);
+        a.closePath();
+        const g = c.createLinearGradient(70, 0, 150, 0); g.addColorStop(0, ice[1]); g.addColorStop(1, ice[0]);
+        c.fillStyle = g; c.fill(a); c.strokeStyle = out; c.lineWidth = 3; c.stroke(a);
+        c.strokeStyle = skA(ice[2], 0.7); c.lineWidth = 2.5;                    // שריר הזרוע
+        c.beginPath(); c.moveTo(96, 44); c.quadraticCurveTo(118, 22, 130, 52); c.stroke();
+        skE(c, 137, -14, 17, 15, ice[0], out, 3);                                // אגרוף
+        c.strokeStyle = skA(ice[2], 0.7); c.lineWidth = 2;
+        c.beginPath(); c.moveTo(126, -20); c.lineTo(148, -20); c.moveTo(126, -11); c.lineTo(148, -11); c.stroke();
+        c.restore();
+    };
+    arm(-1); arm(1);
+    // השקית: פסי הלחמה בצדדים, קרח צבעוני ושוליים שקופים
+    const tube = new Path2D();
+    tube.moveTo(-80, -176); tube.lineTo(80, -176); tube.lineTo(80, 340); tube.lineTo(-80, 340); tube.closePath();
+    c.fillStyle = 'rgba(235,245,255,0.75)'; c.fill(tube);
+    const ig = c.createLinearGradient(-70, 0, 70, 0);
+    ig.addColorStop(0, ice[2]); ig.addColorStop(0.3, ice[1]); ig.addColorStop(0.55, ice[0]); ig.addColorStop(1, ice[2]);
+    skR(c, -66, -162, 132, 520, 20, ig, null);
+    c.save(); c.beginPath(); c.roundRect(-66, -162, 132, 520, 20); c.clip();
+    for (let i = 0; i < 60; i++) {                                               // גבישי קרח
+        const x = ((i * 53) % 128) - 64, y = ((i * 71) % 480) - 160;
+        c.fillStyle = i % 3 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.5)';
+        c.fillRect(x, y, 2 + (i % 2), 2);
+    }
+    c.fillStyle = 'rgba(255,255,255,0.28)'; c.fillRect(-50, -150, 12, 480);       // ברק
+    c.restore();
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke(tube);
+    c.strokeStyle = 'rgba(120,140,170,0.6)'; c.lineWidth = 1.5;                  // חריצים בפסי ההלחמה
+    for (const sd of [-1, 1]) for (let y = -170; y < 340; y += 9) { c.beginPath(); c.moveTo(sd * 80, y); c.lineTo(sd * 70, y + 3); c.stroke(); }
+    // הלחמה עליונה משוננת עם חריץ לקריעה
+    c.beginPath(); c.moveTo(-80, -176);
+    for (let x = -80; x <= 80; x += 10) c.lineTo(x, x % 20 === 0 ? -200 : -192);
+    c.lineTo(80, -176); c.closePath();
+    c.fillStyle = 'rgba(235,245,255,0.9)'; c.fill(); c.strokeStyle = out; c.lineWidth = 2.5; c.stroke();
+    c.strokeStyle = 'rgba(120,140,170,0.6)'; c.lineWidth = 1.5;
+    for (let x = -74; x < 80; x += 8) { c.beginPath(); c.moveTo(x, -190); c.lineTo(x, -178); c.stroke(); }
+    c.strokeStyle = out; c.lineWidth = 2; c.beginPath(); c.moveTo(60, -176); c.lineTo(52, -168); c.stroke();
+    // תווית
+    skR(c, -50, 96, 100, 46, 12, '#ffffff', out, 2.5);
+    c.save(); c.fillStyle = ice[1]; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = 'bold 28px "Secular One", Arial, sans-serif'; c.fillText('שלוק', 0, 120); c.restore();
+    // חגורת זהב
+    skR(c, -80, 62, 160, 16, 4, '#e8b923', out, 2);
+    skE(c, 0, 70, 13, 11, '#ffd54f', out, 2); skStar(c, 0, 70, 6, '#fff3b0', 0);
+    skEyes(c, sk, st);
+}
+function skShlukFront(c, sk, st) {
+    // זר דפנה מזהב סביב החלק העליון
+    const leaf = (x, y, rot) => {
+        c.save(); c.translate(x, y); c.rotate(rot);
+        const g = c.createLinearGradient(-10, 0, 10, 0); g.addColorStop(0, '#fff0a0'); g.addColorStop(1, '#c8960a');
+        c.fillStyle = g; c.beginPath(); c.ellipse(0, 0, 13, 5.5, 0, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = '#6a4a04'; c.lineWidth = 1.4; c.stroke();
+        c.beginPath(); c.moveTo(-11, 0); c.lineTo(11, 0); c.stroke();
+        c.restore();
+    };
+    c.strokeStyle = '#a8760a'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(-82, -128); c.quadraticCurveTo(0, -116, 82, -128); c.stroke();
+    for (const sd of [-1, 1]) {
+        for (let i = 0; i < 6; i++) {
+            const x = sd * (84 - i * 13), y = -128 + i * 2.2;
+            leaf(x, y - 7, sd * (-0.6 + i * 0.05)); leaf(x - sd * 4, y + 7, sd * (0.6 - i * 0.05));
+        }
+    }
+    skE(c, 0, -116, 7, 6, '#ffd54f', '#6a4a04', 1.5);
 }
 
 function skDeniBack(c, sk, st) {

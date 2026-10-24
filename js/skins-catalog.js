@@ -120,6 +120,8 @@ const SV_SKINS = [
       outfit: { base: '#5a1410', trim: '#ff8a1a', collar: 'high' }, aura: { color: '#ff6a1a', alpha: 0.5 }, fx: { type: 'embers', count: 20, speed: 0.5 } },
     { id: 'kebab', name: 'הקבב האגדי', rarity: 4, brow: '#2a1206', lips: '#6a2a0c', eyes: { iris: '#3a1a06' },
       aura: { color: '#ff8a1a', alpha: 0.5 }, fx: { type: 'embers', count: 18, speed: 0.45 }, drawBack: skKebabBack },
+    { id: 'shluk', name: 'שלוקלוס', rarity: 4, brow: '#5a0a1a', lips: '#7a0a22', eyes: { iris: '#3a0a14' }, blush: false,
+      aura: { color: '#7fd8ff', alpha: 0.45 }, fx: { type: 'sparkles', count: 16, speed: 0.4 }, drawBack: skShlukBack, drawFront: skShlukFront },
     { id: 'laffa', name: 'שווארמה בלאפה', rarity: 4, brow: '#5a3a1a', lips: '#8a4a1a', eyes: { iris: '#3a2410' },
       aura: { color: '#ffb02e', alpha: 0.45 }, fx: { type: 'sparkles', count: 14 }, drawBack: skLaffaBack },
     { id: 'hedgehog', name: 'סוניק', rarity: 4, brow: '#123c94', lips: '#8a4a3a', eyes: { iris: '#1f9a4a' }, blush: false,

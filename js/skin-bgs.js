@@ -249,6 +249,23 @@ const SK_BG = {
             for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3 + t; c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * 5, y + Math.sin(a) * 5); c.stroke(); }
         }, 10);
     },
+    shluk(c, W, H, t) {                                         // שלוקלוס: הר האולימפוס הקפוא - עמודים יווניים ופתיתי שלג
+        bgLinear(c, W, H, ['#6ac8ff', '#c8eeff', '#eef9ff']);
+        bgRays(c, W / 2, H * 0.36, t, 16, '255,255,255', 0.35, W, 0.08);
+        bgCloud(c, W * 0.5 + Math.sin(t * 0.3) * 10, H * 0.9, 60, 'rgba(255,255,255,0.95)');
+        for (const sx of [0.08, 0.92]) {                            // עמודים יווניים
+            const x = W * sx;
+            c.fillStyle = '#f4f1ea'; c.fillRect(x - 16, H * 0.2, 32, H * 0.7);
+            c.strokeStyle = 'rgba(150,160,180,0.7)'; c.lineWidth = 1.5;
+            for (let k = -10; k <= 10; k += 7) { c.beginPath(); c.moveTo(x + k, H * 0.22); c.lineTo(x + k, H * 0.88); c.stroke(); }
+            c.fillStyle = '#e4e0d4'; c.fillRect(x - 24, H * 0.17, 48, 14); c.fillRect(x - 24, H * 0.88, 48, 14);
+            c.strokeStyle = 'rgba(120,130,150,0.8)'; c.strokeRect(x - 24, H * 0.17, 48, 14); c.strokeRect(x - 24, H * 0.88, 48, 14);
+        }
+        bgFallers(c, W, H, t, 22, 331, (x, y, i) => {
+            c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = 1.3;
+            for (let k = 0; k < 3; k++) { const a = k * Math.PI / 3 + t * 0.5 + i; c.beginPath(); c.moveTo(x - Math.cos(a) * 4, y - Math.sin(a) * 4); c.lineTo(x + Math.cos(a) * 4, y + Math.sin(a) * 4); c.stroke(); }
+        }, 16);
+    },
     thunder(c, W, H, t) {                                       // אל הרעם: עננים כבדים וברקים מהבהבים
         bgLinear(c, W, H, ['#0a0e22', '#1e2448', '#2a2e4a']);
         const flash = (t % 3.2) < 0.12 ? 0.35 : 0;
