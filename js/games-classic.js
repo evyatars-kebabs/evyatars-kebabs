@@ -193,8 +193,12 @@ let goodsScore = 0;
 let goodsTimer = 30;
 let goodsInterval = null;
 let goodsStarted = false;
-let goodsLocked = false;        // נעילת קלט בזמן אנימציית היעלמות
-let goodsVanishing = new Set(); // אינדקסים של מדפים שמוסרים כרגע
+let goodsLocked = false;        // נעילת קלט בזמן טעינת לוח חדש (אחרי שכל המדפים התפנו)
+let goodsVanishing = new Set(); // אינדקסים של מדפים שמוסרים כרגע (רק הם נעולים - שאר הלוח ממשיך לעבוד)
+const goodsVanishAt = {};        // מתי התחילה ההיעלמות של כל מדף (כדי שציור מחדש לא יתחיל את האנימציה מההתחלה)
+let goodsHolding = false;       // אצבע על הלוח - לא מציירים מחדש מתחתיה (באייפון זה עוצר את האירועים)
+let goodsPendingRender = false;
+function goodsRenderSafe() { if (goodsHolding) goodsPendingRender = true; else { goodsPendingRender = false; renderGoodsBoard(); } }
 
 const goodsProducts = ['🥩', '🧅', '🍅', '🌶️', '🥫', '🧄'];
 
@@ -269,7 +273,8 @@ function renderGoodsBoard() {
     goodsBoard.forEach((shelf, shelfIdx) => {
         const shelfDiv = document.createElement('div');
         shelfDiv.className = 'goods-shelf';
-        if (goodsVanishing.has(shelfIdx)) shelfDiv.classList.add('match-vanish');
+        const vanish = goodsVanishing.has(shelfIdx);
+        if (vanish) shelfDiv.classList.add('match-vanish');
 
         shelf.forEach((item, slotIdx) => {
             const slotDiv = document.createElement('div');
@@ -280,6 +285,7 @@ function renderGoodsBoard() {
             slotDiv.textContent = item || '';
             slotDiv.dataset.shelf = shelfIdx;
             slotDiv.dataset.slot = slotIdx;
+            if (vanish) slotDiv.style.animationDelay = -(performance.now() - goodsVanishAt[shelfIdx]) + 'ms';
             shelfDiv.appendChild(slotDiv);
         });
 
@@ -289,7 +295,7 @@ function renderGoodsBoard() {
 
 // לחיצה: בחירה / ביטול / החלפה בין כל שני תאים
 function handleGoodsClick(shelfIdx, slotIdx) {
-    if (goodsLocked || goodsTimer <= 0) return;
+    if (goodsLocked || goodsTimer <= 0 || goodsVanishing.has(shelfIdx)) return;
     startGoodsTimer();
 
     const clickedItem = goodsBoard[shelfIdx][slotIdx];
@@ -298,13 +304,20 @@ function handleGoodsClick(shelfIdx, slotIdx) {
         if (clickedItem) selectedGoodsSlot = { shelf: shelfIdx, slot: slotIdx };
     } else if (selectedGoodsSlot.shelf === shelfIdx && selectedGoodsSlot.slot === slotIdx) {
         selectedGoodsSlot = null;
-    } else {
+    } else if (!goodsVanishing.has(selectedGoodsSlot.shelf)) {
         goodsSwap(selectedGoodsSlot, { shelf: shelfIdx, slot: slotIdx });
         selectedGoodsSlot = null;
         checkGoodsMatches();
+    } else {
+        selectedGoodsSlot = null;
     }
 
     renderGoodsBoard();
+}
+// בחירה מיידית ברגע הנגיעה - רק מחליפים קלאס, בלי לצייר את הלוח מחדש מתחת לאצבע
+function goodsMarkSelected() {
+    document.querySelectorAll('#goods-board .goods-slot').forEach(el => el.classList.toggle('selected',
+        !!selectedGoodsSlot && +el.dataset.shelf === selectedGoodsSlot.shelf && +el.dataset.slot === selectedGoodsSlot.slot));
 }
 
 function goodsSwap(a, b) {
@@ -332,14 +345,22 @@ function goodsSwap(a, b) {
         if (drag) return;                                  // אצבע שנייה - מתעלמים
         dropGhost(); clearMarks();
         const s = slotAt(e.clientX, e.clientY);
-        if (!s || goodsLocked || goodsTimer <= 0) return;
-        drag = { id: e.pointerId, from: s, x0: e.clientX, y0: e.clientY, moving: false, ghost: null };
+        if (!s || goodsLocked || goodsTimer <= 0 || goodsVanishing.has(s.shelf)) return;
+        drag = { id: e.pointerId, from: s, x0: e.clientX, y0: e.clientY, moving: false, ghost: null, picked: false };
+        goodsHolding = true;
+        // נגיעה ראשונה במוצר בוחרת אותו מיד (בלי לחכות שהאצבע תעלה)
+        if (!selectedGoodsSlot && goodsBoard[s.shelf][s.slot]) {
+            startGoodsTimer();
+            selectedGoodsSlot = { shelf: s.shelf, slot: s.slot };
+            goodsMarkSelected();
+            drag.picked = true;
+        }
         try { board.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
     });
     const move = e => {
         if (!drag || e.pointerId !== drag.id) return;
         if (!drag.moving) {
-            if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 12 || !goodsBoard[drag.from.shelf][drag.from.slot] || goodsLocked) return;
+            if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 12 || !goodsBoard[drag.from.shelf][drag.from.slot] || goodsLocked || goodsVanishing.has(drag.from.shelf)) return;
             drag.moving = true;
             startGoodsTimer();
             if (selectedGoodsSlot) { selectedGoodsSlot = null; board.querySelectorAll('.goods-slot.selected').forEach(el => el.classList.remove('selected')); }
@@ -360,15 +381,16 @@ function goodsSwap(a, b) {
     const finish = (e, cancel) => {
         if (!drag || e.pointerId !== drag.id) return;
         const d = drag; drag = null;
+        goodsHolding = false;
         try { board.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
         dropGhost(); clearMarks();
-        if (cancel) return;
+        if (cancel || (d.picked && !d.moving)) { if (goodsPendingRender) goodsRenderSafe(); return; }
         const to = d.moving ? slotAt(e.clientX, e.clientY) : d.from;
         if (!d.moving || same(to, d.from)) {               // הקשה (גם עם רעידה קטנה של האצבע)
             handleGoodsClick(d.from.shelf, d.from.slot);
             return;
         }
-        if (to && !goodsLocked && goodsTimer > 0) {
+        if (to && !goodsLocked && goodsTimer > 0 && !goodsVanishing.has(to.shelf) && !goodsVanishing.has(d.from.shelf)) {
             goodsSwap(d.from, to);
             sfx.tap();
             checkGoodsMatches();
@@ -381,19 +403,21 @@ function goodsSwap(a, b) {
     window.addEventListener('pointercancel', e => finish(e, true));
     // אייפונים ישנים שמתעלמים מ-touch-action: לא לגלול את הדף בזמן גרירה
     board.addEventListener('touchmove', e => { if (drag && e.cancelable) e.preventDefault(); }, { passive: false });
-    window.addEventListener('blur', () => { if (drag) { drag = null; dropGhost(); clearMarks(); } });
+    window.addEventListener('blur', () => { if (drag) { drag = null; goodsHolding = false; dropGhost(); clearMarks(); goodsRenderSafe(); } });
 })();
 
 // זיהוי שלישיות: נועלים את הלוח, מנגנים אנימציה (הקלאס נשמר ב-render), ואז מרוקנים
 function checkGoodsMatches() {
     const matched = [];
     goodsBoard.forEach((shelf, idx) => {
-        if (isGoodsShelfMatch(shelf)) matched.push(idx);
+        if (isGoodsShelfMatch(shelf) && !goodsVanishing.has(idx)) matched.push(idx);
     });
     if (matched.length === 0) return;
 
-    goodsLocked = true;
-    goodsVanishing = new Set(matched);
+    // רק המדפים שנעלמים נעולים - אפשר להמשיך לסדר את שאר הלוח בזמן האנימציה
+    const now = performance.now();
+    matched.forEach(idx => { goodsVanishing.add(idx); goodsVanishAt[idx] = now; });
+    if (selectedGoodsSlot && goodsVanishing.has(selectedGoodsSlot.shelf)) selectedGoodsSlot = null;
     sfx.match(matched.length);
 
     goodsScore += matched.length * 3;
@@ -405,20 +429,18 @@ function checkGoodsMatches() {
     goodsSetTimeout(() => { msgEl.textContent = ''; }, 1200);
 
     goodsSetTimeout(() => {
-        matched.forEach(idx => { goodsBoard[idx] = [null, null, null]; });
-        goodsVanishing = new Set();
-        renderGoodsBoard();
+        matched.forEach(idx => { goodsBoard[idx] = [null, null, null]; goodsVanishing.delete(idx); });
+        goodsRenderSafe();
 
         const isBoardEmpty = goodsBoard.every(shelf => shelf.every(item => item === null));
         if (isBoardEmpty) {
             msgEl.style.color = '#e3b341';
             msgEl.textContent = '🎉 פיניתם את כל המדפים! טוען מוצרים חדשים...';
+            goodsLocked = true;
             goodsSetTimeout(() => {
                 initGoodsBoard();   // גם משחרר את הנעילה
                 msgEl.textContent = '';
             }, 1000);
-        } else {
-            goodsLocked = false;
         }
     }, 400);   // תואם לאנימציה ב-CSS
 }
