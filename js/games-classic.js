@@ -278,7 +278,8 @@ function renderGoodsBoard() {
                 slotDiv.classList.add('selected');
             }
             slotDiv.textContent = item || '';
-            slotDiv.onclick = () => handleGoodsClick(shelfIdx, slotIdx);
+            slotDiv.dataset.shelf = shelfIdx;
+            slotDiv.dataset.slot = slotIdx;
             shelfDiv.appendChild(slotDiv);
         });
 
@@ -298,19 +299,80 @@ function handleGoodsClick(shelfIdx, slotIdx) {
     } else if (selectedGoodsSlot.shelf === shelfIdx && selectedGoodsSlot.slot === slotIdx) {
         selectedGoodsSlot = null;
     } else {
-        const fromShelf = selectedGoodsSlot.shelf;
-        const fromSlot = selectedGoodsSlot.slot;
-
-        const temp = goodsBoard[shelfIdx][slotIdx];
-        goodsBoard[shelfIdx][slotIdx] = goodsBoard[fromShelf][fromSlot];
-        goodsBoard[fromShelf][fromSlot] = temp;
-
+        goodsSwap(selectedGoodsSlot, { shelf: shelfIdx, slot: slotIdx });
         selectedGoodsSlot = null;
         checkGoodsMatches();
     }
 
     renderGoodsBoard();
 }
+
+function goodsSwap(a, b) {
+    const temp = goodsBoard[b.shelf][b.slot];
+    goodsBoard[b.shelf][b.slot] = goodsBoard[a.shelf][a.slot];
+    goodsBoard[a.shelf][a.slot] = temp;
+}
+
+// גרירה: מחזיקים מוצר וגוררים אותו לתא אחר כדי להחליף ביניהם. הקשה רגילה (בלי תזוזה) עובדת כמו קודם
+(function bindGoodsDrag() {
+    const board = document.getElementById('goods-board');
+    if (!board) return;
+    let drag = null;
+    const slotAt = (x, y) => {
+        const el = document.elementFromPoint(x, y);
+        const s = el && el.closest ? el.closest('.goods-slot') : null;
+        return s && board.contains(s) ? { el: s, shelf: +s.dataset.shelf, slot: +s.dataset.slot } : null;
+    };
+    const clearOver = () => board.querySelectorAll('.goods-slot.drop-over').forEach(e => e.classList.remove('drop-over'));
+    board.addEventListener('pointerdown', e => {
+        const s = slotAt(e.clientX, e.clientY);
+        if (!s || goodsLocked || goodsTimer <= 0) return;
+        drag = { from: s, x0: e.clientX, y0: e.clientY, moving: false, ghost: null };
+        try { board.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    });
+    board.addEventListener('pointermove', e => {
+        if (!drag) return;
+        if (!drag.moving) {
+            if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 8 || !goodsBoard[drag.from.shelf][drag.from.slot]) return;
+            drag.moving = true;
+            startGoodsTimer();
+            selectedGoodsSlot = null;
+            renderGoodsBoard();
+            const src = board.querySelector('.goods-slot[data-shelf="' + drag.from.shelf + '"][data-slot="' + drag.from.slot + '"]');
+            if (src) src.classList.add('drag-src');
+            const g = document.createElement('div');
+            g.className = 'goods-ghost';
+            g.textContent = goodsBoard[drag.from.shelf][drag.from.slot];
+            document.body.appendChild(g);
+            drag.ghost = g;
+            sfx.pop();
+        }
+        e.preventDefault();
+        drag.ghost.style.transform = 'translate(' + (e.clientX - 28) + 'px,' + (e.clientY - 34) + 'px) scale(1.25)';
+        clearOver();
+        const over = slotAt(e.clientX, e.clientY);
+        if (over && !(over.shelf === drag.from.shelf && over.slot === drag.from.slot)) over.el.classList.add('drop-over');
+    });
+    const finish = (e, cancel) => {
+        if (!drag) return;
+        const d = drag; drag = null;
+        clearOver();
+        if (d.ghost) d.ghost.remove();
+        if (!d.moving) {                                   // הקשה רגילה
+            if (!cancel) handleGoodsClick(d.from.shelf, d.from.slot);
+            return;
+        }
+        const to = cancel ? null : slotAt(e.clientX, e.clientY);
+        if (to && !(to.shelf === d.from.shelf && to.slot === d.from.slot) && !goodsLocked && goodsTimer > 0) {
+            goodsSwap(d.from, to);
+            sfx.tap();
+            checkGoodsMatches();
+        }
+        renderGoodsBoard();
+    };
+    board.addEventListener('pointerup', e => finish(e, false));
+    board.addEventListener('pointercancel', e => finish(e, true));
+})();
 
 // זיהוי שלישיות: נועלים את הלוח, מנגנים אנימציה (הקלאס נשמר ב-render), ואז מרוקנים
 function checkGoodsMatches() {
