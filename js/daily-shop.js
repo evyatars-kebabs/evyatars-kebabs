@@ -457,6 +457,8 @@ function getPreview(sk) {
 function skPreviewBg(c, W, H, skin, t) {
     const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
     const cx = W / 2, cy = H * 0.42, R = Math.hypot(W, H);
+    const own = skSkinBg(skin);                                 // רקע מיוחד לסקין (js/skin-bgs.js)
+    if (own) { own(c, W, H, t, skin); return; }
     if (skin.pencil) {                                          // ציור בעיפרון - דף נייר
         const bg = c.createLinearGradient(0, 0, 0, H);
         bg.addColorStop(0, '#f3efe5'); bg.addColorStop(1, '#e2dccd');
