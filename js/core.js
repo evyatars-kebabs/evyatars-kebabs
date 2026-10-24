@@ -101,30 +101,61 @@ const firebaseConfig = {
     const pendingSaves = new Set();     // שמירות בענן שעדיין רצות
     const lbRequestToken = {};          // מונע מתשובה ישנה לדרוס תשובה חדשה
 
-    function saveBestScore(collectionName, score, localKey) {
+    // שמירת שיא בלי לקרוא קודם מהשרת: כותבים רק כשהשיא המקומי השתפר (או force - למשל בהתחברות לחשבון).
+    // הכללים בשרת לא מאפשרים לניקוד לרדת, אז אם בשרת כבר יש שיא גבוה יותר הכתיבה פשוט נדחית.
+    // שמירה שנכשלה (אין חיבור / נגמרה המכסה) נשמרת בצד ונשלחת שוב בפתיחה הבאה של האפליקציה.
+    const LB_PENDING_KEY = 'kebab_lbPending';
+    function lbPending() { try { return JSON.parse(store.get(LB_PENDING_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function saveBestScore(collectionName, score, localKey, force) {
+        const prevBest = parseInt(store.get(localKey)) || 0;
         saveLocalBest(localKey, score);
-        if (!db || score <= 0) return Promise.resolve();
+        if (!db || score <= 0 || (!force && score <= prevBest)) return Promise.resolve();
 
         const userRef = db.collection(collectionName).doc(playerId);
-        const p = userRef.get().then(doc => {
-            const data = doc.exists ? doc.data() : {};
-            const hasScore = typeof data.score === 'number';
-            const currentBest = hasScore ? data.score : 0;
-            const write = (!doc.exists || !hasScore || score > currentBest)
-                ? userRef.set({
-                    name: playerName,
-                    score: Math.max(score, currentBest),
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true })
-                : Promise.resolve();
-            // הסקין נשמר בכתיבה נפרדת, כך שגם אם הכללים בשרת לא מאפשרים אותו - הניקוד עדיין נשמר
-            return write.then(() => { if (data.skin !== currentSkinId() || data.coins !== getCoins()) return saveLbSkin(userRef); });
-        }).catch(err => {
-            console.error("שגיאה בשמירה בענן (" + collectionName + "):", err.code || '', err.message || err);
-        }).then(() => { delete lbCache[collectionName]; pendingSaves.delete(p); });
+        const entry = { name: playerName, score, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
+        // שמירה אחת עם הסקין והמטבעות; אם הכללים בשרת לא מאפשרים אותם - מנסים בלי מטבעות, ואז רק את השיא עצמו
+        const tries = [lbExtras(), { skin: currentSkinId() }, {}];
+        const attempt = i => userRef.set(Object.assign({}, entry, tries[i]), { merge: true }).catch(err => {
+            if (err && err.code === 'permission-denied' && i < tries.length - 1) { if (i === 0) lbCoinsOk = false; return attempt(i + 1); }
+            throw err;
+        });
+        const p = attempt(lbCoinsOk ? 0 : 1)
+            .then(() => {
+                const pend = lbPending(); delete pend[collectionName]; store.set(LB_PENDING_KEY, JSON.stringify(pend));
+                lbPatchCache(collectionName, { score, name: playerName, ts: Date.now() });
+                delete profileCache[playerId];
+            })
+            .catch(err => {
+                if (err && err.code === 'permission-denied') return;      // בשרת כבר יש שיא גבוה יותר
+                console.error("שגיאה בשמירה בענן (" + collectionName + "):", err.code || '', err.message || err);
+                const pend = lbPending(); pend[collectionName] = Math.max(pend[collectionName] || 0, score); store.set(LB_PENDING_KEY, JSON.stringify(pend));
+            }).then(() => { pendingSaves.delete(p); });
 
         pendingSaves.add(p);
         return p;
+    }
+    function retryPendingScores() {
+        const pend = lbPending();
+        Object.entries(pend).forEach(([col, sc]) => { if (LB_LOCAL_KEY[col]) saveBestScore(col, sc, LB_LOCAL_KEY[col], true); });
+    }
+    // מעדכנים את הטבלה שכבר נטענה במקום לטעון אותה שוב (חוסך עד 100 קריאות אחרי כל משחק)
+    function lbPatchCache(col, upd) {
+        const lb = lbCache[col];
+        if (!lb) return;
+        let row = lb.rows.find(r => r.id === playerId);
+        if (row) { if (upd.score !== undefined && upd.score < row.score) delete upd.score; Object.assign(row, upd); }
+        else if (upd.score !== undefined) {
+            const last = lb.rows[lb.rows.length - 1];
+            if (lb.rows.length >= LB_LIMIT && last && upd.score <= last.score) return;   // לא נכנס ל-100 המובילים
+            lb.rows.push(Object.assign({ id: playerId, name: playerName, skin: currentSkinId(), coins: getCoins(), ts: Date.now() }, upd));
+        } else return;
+        lbSortRows(lb.rows);
+        if (lb.rows.length > LB_LIMIT) lb.rows.length = LB_LIMIT;
+    }
+    // סדר יציב: ניקוד יורד, ובשוויון - מי שהגיע ראשון, ואז לפי שם. שחקנים עם אותו ניקוד חולקים מקום
+    function lbSortRows(rows) {
+        rows.sort((a, b) => b.score - a.score || a.ts - b.ts || a.name.localeCompare(b.name));
+        rows.forEach((r, i) => { r.rank = (i > 0 && rows[i - 1].score === r.score) ? rows[i - 1].rank : i + 1; });
     }
 
     /* --- הסקין של השחקן בטבלאות השיאים --- */
@@ -238,6 +269,7 @@ const firebaseConfig = {
     const LB_LIMIT = 100;                 // כמה שחקנים מוצגים בכל טבלה
     const LB_CACHE_MS = 300000;           // שומרים תשובה 5 דקות כדי לא לקרוא את כל הטבלה בכל מעבר בין לשוניות
     const lbCache = {};
+    const lbInflight = {};             // טעינות טבלה שעדיין בדרך
     const LB_LOCAL_KEY = {
         leaderboard_delivery: 'kebab_dlvHighScore',
         leaderboard_goods: 'kebab_goodsHighScore', leaderboard_shvartz: 'kebab_shvartzHighScore',
@@ -328,18 +360,22 @@ const firebaseConfig = {
         }
 
         const cached = lbCache[collectionName];
-        if (cached && Date.now() - cached.t < LB_CACHE_MS && pendingSaves.size === 0) {
-            render(cached.rows);
+        if (cached && Date.now() - cached.t < LB_CACHE_MS) {
+            // שמירה שעוד בדרך תעדכן את הטבלה השמורה - מחכים לה ומציגים בלי לטעון שוב
+            if (pendingSaves.size) Promise.allSettled(Array.from(pendingSaves)).then(() => { if (!isStale() && lbCache[collectionName]) render(lbCache[collectionName].rows); });
+            else render(cached.rows);
             return;
         }
         showMsg('טוען נתונים...', '#b9a38e', false);
 
-        // מחכים לשמירות שעדיין בדרך (כדי שהשיא שהרגע נקבע יופיע), ובכל מקרה לא יותר מ-8 שניות
-        const fetchData = Promise.allSettled(Array.from(pendingSaves)).then(() =>
+        // מחכים לשמירות שעדיין בדרך (כדי שהשיא שהרגע נקבע יופיע), ובכל מקרה לא יותר מ-8 שניות.
+        // אם אותה טבלה כבר נטענת (למשל מעבר למסך ולחיצה על הלשונית) - משתמשים באותה טעינה ולא קוראים פעמיים
+        const fetchData = lbInflight[collectionName] || (lbInflight[collectionName] = Promise.allSettled(Array.from(pendingSaves)).then(() =>
             // תמיד מהשרת: כשהשרת לא עונה (למשל כשנגמרה המכסה היומית) Firestore מחזיר בשקט את מה ששמור במכשיר -
             // ובו רק השיא שהשחקן עצמו שמר עכשיו, כך שהוא נראה במקום הראשון
             db.collection(collectionName).orderBy('score', 'desc').limit(LB_LIMIT).get({ source: 'server' }))
-            .then(snap => (snap.metadata && snap.metadata.fromCache) ? Promise.reject({ code: 'unavailable' }) : snap);
+            .then(snap => (snap.metadata && snap.metadata.fromCache) ? Promise.reject({ code: 'unavailable' }) : snap)
+            .finally(() => { delete lbInflight[collectionName]; }));
         const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
 
         Promise.race([fetchData, timeout])
@@ -362,10 +398,7 @@ const firebaseConfig = {
                     const r = rows[i];
                     if (r.id.startsWith('player_') && r.id !== playerId && accountBest[r.name] !== undefined && accountBest[r.name] >= r.score) rows.splice(i, 1);
                 }
-                // סדר יציב: ניקוד יורד, ובשוויון - מי שהגיע ראשון, ואז לפי שם
-                rows.sort((a, b) => b.score - a.score || a.ts - b.ts || a.name.localeCompare(b.name));
-                // שחקנים עם אותו ניקוד חולקים את אותו מקום
-                rows.forEach((r, i) => { r.rank = (i > 0 && rows[i - 1].score === r.score) ? rows[i - 1].rank : i + 1; });
+                lbSortRows(rows);
                 lbCache[collectionName] = { t: Date.now(), rows };
                 render(rows);
             })
@@ -499,7 +532,7 @@ const firebaseConfig = {
     function pushBestScores() {
         LB_BEST.forEach(([col, key]) => {
             const best = parseInt(store.get(key)) || 0;
-            if (best > 0) saveBestScore(col, best, key);
+            if (best > 0) saveBestScore(col, best, key, true);     // בהתחברות: שולחים את השיאים גם אם לא השתפרו כאן
         });
     }
 
@@ -752,17 +785,15 @@ const firebaseConfig = {
         document.getElementById('player-name-input').value = playerName;
         store.set('kebab_playerName', playerName);
 
-        // עדכון השם בכל טבלאות השיאים שבהן השחקן כבר קיים
+        // עדכון השם בכל טבלאות השיאים שבהן השחקן כבר קיים - בלי לקרוא קודם (בטבלה שהוא לא נמצא בה העדכון נכשל ב-not-found)
         if (db) {
             Object.keys(LB_LOCAL_KEY).forEach(col => {
-                const ref = db.collection(col).doc(playerId);
-                ref.get().then(doc => {
-                    if (doc.exists && typeof doc.data().score === 'number') return ref.update({ name: playerName });
-                }).catch(err => console.error("שגיאה בעדכון שם (" + col + "):", err));
+                db.collection(col).doc(playerId).update({ name: playerName })
+                    .then(() => lbPatchCache(col, { name: playerName }))
+                    .catch(err => { if (!err || err.code !== 'not-found') console.error("שגיאה בעדכון שם (" + col + "):", err.code || err); });
             });
         }
-
-        Object.keys(lbCache).forEach(k => { delete lbCache[k]; });
+        Object.keys(LB_LOCAL_KEY).forEach(col => { const r = lbCache[col] && lbCache[col].rows.find(x => x.id === playerId); if (r) r.name = playerName; });
 
         msg.textContent = '✓ השם עודכן בהצלחה!';
         msg.style.color = '#2ea043';

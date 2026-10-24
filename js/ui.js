@@ -346,3 +346,4 @@ document.getElementById('code-modal').addEventListener('click', e => { if (e.tar
 renderCoinBadges();
 renderDaily();
 syncLeaderboardSkin(4000);
+setTimeout(retryPendingScores, 5000);              // שיאים שלא נשמרו בפעם הקודמת (אין חיבור / מכסה)
