@@ -64,12 +64,6 @@
             <div class="gc-go">◀</div>
         </div>
 
-        <div class="game-card" onclick="startCatchGame()">
-            <div class="gc-icon">🍢</div>
-            <div class="gc-body"><h3>תפוס את הקבב</h3><p>עליכם לתפוס כמה שיותר קבבים ב-15 שניות בלבד</p></div>
-            <div class="gc-go">◀</div>
-        </div>
-		
 		<div class="game-card" onclick="startGoodsSortGame()">
             <div class="gc-icon">🥫</div>
             <div class="gc-body"><h3>סידור המדפים</h3><p>סדרו 3 מוצרים זהים על אותו המדף כדי להעלים אותם!</p></div>
@@ -82,14 +76,6 @@
             <div class="gc-go">◀</div>
         </div>
 
-    </div>
-
-    <div id="screen-catch" class="screen">
-        <div class="hud">
-            <div class="hud-pill"><small>זמן</small><span id="catch-timer">15</span></div>
-            <div class="hud-pill"><small>ניקוד</small><span id="catch-score">0</span></div>
-        </div>
-        <div id="game-area"></div>
     </div>
 
     <div id="screen-trivia" class="screen">
@@ -189,16 +175,12 @@
 		<h2>🏆 טבלת אלופי הקבב</h2>
 
 		<div class="sub-tabs">
-			<button id="sub-btn-main" class="sub-tab-btn active" onclick="switchLeaderboardTab('main')">🍢 תפוס</button>
+			<button id="sub-btn-shvartz" class="sub-tab-btn active" onclick="switchLeaderboardTab('shvartz')">🥙 שוורץ</button>
 			<button id="sub-btn-goods" class="sub-tab-btn" onclick="switchLeaderboardTab('goods')">🥫 מדפים</button>
-			<button id="sub-btn-shvartz" class="sub-tab-btn" onclick="switchLeaderboardTab('shvartz')">🥙 שוורץ</button>
 			<button id="sub-btn-ninja" class="sub-tab-btn" onclick="switchLeaderboardTab('ninja')">🥷 נינג'ה</button>
 			<button id="sub-btn-kvk" class="sub-tab-btn" onclick="switchLeaderboardTab('kvk')">🍢 קולסקים</button>
 		</div>
 
-		<div id="sub-screen-main" class="leaderboard-sub-screen">
-			<ul id="leaderboard-container" class="leaderboard-list"></ul>
-		</div>
 
 		<div id="sub-screen-ninja" class="leaderboard-sub-screen" style="display: none;">
 			<ul id="ninja-leaderboard-container" class="leaderboard-list"></ul>
@@ -208,7 +190,7 @@
 			<ul id="kvk-leaderboard-container" class="leaderboard-list"></ul>
 		</div>
 
-		<div id="sub-screen-shvartz" class="leaderboard-sub-screen" style="display: none;">
+		<div id="sub-screen-shvartz" class="leaderboard-sub-screen">
 			<ul id="shvartz-leaderboard-container" class="leaderboard-list"></ul>
 		</div>
 

@@ -8,8 +8,6 @@ const DAILY_BONUS = 75;
 const WEEKLY_PRIZE = 400;                 // כל 7 ימים ברצף
 // on = סוג האירוע (שם המשחק, '*' לכל משחק, או 'coupon'); mode: max = הכי טוב במשחק אחד, sum = מצטבר, set = משחקים שונים
 const DAILY_POOL = [
-    { id: 'catch_max',   game: 'catch',   icon: '🍢', text: 'תפסו {t} קבבים במשחק אחד',               t: 12,  reward: 30, on: 'catch',   mode: 'max', val: e => e.score },
-    { id: 'catch_sum',   game: 'catch',   icon: '🍢', text: 'תפסו {t} קבבים בסך הכול',                 t: 35,  reward: 35, on: 'catch',   mode: 'sum', val: e => e.score },
     { id: 'ninja_slice', game: 'ninja',   icon: '🥷', text: 'חתכו {t} פריטים בקבב נינג\'ה',             t: 60,  reward: 40, on: 'ninja',   mode: 'sum', val: e => e.sliced },
     { id: 'ninja_max',   game: 'ninja',   icon: '🥷', text: 'צברו {t} נקודות במשחק נינג\'ה אחד',        t: 60,  reward: 45, on: 'ninja',   mode: 'max', val: e => e.score },
     { id: 'sv_made',     game: 'shvartz', icon: '🥙', text: 'האכילו את שוורץ {t} פעמים במשחק אחד',     t: 8,   reward: 40, on: 'shvartz', mode: 'max', val: e => e.made },
@@ -55,6 +53,12 @@ function dailyLoad() {
         st = { date: today, ids: dailyPick(today), prog: {}, claimed: [], notified: [], bonus: false,
                streak: st ? st.streak || 0 : 0, lastFull: st ? st.lastFull || '' : '',
                weekly: st && st.weekly === 'pending' ? 'pending' : null };            // פרס שבועי שלא נאסף נשמר
+        dailySave(st);
+    }
+    // אתגר של משחק שהוסר (למשל "תפוס את הקבב") מוחלף באתגר אחר, כדי שעדיין אפשר יהיה להשלים את כל האתגרים היום
+    if (st.ids.some(id => !dailyDef(id))) {
+        const spare = dailyPick(today).concat(DAILY_POOL.map(c => c.id)).filter(id => dailyDef(id) && !st.ids.includes(id));
+        st.ids = st.ids.map(id => dailyDef(id) ? id : spare.shift());
         dailySave(st);
     }
     return st;
@@ -330,7 +334,7 @@ setInterval(() => {
 
 let lastGameKey = null;
 function playAgain() {
-    const starters = { catch: startCatchGame, trivia: startTriviaGame, goods: startGoodsSortGame, shvartz: startShvartzGame, ninja: startNinjaGame, kvk: startKvkGame };
+    const starters = { trivia: startTriviaGame, goods: startGoodsSortGame, shvartz: startShvartzGame, ninja: startNinjaGame, kvk: startKvkGame };
     (starters[lastGameKey] || (() => switchTab('home')))();
 }
 

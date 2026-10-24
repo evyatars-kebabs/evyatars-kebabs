@@ -65,7 +65,6 @@ const firebaseConfig = {
 
     /* --- שיאים אישיים (מקומי) + שמירה בענן --- */
     const GAME_STATS = [
-        ['🍢 תפוס את הקבב', 'kebab_highScore'],
         ['🥷 קבב נינג\'ה', 'kebab_ninjaHighScore'],
         ['🥙 האכל את השוורץ', 'kebab_shvartzHighScore'],
         ['🥫 סידור המדפים', 'kebab_goodsHighScore'],
@@ -135,8 +134,10 @@ const firebaseConfig = {
     let lbCoinsOk = true;
     const lbExtras = () => lbCoinsOk ? { skin: currentSkinId(), coins: getCoins() } : { skin: currentSkinId() };
     function lbWriteExtras(write) {
-        return write(lbExtras()).catch(err => {
-            if (err && err.code === 'permission-denied' && lbCoinsOk) { lbCoinsOk = false; return write(lbExtras()); }
+        const data = lbExtras();
+        return write(data).catch(err => {
+            // כל כתיבה שנדחתה עם מטבעות מנסה שוב בלי מטבעות (גם כשכמה כתיבות רצות במקביל)
+            if (err && err.code === 'permission-denied' && 'coins' in data) { lbCoinsOk = false; return write({ skin: data.skin }); }
             throw err;
         });
     }
@@ -180,7 +181,7 @@ const firebaseConfig = {
 
     /* --- פרופיל שחקן: השיאים שלו בכל המשחקים --- */
     const PROFILE_BOARDS = [
-        ['leaderboard', '🍢 תפוס את הקבב'], ['leaderboard_ninja', '🥷 קבב נינג\'ה'], ['leaderboard_shvartz', '🥙 האכל את השוורץ'],
+        ['leaderboard_ninja', '🥷 קבב נינג\'ה'], ['leaderboard_shvartz', '🥙 האכל את השוורץ'],
         ['leaderboard_goods', '🥫 סידור המדפים'], ['leaderboard_kvk', '🍢 קבבים מול קולסקים']
     ];
     const profileCache = {};
@@ -237,7 +238,6 @@ const firebaseConfig = {
     const LB_CACHE_MS = 300000;           // שומרים תשובה 5 דקות כדי לא לקרוא את כל הטבלה בכל מעבר בין לשוניות
     const lbCache = {};
     const LB_LOCAL_KEY = {
-        leaderboard: 'kebab_highScore',
         leaderboard_goods: 'kebab_goodsHighScore', leaderboard_shvartz: 'kebab_shvartzHighScore',
         leaderboard_ninja: 'kebab_ninjaHighScore', leaderboard_kvk: 'kebab_kvkHighScore'
     };
@@ -381,8 +381,6 @@ const firebaseConfig = {
 
     /* --- עצירת כל הטיימרים של כל המשחקים --- */
     function stopAllGames() {
-        clearInterval(catchInterval);
-        clearTimeout(kebabTimeout);
         clearInterval(goodsInterval);
         goodsTimeouts.forEach(clearTimeout);
         goodsTimeouts = [];
@@ -390,8 +388,6 @@ const firebaseConfig = {
         if (typeof svStop === 'function') svStop();
         if (typeof njStop === 'function') njStop();
         if (typeof kvStop === 'function') kvStop();
-        const area = document.getElementById('game-area');
-        if (area) area.innerHTML = '';
     }
 
     /* --- משתנים גלובליים ומזהה שחקן ייחודי --- */
@@ -423,7 +419,7 @@ const firebaseConfig = {
         'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
     const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
-    const LB_BEST = [['leaderboard', 'kebab_highScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
+    const LB_BEST = [['leaderboard_goods', 'kebab_goodsHighScore'],
         ['leaderboard_shvartz', 'kebab_shvartzHighScore'], ['leaderboard_ninja', 'kebab_ninjaHighScore'], ['leaderboard_kvk', 'kebab_kvkHighScore']];
 
     let accountUser = null;         // משתמש Firebase מחובר
@@ -693,7 +689,6 @@ const firebaseConfig = {
 
 	/* --- החלפה בין טבלאות השיאים בתוך המסך --- */
 	const LB_TABS = {
-		main:    () => loadLeaderboard(),
 		goods:   () => loadGoodsLeaderboard(),
 		shvartz: () => loadShvartzLeaderboard(),
 		ninja:   () => loadNinjaLeaderboard(),
@@ -701,7 +696,7 @@ const firebaseConfig = {
 	};
 
 	function switchLeaderboardTab(type) {
-		if (!LB_TABS[type]) type = 'main';
+		if (!LB_TABS[type]) type = 'shvartz';
 		Object.keys(LB_TABS).forEach(k => {
 			document.getElementById('sub-btn-' + k).classList.toggle('active', k === type);
 			document.getElementById('sub-screen-' + k).style.display = (k === type) ? 'block' : 'none';
@@ -723,7 +718,7 @@ const firebaseConfig = {
 
 		if (targetScreen) targetScreen.classList.add('active');
 		if (targetBtn) targetBtn.classList.add('active');
-		document.body.classList.toggle('in-game', ['catch', 'trivia', 'goods', 'shvartz', 'ninja', 'kvk'].includes(screenId));
+		document.body.classList.toggle('in-game', ['trivia', 'goods', 'shvartz', 'ninja', 'kvk'].includes(screenId));
 
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
 		if (screenId === 'shop') renderShop();
@@ -731,8 +726,8 @@ const firebaseConfig = {
 
 		if (screenId === 'leaderboard') {
 			const active = document.querySelector('.sub-tab-btn.active');
-			const type = active ? active.id.replace('sub-btn-', '') : 'main';
-			(LB_TABS[type] || LB_TABS.main)();
+			const type = active ? active.id.replace('sub-btn-', '') : 'shvartz';
+			(LB_TABS[type] || LB_TABS.shvartz)();
 		}
 	}
 
@@ -755,7 +750,7 @@ const firebaseConfig = {
 
         // עדכון השם בכל טבלאות השיאים שבהן השחקן כבר קיים
         if (db) {
-            ['leaderboard', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja', 'leaderboard_kvk'].forEach(col => {
+            Object.keys(LB_LOCAL_KEY).forEach(col => {
                 const ref = db.collection(col).doc(playerId);
                 ref.get().then(doc => {
                     if (doc.exists && typeof doc.data().score === 'number') return ref.update({ name: playerName });
@@ -772,12 +767,4 @@ const firebaseConfig = {
         msg._t = setTimeout(() => { msg.style.display = 'none'; }, 2000);
     }
 
-    /* --- שיא "תפוס את הקבב" --- */
-    function checkHighScore(score) {
-        saveBestScore('leaderboard', score, 'kebab_highScore');
-    }
-
-    function loadLeaderboard() {
-        loadLeaderboardInto('leaderboard-container', 'leaderboard');
-    }
 
