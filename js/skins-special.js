@@ -760,8 +760,9 @@ function skJerseyBody(c, sk, t, J) {
     c.fillText(J.text, 0, 178);
     c.font = 'bold 74px "Arial Black", Arial, sans-serif';
     c.lineWidth = 7; c.strokeStyle = J.numStroke; c.lineJoin = 'round';
-    c.strokeText(J.num || '8', 0, 246);
-    c.fillStyle = J.numFill; c.fillText(J.num || '8', 0, 246);
+    const num = J.num === undefined ? '8' : J.num;              // '' = גופייה בלי מספר
+    c.strokeText(num, 0, 246);
+    c.fillStyle = J.numFill; c.fillText(num, 0, 246);
     c.restore();
     if (J.star) skStarOfDavid(c, 54, 128, 13, J.textCol, 3.5);
 }
@@ -900,6 +901,78 @@ function skLebronFront(c, sk, st) {
     c.save(); c.translate(0, -36); c.scale(0.9, 0.9);
     skKebabCrown(c, st.t);
     c.restore();
+}
+
+// טופאק - סקיצה בעיפרון: בנדנה עם דוגמת פייזלי וקשר מקדימה, שפם וזקנקן, עגיל חישוק, גופייה ושרשרת
+const TUPAC_TANK = { base: '#f6f4ee', stripes: [], trim: ['#f6f4ee', '#f6f4ee'], text: '', textCol: '#f6f4ee',
+    numFill: '#f6f4ee', numStroke: '#f6f4ee', num: '' };
+function skTupacBack(c, sk, st) {
+    skJerseyBody(c, sk, st.t, TUPAC_TANK);
+    // שרשרת חוליות דקה על הגופייה
+    c.strokeStyle = SK_OUT; c.lineWidth = 1.6;
+    for (let i = 0; i <= 14; i++) {
+        const u = i / 14, x = -34 + 68 * u, y = 60 + Math.sin(u * Math.PI) * 74;
+        c.beginPath(); c.ellipse(x, y, 4.2, 2.8, Math.atan2(Math.cos(u * Math.PI) * 74 * Math.PI, 68), 0, Math.PI * 2); c.stroke();
+    }
+    skHead(c, sk);
+    skEyes(c, sk, st);
+    // זקנקן קטן מתחת לשפה התחתונה ועל הסנטר - קווי עיפרון קצרים
+    const g = new Path2D();
+    g.moveTo(-17, 30); g.quadraticCurveTo(-16, 48, 0, 57); g.quadraticCurveTo(16, 48, 17, 30);
+    g.quadraticCurveTo(0, 36, -17, 30); g.closePath();
+    c.strokeStyle = SK_OUT; c.lineWidth = 2; c.stroke(g);
+    c.save(); c.clip(g);
+    c.strokeStyle = SK_PENCIL + '0.6)'; c.lineWidth = 1.2; c.lineCap = 'round';
+    for (let x = -18; x <= 18; x += 3.5) { c.beginPath(); c.moveTo(x, 30); c.lineTo(x * 0.6, 58); c.stroke(); }
+    c.restore();
+}
+function skTupacFront(c, sk, st) {
+    const paper = sk.tone, out = SK_OUT;
+    // שפם דק שיורד בצדי הפה אל הזקנקן
+    for (const [w, col] of [[7, out], [3.5, paper]]) {
+        c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(-46, 8); c.quadraticCurveTo(-42, -18, 0, -19); c.quadraticCurveTo(42, -18, 46, 8); c.stroke();
+    }
+    c.strokeStyle = SK_PENCIL + '0.55)'; c.lineWidth = 1;
+    for (let x = -36; x <= 36; x += 6) { c.beginPath(); c.moveTo(x, -21); c.lineTo(x * 1.05, -15); c.stroke(); }
+    // עגיל חישוק באוזן שמאל (ימין המסך)
+    skE(c, 88, -6, 7, 9, null, out, 2.4);
+    // בנדנה מסביב לראש - יורדת עד מעל הגבות
+    const band = new Path2D();
+    band.ellipse(0, -34, 93, 99, 0, Math.PI + 0.2, Math.PI * 2 - 0.2);
+    band.quadraticCurveTo(46, -96, 0, -100);
+    band.quadraticCurveTo(-46, -96, -91, -54);
+    band.closePath();
+    c.fillStyle = paper; c.fill(band);
+    c.save(); c.clip(band);
+    c.strokeStyle = SK_PENCIL + '0.75)'; c.lineWidth = 1.5;          // פייזלי - טיפות מסולסלות בקו בלבד
+    for (const [x, y, r] of [[-62, -104, 0.6], [-30, -124, -0.4], [30, -122, 0.9], [64, -98, -0.2], [-66, -80, 2.4], [66, -78, 2.8], [0, -140, 1.6]]) {
+        c.save(); c.translate(x, y); c.rotate(r);
+        c.beginPath(); c.moveTo(0, -9); c.bezierCurveTo(9, -6, 9, 7, 0, 8); c.bezierCurveTo(-8, 7, -7, -2, 0, -2); c.quadraticCurveTo(3, -6, 0, -9); c.stroke();
+        c.beginPath(); c.arc(1.5, 3, 2, 0, Math.PI * 2); c.stroke();
+        c.restore();
+    }
+    c.strokeStyle = SK_PENCIL + '0.35)'; c.lineWidth = 1.2;          // קפלי בד ליד הקשר
+    for (const sd of [-1, 1]) { c.beginPath(); c.moveTo(sd * 16, -104); c.quadraticCurveTo(sd * 40, -116, sd * 60, -132); c.stroke(); }
+    c.restore();
+    c.strokeStyle = out; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(band);
+    // קשר מקדימה: שני קצוות בד רחבים ומשולשים שעומדים למעלה ולצדדים
+    for (const sd of [-1, 1]) {
+        const tail = new Path2D();
+        tail.moveTo(sd * 6, -112);
+        tail.quadraticCurveTo(sd * 18, -136, sd * 38, -146);
+        tail.quadraticCurveTo(sd * 46, -128, sd * 50, -112);
+        tail.quadraticCurveTo(sd * 30, -108, sd * 10, -98);
+        tail.closePath();
+        c.fillStyle = paper; c.fill(tail); c.strokeStyle = out; c.lineWidth = 2.4; c.stroke(tail);
+        c.strokeStyle = SK_PENCIL + '0.45)'; c.lineWidth = 1.1;
+        c.beginPath(); c.moveTo(sd * 12, -106); c.quadraticCurveTo(sd * 26, -122, sd * 38, -136); c.stroke();
+        c.beginPath(); c.moveTo(sd * 14, -102); c.quadraticCurveTo(sd * 32, -112, sd * 44, -118); c.stroke();
+    }
+    skE(c, 0, -104, 13, 11, paper, out, 2.6);
+    c.strokeStyle = SK_PENCIL + '0.5)'; c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(-6, -111); c.quadraticCurveTo(1, -104, -4, -96); c.stroke();
+    skPencilExtra(c, sk, st);
 }
 
 function skDeniBack(c, sk, st) {

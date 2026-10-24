@@ -250,6 +250,7 @@ const REDEEM_CODES = {
     'DANCERELLA12':      { skin: 'ella' },
     'MACMILLER30':       { skin: 'macmiller' },
     'KINGJAMES23':       { skin: 'lebron' },
+    'TUPACONPAPER2':     { skin: 'tupac' },
     // סקין רגיל מהחנות (אגדי) - הקוד נותן אותו בחינם, אבל אפשר גם לקנות אותו
     'AVATARBL88':        { skin: 'avatar' }
 };
