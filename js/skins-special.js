@@ -1020,10 +1020,28 @@ function skTrumpBack(c, sk, st) {
 function skTrumpFront(c, sk, st) {
     const col = sk.hair.color, hl = skShade(col, 0.3), dk = skShade(col, -0.3), out = SK_OUT;
     const t = st.t, flap = Math.sin(t * 2.2) * 3;
-    // צדדים מסורקים לאחור
-    for (const sd of [-1, 1]) {
-        skP(c, [[sd * 80, -112], [sd * 96, -84], [sd * 92, -40], [sd * 84, -48], [sd * 80, -84]], col, out, 2.5);
+    // שיער מלא שמכסה את כל החלק העליון של הראש ואת הצדדים עד האוזניים, מסורק לאחור
+    const base = new Path2D();
+    base.moveTo(-96, -20);
+    base.bezierCurveTo(-108, -110, -64, -170, 0, -172);
+    base.bezierCurveTo(64, -170, 108, -110, 96, -20);
+    base.lineTo(84, -26);
+    base.quadraticCurveTo(88, -80, 66, -100);
+    base.lineTo(-66, -100);
+    base.quadraticCurveTo(-88, -80, -84, -26);
+    base.closePath();
+    const bg = c.createLinearGradient(0, -172, 0, -20);
+    bg.addColorStop(0, hl); bg.addColorStop(1, skShade(col, -0.1));
+    c.fillStyle = bg; c.fill(base);
+    c.strokeStyle = out; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(base);
+    c.save(); c.clip(base);
+    c.strokeStyle = skA(dk, 0.4); c.lineWidth = 1.8; c.lineCap = 'round';
+    for (const sd of [-1, 1]) {                                      // קווי סירוק לאחור בצדדים
+        for (let i = 0; i < 2; i++) {
+            c.beginPath(); c.moveTo(sd * (72 + i * 5), -96 + i * 4); c.quadraticCurveTo(sd * (96 + i * 2), -70, sd * (92 + i), -30 - i * 4); c.stroke();
+        }
     }
+    c.restore();
     // הבלורית: גל גדול שמסתלסל מימין לשמאל מעל המצח
     const hair = new Path2D();
     hair.moveTo(90, -96);
