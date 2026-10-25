@@ -77,7 +77,11 @@ function tmntFetch(force) {
             store.set(TMNT_COUNTS_KEY, JSON.stringify(next));
             return true;
         })
-        .catch(err => { console.warn('אירוע: טעינת ההתקדמות נכשלה', err.code || err.message || err); return false; })
+        .catch(err => {
+            console.warn('אירוע: טעינת ההתקדמות נכשלה', err.code || err.message || err);
+            tmntFetchedAt = Date.now() - TMNT_CACHE_MS + 15000;     // טעינה שנכשלה - מנסים שוב בעוד 15 שניות
+            return false;
+        })
         .finally(() => { tmntFetching = null; });
     return tmntFetching;
 }
@@ -279,8 +283,13 @@ setInterval(() => {
     if (t) t.textContent = tmntCountdown();
     if (tmntShown !== null && tmntShown !== tmntVisible() + '|' + tmntLive()) renderTmnt();
 }, 1000);
+// חזרה לאפליקציה (מהרקע) - טוענים מיד את המספרים העדכניים
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden || !tmntVisible() || !document.getElementById('screen-home').classList.contains('active')) return;
+    tmntFetch(true).then(fresh => { if (fresh) renderTmnt(); });
+});
 setInterval(() => {
     if (tmntShown !== tmntVisible() + '|' + tmntLive()) renderTmnt();
-    // בזמן בחירת הצוותים מרעננים את מספר השחקנים כשמסך הבית פתוח
-    else if (tmntPoll() && document.getElementById('screen-home').classList.contains('active') && Date.now() - tmntFetchedAt >= TMNT_CACHE_MS) renderTmnt();
-}, 30000);
+    // כל עוד מסך הבית פתוח - מרעננים את המספרים (כל דקה וחצי, או 15 שניות אחרי טעינה שנכשלה)
+    else if (tmntVisible() && document.getElementById('screen-home').classList.contains('active') && Date.now() - tmntFetchedAt >= TMNT_CACHE_MS) renderTmnt();
+}, 15000);
