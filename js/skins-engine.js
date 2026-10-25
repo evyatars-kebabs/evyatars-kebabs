@@ -585,8 +585,8 @@ function skOutfit(c, sk, t) {
 /* ---------------- פנים ---------------- */
 function skHead(c, sk) {
     const H = SK_HEAD, tone = sk.tone;
-    // אוזניים
-    for (const s of [-1, 1]) {
+    // אוזניים (לצבים אין)
+    if (!sk.noEars) for (const s of [-1, 1]) {
         skE(c, s * 86, -30, 13, 18, tone, SK_OUT, 2.5);
         skE(c, s * 86, -30, 6, 10, skShade(tone, -0.15));
     }

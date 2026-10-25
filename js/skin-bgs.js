@@ -541,6 +541,71 @@ const SK_BG = {
         for (let i = 0; i < 4; i++) { c.fillStyle = i % 2 ? '#ffffff' : '#e8262a'; c.beginPath(); c.moveTo(0, -40); c.arc(0, -40, 36, Math.PI + i * Math.PI / 4, Math.PI + (i + 1) * Math.PI / 4); c.fill(); }
         c.restore();
     },
+    // ---------- אירוע צבי הנינג'ה ----------
+    tmnt_sewer(c, W, H, t) {                                    // הצבים: ביוב מתחת לעיר עם אור מהמכסה ומים ירוקים זוהרים
+        bgLinear(c, W, H, ['#0e1a16', '#16302a', '#0a1410']);
+        c.strokeStyle = 'rgba(80,110,90,0.35)'; c.lineWidth = 2;   // לבנים בקיר
+        for (let r = 0, y = 0; y < H * 0.78; y += 22, r++) {
+            c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke();
+            for (let x = (r % 2) * 22; x < W; x += 44) { c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + 22); c.stroke(); }
+        }
+        c.strokeStyle = '#3a4a42'; c.lineWidth = 16;                // קשת המנהרה
+        c.beginPath(); c.arc(W / 2, H * 0.78, W * 0.62, Math.PI, 0); c.stroke();
+        c.strokeStyle = 'rgba(20,30,26,0.9)'; c.lineWidth = 4; c.stroke();
+        c.save();                                                   // אור מכסה הביוב
+        const lg = c.createLinearGradient(0, 0, 0, H * 0.8); lg.addColorStop(0, 'rgba(255,250,200,0.45)'); lg.addColorStop(1, 'rgba(255,250,200,0)');
+        c.fillStyle = lg; c.beginPath(); c.moveTo(W * 0.62, 0); c.lineTo(W * 0.78, 0); c.lineTo(W * 0.98, H * 0.8); c.lineTo(W * 0.5, H * 0.8); c.closePath(); c.fill();
+        c.restore();
+        c.fillStyle = '#4a5a52'; c.fillRect(0, H * 0.08, W, 12);        // צינור עם טיפות
+        c.fillStyle = 'rgba(255,255,255,0.15)'; c.fillRect(0, H * 0.08 + 2, W, 3);
+        bgFallers(c, W, H * 0.78, t, 6, 341, (x, y) => { c.fillStyle = 'rgba(160,255,190,0.7)'; c.beginPath(); c.ellipse(x, y, 2, 3.5, 0, 0, Math.PI * 2); c.fill(); }, 50);
+        const wy = H * 0.8;                                         // מים ירוקים זוהרים
+        const wg = c.createLinearGradient(0, wy, 0, H); wg.addColorStop(0, '#2ac86a'); wg.addColorStop(1, '#0a5a2a');
+        c.fillStyle = wg; c.fillRect(0, wy, W, H - wy);
+        bgGlow(c, W / 2, wy, W * 0.6, '60,255,120', 0.25);
+        c.strokeStyle = 'rgba(200,255,210,0.5)'; c.lineWidth = 2;
+        for (let r = 0; r < 3; r++) { const y = wy + 8 + r * 12, off = (t * 16 + r * 20) % 30; c.beginPath(); for (let x = -30 + off; x < W + 30; x += 30) { c.moveTo(x, y); c.quadraticCurveTo(x + 8, y - 3, x + 16, y); } c.stroke(); }
+        c.save(); c.translate(W * 0.12, H * 0.2); c.rotate(-0.3 + Math.sin(t) * 0.05);   // משולש פיצה
+        c.beginPath(); c.moveTo(0, -22); c.lineTo(20, 18); c.lineTo(-20, 18); c.closePath(); c.fillStyle = '#ffcf5a'; c.fill(); c.strokeStyle = '#a8601a'; c.lineWidth = 2; c.stroke();
+        c.fillStyle = '#d8402a'; for (const [x, y] of [[0, -4], [-8, 10], [8, 9]]) { c.beginPath(); c.arc(x, y, 3.5, 0, Math.PI * 2); c.fill(); }
+        c.fillStyle = '#c8843a'; c.fillRect(-21, 16, 42, 6);
+        c.restore();
+    },
+    tmnt_splinter(c, W, H, t) {                                 // ספלינטר: דוג'ו יפני עם קירות נייר, מגילה ונרות
+        bgLinear(c, W, H, ['#3a2414', '#5a3820']);
+        const pw = W / 4;
+        for (let i = 0; i < 4; i++) {                               // קירות שוג'י
+            c.fillStyle = 'rgba(250,236,200,0.85)'; c.fillRect(i * pw + 6, H * 0.06, pw - 12, H * 0.62);
+            c.strokeStyle = '#4a2c14'; c.lineWidth = 3;
+            for (let k = 1; k < 3; k++) { c.beginPath(); c.moveTo(i * pw + 6 + k * (pw - 12) / 3, H * 0.06); c.lineTo(i * pw + 6 + k * (pw - 12) / 3, H * 0.68); c.stroke(); }
+            for (let k = 1; k < 5; k++) { c.beginPath(); c.moveTo(i * pw + 6, H * 0.06 + k * H * 0.124); c.lineTo(i * pw + pw - 6, H * 0.06 + k * H * 0.124); c.stroke(); }
+        }
+        c.fillStyle = '#c8a860'; c.fillRect(0, H * 0.7, W, H * 0.3);     // טטאמי
+        c.strokeStyle = '#8a6a30'; c.lineWidth = 2; for (let x = 0; x < W; x += W / 3) { c.beginPath(); c.moveTo(x, H * 0.7); c.lineTo(x, H); c.stroke(); }
+        c.fillStyle = '#f4ecd8'; c.fillRect(W * 0.82, H * 0.1, 40, 110);  // מגילה עם עיגול דיו
+        c.strokeStyle = '#1a1410'; c.lineWidth = 5; c.beginPath(); c.arc(W * 0.82 + 20, H * 0.1 + 50, 13, 0.4, Math.PI * 2 - 0.2); c.stroke();
+        for (const x of [0.08, 0.92]) {                              // נרות מהבהבים
+            const fl = 0.8 + 0.2 * Math.sin(t * 9 + x * 10);
+            c.fillStyle = '#f4ecd8'; c.fillRect(W * x - 5, H * 0.74, 10, 26);
+            bgGlow(c, W * x, H * 0.72, 40 * fl, '255,200,90', 0.6);
+            c.fillStyle = '#ffcf5a'; c.beginPath(); c.ellipse(W * x, H * 0.72, 4, 8 * fl, 0, 0, Math.PI * 2); c.fill();
+        }
+    },
+    tmnt_shredder(c, W, H, t) {                                 // שרדר: מבצר של שבט כף הרגל - אדום כהה, עשן וסמל ענק
+        bgLinear(c, W, H, ['#1a0408', '#3a0a10', '#0e0204']);
+        c.save(); c.globalAlpha = 0.18; c.translate(W / 2, H * 0.42); c.scale(W / 120, W / 120);
+        c.fillStyle = '#ff2a3a';
+        c.beginPath(); c.ellipse(0, 10, 26, 36, 0, 0, Math.PI * 2); c.fill();
+        for (const [x, y, r] of [[-24, -36, 10], [-6, -46, 10], [14, -42, 9], [28, -28, 8]]) { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); }
+        c.restore();
+        for (const sx of [0.1, 0.9]) {                              // דגלים תלויים
+            c.fillStyle = '#7a0a14'; c.fillRect(W * sx - 20, 0, 40, H * 0.55);
+            c.beginPath(); c.moveTo(W * sx - 20, H * 0.55); c.lineTo(W * sx, H * 0.5); c.lineTo(W * sx + 20, H * 0.55); c.fill();
+            c.fillStyle = '#e8c060'; c.fillRect(W * sx - 20, H * 0.04, 40, 4);
+        }
+        bgRisers(c, W, H, t, 6, 351, (x, y) => bgGlow(c, x, y, 40, '120,100,110', 0.12), 10);
+        bgRisers(c, W, H, t, 14, 361, (x, y) => { c.fillStyle = 'rgba(255,120,80,0.7)'; c.fillRect(x, y, 2, 2); }, 22);
+    },
     megatron(c, W, H, t) {                                      // מגהטרון: מפעל רובוטים אפל עם רשת משושים, קרן סריקה אדומה וניצוצות
         bgLinear(c, W, H, ['#07070c', '#14141e', '#07070c']);
         c.strokeStyle = 'rgba(120,130,160,0.14)'; c.lineWidth = 1.2;      // רשת משושים
@@ -587,6 +652,7 @@ const SK_BG = {
         bgFallers(c, W, H, t, 16, 311, (x, y, i) => bgSparkle(c, x, y, 2.5, i % 2 ? 'rgba(255,215,90,0.9)' : 'rgba(255,255,255,0.85)'), 14);
     }
 };
+['tmnt_leo', 'tmnt_don', 'tmnt_raph', 'tmnt_mikey'].forEach(id => { SK_BG[id] = SK_BG.tmnt_sewer; });
 SK_BG.nir_champ = (c, W, H, t, sk) => {                         // ניר האלוף: אולם + קונפטי זהב
     SK_BG.nir(c, W, H, t, sk);
     bgFallers(c, W, H, t, 22, 321, (x, y, i) => { c.fillStyle = i % 2 ? '#ffd23d' : '#ffffff'; c.save(); c.translate(x, y); c.rotate(t * 3 + i); c.fillRect(-3, -1.5, 6, 3); c.restore(); }, 30);

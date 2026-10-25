@@ -1176,6 +1176,172 @@ function skShlukFront(c, sk, st) {
     skE(c, 0, -116, 7, 6, '#ffd54f', '#6a4a04', 1.5);
 }
 
+/* ---------- אירוע צבי הנינג'ה ---------- */
+// מצייר "מאחורי" הדמות: רק מחוץ לראש ולגוף (כדי שחרבות, שריון וזנבות הבנדנה ייראו מאחורה גם כשהם מצוירים אחרונים)
+function skBehind(c, fn) {
+    c.save();
+    const a = new Path2D(); a.rect(-500, -500, 1000, 1000); a.ellipse(SK_HEAD.cx, SK_HEAD.cy, SK_HEAD.rx, SK_HEAD.ry, 0, 0, Math.PI * 2);
+    c.clip(a, 'evenodd');
+    const b = new Path2D(); b.rect(-500, -500, 1000, 1000);
+    b.moveTo(-32, 44); b.bezierCurveTo(-34, 70, -66, 74, -96, 88); b.bezierCurveTo(-120, 100, -124, 150, -124, 200);
+    b.lineTo(-124, 340); b.lineTo(124, 340); b.lineTo(124, 200); b.bezierCurveTo(124, 150, 120, 100, 96, 88); b.bezierCurveTo(66, 74, 34, 70, 32, 44); b.closePath();
+    c.clip(b, 'evenodd');
+    fn();
+    c.restore();
+}
+function skBlade(c, x0, y0, x1, y1, w, grip) {                  // חרב יפנית: להב, מגן וידית עטופה
+    const a = Math.atan2(y1 - y0, x1 - x0), L = Math.hypot(x1 - x0, y1 - y0);
+    c.save(); c.translate(x0, y0); c.rotate(a);
+    const g = c.createLinearGradient(0, -w, 0, w); g.addColorStop(0, '#f4f6fa'); g.addColorStop(1, '#9aa4b4');
+    c.beginPath(); c.moveTo(0, -w / 2); c.lineTo(L * 0.68, -w / 2); c.lineTo(L * 0.68, w / 2); c.lineTo(0, w / 2); c.quadraticCurveTo(-w * 1.4, 0, 0, -w / 2); c.closePath();
+    c.fillStyle = g; c.fill(); c.strokeStyle = SK_OUT; c.lineWidth = 2; c.stroke();
+    skR(c, L * 0.68 - 2, -w * 1.3, 6, w * 2.6, 2, '#d9b25a', SK_OUT, 1.5);
+    skR(c, L * 0.68 + 4, -w * 0.55, L * 0.32, w * 1.1, 3, grip, SK_OUT, 2);
+    c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 1.4;
+    for (let x = L * 0.7; x < L - 4; x += 7) { c.beginPath(); c.moveTo(x, -w * 0.5); c.lineTo(x + 4, w * 0.5); c.stroke(); }
+    c.restore();
+}
+function skTurtleExtra(c, sk, st) {
+    const t = st.t, tr = sk.turtle, out = SK_OUT, bd = tr.mask;
+    // שריון הגב מציץ מסביב לכתפיים, כלי הנשק מאחורה וזנבות הבנדנה
+    skBehind(c, () => {
+        const sg = c.createRadialGradient(0, 160, 30, 0, 190, 190);
+        sg.addColorStop(0, '#7a8a3a'); sg.addColorStop(1, '#3e4a1e');
+        skE(c, 0, 196, 150, 168, sg, out, 3);
+        skE(c, 0, 196, 138, 156, null, 'rgba(230,200,110,0.55)', 4);
+        if (tr.weapon === 'katana') { skBlade(c, -40, 250, 118, -48, 12, '#1f4fa8'); skBlade(c, 40, 250, -118, -48, 12, '#1f4fa8'); }
+        if (tr.weapon === 'bo') {
+            c.lineCap = 'round';
+            c.strokeStyle = out; c.lineWidth = 16; c.beginPath(); c.moveTo(-150, 300); c.lineTo(142, -132); c.stroke();
+            c.strokeStyle = '#a8743a'; c.lineWidth = 11; c.stroke();
+            c.strokeStyle = '#6a4418'; c.lineWidth = 11;
+            for (const u of [0.18, 0.82]) { c.beginPath(); c.moveTo(-150 + 292 * (u - 0.04), 300 - 432 * (u - 0.04)); c.lineTo(-150 + 292 * (u + 0.04), 300 - 432 * (u + 0.04)); c.stroke(); }
+        }
+        const fl = Math.sin(t * 5) * 6;                                  // זנבות הבנדנה מתנופפים
+        for (const [dy, len] of [[0, 1], [14, 0.8]]) {
+            c.beginPath(); c.moveTo(78, -78 + dy);
+            c.quadraticCurveTo(122, -86 + dy + fl, 150 * len + 20, -60 + dy + fl * 1.6);
+            c.lineTo(146 * len + 16, -46 + dy + fl * 1.6);
+            c.quadraticCurveTo(116, -70 + dy + fl, 80, -62 + dy);
+            c.closePath(); c.fillStyle = bd; c.fill(); c.strokeStyle = out; c.lineWidth = 2.5; c.stroke();
+        }
+    });
+    // שריון הבטן הצהוב, מחולק למשבצות
+    c.save(); skTorsoPath(c); c.clip();
+    const pl = new Path2D(); pl.roundRect(-74, 66, 148, 300, 46);
+    const pg = c.createLinearGradient(-74, 0, 74, 0); pg.addColorStop(0, '#c8a040'); pg.addColorStop(0.5, '#f0d27a'); pg.addColorStop(1, '#c8a040');
+    c.fillStyle = pg; c.fill(pl); c.strokeStyle = out; c.lineWidth = 3; c.stroke(pl);
+    c.strokeStyle = 'rgba(120,80,20,0.75)'; c.lineWidth = 2.5;
+    for (const y of [118, 166, 214, 262]) { c.beginPath(); c.moveTo(-70, y); c.quadraticCurveTo(0, y + 8, 70, y); c.stroke(); }
+    c.beginPath(); c.moveTo(0, 70); c.lineTo(0, 340); c.stroke();
+    c.restore();
+    // חגורה עם האות של הצב
+    skR(c, -112, 176, 224, 22, 6, '#7a4a20', out, 2.5);
+    skE(c, 0, 187, 19, 17, '#d9b25a', out, 2.5);
+    c.save(); c.fillStyle = skShade(bd, -0.2); c.font = 'bold 22px "Arial Black", Arial, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(tr.letter, 0, 188); c.restore();
+    if (tr.weapon === 'sai') {                                         // סאי בחגורה משני הצדדים
+        for (const sd of [-1, 1]) {
+            c.save(); c.translate(sd * 70, 196); c.rotate(sd * 0.5);
+            c.strokeStyle = out; c.lineWidth = 7; c.lineCap = 'round';
+            c.beginPath(); c.moveTo(0, -70); c.lineTo(0, 30); c.moveTo(-14, -6); c.quadraticCurveTo(-16, -22, -10, -30); c.moveTo(14, -6); c.quadraticCurveTo(16, -22, 10, -30); c.stroke();
+            c.strokeStyle = '#d8dde6'; c.lineWidth = 4; c.stroke();
+            skR(c, -5, -2, 10, 34, 3, '#8a1a1a', out, 1.5);
+            c.restore();
+        }
+    }
+    if (tr.weapon === 'nunchaku') {                                    // נונצ'אקו תלוי מהחגורה
+        const sw = Math.sin(t * 3) * 0.15;
+        for (const [x, r] of [[-60, 0.2 + sw], [60, -0.2 - sw]]) {
+            c.save(); c.translate(x, 198); c.rotate(r);
+            skR(c, -7, 6, 14, 64, 6, '#c8843a', out, 2);
+            c.strokeStyle = '#6a4418'; c.lineWidth = 2; c.beginPath(); c.moveTo(-7, 20); c.lineTo(7, 20); c.moveTo(-7, 56); c.lineTo(7, 56); c.stroke();
+            c.restore();
+        }
+        c.strokeStyle = '#9aa4b4'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(-60, 200); c.quadraticCurveTo(0, 226, 60, 200); c.stroke();
+    }
+    // הבנדנה על העיניים - עם חורים לעיניים, כך שהאישונים עדיין זזים
+    const band = new Path2D();
+    band.moveTo(-88, -84); band.quadraticCurveTo(0, -104, 88, -84);
+    band.lineTo(88, -48); band.quadraticCurveTo(0, -36, -88, -48); band.closePath();
+    for (const o of [-34, 34]) { band.moveTo(o + 21, -62); band.ellipse(o, -62, 21, 16, 0, 0, Math.PI * 2); }
+    c.fillStyle = bd; c.fill(band, 'evenodd');
+    c.strokeStyle = out; c.lineWidth = 3; c.stroke(band);
+    c.strokeStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-70, -86); c.quadraticCurveTo(0, -98, 70, -86); c.stroke();
+}
+
+function skSplinterExtra(c, sk, st) {
+    const t = st.t, out = SK_OUT, fur = sk.tone;
+    skBehind(c, () => {
+        for (const sd of [-1, 1]) {                                    // אוזניים עגולות גדולות
+            skE(c, sd * 78, -120, 40, 38, fur, out, 3);
+            skE(c, sd * 78, -118, 26, 24, '#e8a6a6');
+        }
+        c.lineCap = 'round';                                           // מקל הליכה מבמבוק
+        c.strokeStyle = out; c.lineWidth = 14; c.beginPath(); c.moveTo(150, 340); c.lineTo(140, -40); c.stroke();
+        c.strokeStyle = '#b89a52'; c.lineWidth = 9; c.stroke();
+        c.strokeStyle = '#7a6230'; c.lineWidth = 3;
+        for (const y of [0, 80, 160, 240]) { c.beginPath(); c.moveTo(137 + (y / 380) * 10, y); c.lineTo(147 + (y / 380) * 10, y); c.stroke(); }
+        // זנב ורוד
+        c.strokeStyle = out; c.lineWidth = 9; c.beginPath(); c.moveTo(-120, 300); c.bezierCurveTo(-200, 260, -150, 160, -190 + Math.sin(t * 2) * 8, 120); c.stroke();
+        c.strokeStyle = '#e8a6a6'; c.lineWidth = 5; c.stroke();
+    });
+    // קימונו: חפיפה של הצווארון וחגורה
+    skP(c, [[-34, 46], [10, 46], [60, 150], [30, 150]], skShade(sk.outfit.base, -0.25), out, 2.5);
+    skR(c, -112, 168, 224, 22, 6, '#3a2010', out, 2.5);
+    // חוטם: אף ורוד גדול ושפם של חולדה
+    skE(c, 0, -30, 15, 11, '#e8909a', out, 2.5);
+    skE(c, -4, -34, 5, 3, 'rgba(255,255,255,0.7)');
+    c.strokeStyle = 'rgba(40,30,25,0.8)'; c.lineWidth = 1.6; c.lineCap = 'round';
+    for (const sd of [-1, 1]) for (const [dy, len] of [[-6, 70], [2, 76], [10, 66]]) {
+        c.beginPath(); c.moveTo(sd * 18, -24 + dy); c.quadraticCurveTo(sd * len * 0.6, -30 + dy * 1.6, sd * len, -22 + dy * 2.2); c.stroke();
+    }
+}
+
+function skShredderExtra(c, sk, st) {
+    const t = st.t, out = SK_OUT;
+    const steel = (x0, y0, x1, y1) => { const g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, '#f2f4f8'); g.addColorStop(0.5, '#a8b0bc'); g.addColorStop(1, '#5a6270'); return g; };
+    const spike = (x, y, a, len, w) => {
+        c.save(); c.translate(x, y); c.rotate(a);
+        c.beginPath(); c.moveTo(-w, 0); c.lineTo(0, -len); c.lineTo(w, 0); c.closePath();
+        c.fillStyle = steel(-w, -len, w, 0); c.fill(); c.strokeStyle = out; c.lineWidth = 2; c.stroke();
+        c.restore();
+    };
+    // כתפיות שריון עם להבים
+    for (const sd of [-1, 1]) {
+        for (const [dx, a, len] of [[-22, -0.2, 46], [0, 0, 58], [22, 0.2, 46]]) spike(sd * (100 + dx * 0.9) , 70, sd * (0.45 + a), len, 9);
+        skE(c, sd * 100, 92, 46, 30, steel(sd * 60, 60, sd * 140, 120), out, 3, sd * 0.25);
+        skE(c, sd * 100, 92, 30, 18, null, 'rgba(60,66,80,0.6)', 2, sd * 0.25);
+    }
+    // שריון החזה עם סמל אדום
+    c.save(); skTorsoPath(c); c.clip();
+    const ch = new Path2D(); ch.moveTo(-60, 76); ch.lineTo(60, 76); ch.lineTo(52, 200); ch.lineTo(0, 230); ch.lineTo(-52, 200); ch.closePath();
+    c.fillStyle = steel(-60, 76, 60, 230); c.fill(ch); c.strokeStyle = out; c.lineWidth = 3; c.stroke(ch);
+    c.strokeStyle = 'rgba(60,66,80,0.6)'; c.lineWidth = 2;
+    for (const y of [118, 160]) { c.beginPath(); c.moveTo(-56, y); c.lineTo(56, y); c.stroke(); }
+    c.restore();
+    c.save(); c.translate(0, 136);                                       // סמל כף רגל אדום
+    skE(c, 0, 4, 13, 18, '#c8102e', out, 2);
+    for (const [x, y, r] of [[-12, -18, 5], [-3, -23, 5], [7, -21, 4.5], [14, -14, 4]]) skE(c, x, y, r, r, '#c8102e', out, 1.5);
+    c.restore();
+    // קסדה: כיפת פלדה עם רכס באמצע, מגיני צד ולהבים למעלה
+    spike(0, -150, 0, 70, 12); spike(-40, -138, -0.45, 50, 9); spike(40, -138, 0.45, 50, 9);
+    const helm = new Path2D();
+    helm.moveTo(-96, -10); helm.bezierCurveTo(-106, -110, -60, -160, 0, -160); helm.bezierCurveTo(60, -160, 106, -110, 96, -10);
+    helm.lineTo(80, -14); helm.lineTo(80, -70); helm.quadraticCurveTo(60, -84, 30, -80); helm.lineTo(0, -92); helm.lineTo(-30, -80);
+    helm.quadraticCurveTo(-60, -84, -80, -70); helm.lineTo(-80, -14); helm.closePath();
+    c.fillStyle = steel(-100, -160, 100, -10); c.fill(helm); c.strokeStyle = out; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(helm);
+    c.strokeStyle = 'rgba(60,66,80,0.7)'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(0, -158); c.lineTo(0, -94); c.stroke();
+    for (const sd of [-1, 1]) { c.beginPath(); c.moveTo(sd * 90, -60); c.lineTo(sd * 90, -16); c.stroke(); }
+    // מסכה כהה סביב העיניים
+    c.fillStyle = 'rgba(20,16,30,0.55)';
+    c.beginPath(); c.moveTo(-80, -70); c.quadraticCurveTo(-30, -82, 0, -92); c.quadraticCurveTo(30, -82, 80, -70); c.lineTo(78, -46); c.quadraticCurveTo(0, -38, -78, -46); c.closePath(); c.fill();
+    const glow = 0.5 + 0.5 * Math.sin(t * 3);
+    for (const o of [-34, 34]) skGlow(c, o, -62, 26, '#ff3a3a', 0.25 + 0.2 * glow);
+}
+
 // מגהטרון - סוס רובוטי שחור: ראש מוארך משריון מתכת, אוזניים חדות, רעמה של להבי פלדה, עיניים אדומות זוהרות וליבת אנרגיה בחזה
 function skMegatronBack(c, sk, st) {
     const t = st.t, out = '#050508';

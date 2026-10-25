@@ -39,6 +39,30 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ---------- אירוע קהילתי: צבי הנינג'ה ----------
+    // מסמך אחד עם 12 מונים (צוות a/b x 6 מצבי משחק). כל כתיבה יכולה רק להוסיף 1 למונה אחד
+    function tmntKeys() {
+      return ['a_delivery', 'a_kvk', 'a_ninja', 'a_shvartz', 'a_catch', 'a_goods',
+              'b_delivery', 'b_kvk', 'b_ninja', 'b_shvartz', 'b_catch', 'b_goods'];
+    }
+    function tmntSame(k) {
+      return request.resource.data.get(k, 0) == resource.data.get(k, 0)
+          || request.resource.data.get(k, 0) == resource.data.get(k, 0) + 1;
+    }
+    match /events/tmnt {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(tmntKeys())
+                    && request.resource.data.size() == 1
+                    && request.resource.data.values().hasOnly([1]);
+      allow update: if request.resource.data.keys().hasOnly(tmntKeys())
+                    && request.resource.data.diff(resource.data).affectedKeys().size() == 1
+                    && tmntSame('a_delivery') && tmntSame('a_kvk') && tmntSame('a_ninja')
+                    && tmntSame('a_shvartz') && tmntSame('a_catch') && tmntSame('a_goods')
+                    && tmntSame('b_delivery') && tmntSame('b_kvk') && tmntSame('b_ninja')
+                    && tmntSame('b_shvartz') && tmntSame('b_catch') && tmntSame('b_goods');
+      allow delete: if false;
+    }
+
     // ---------- קודים (להעברת קודי הפיתוח לשרת בהמשך) ----------
     // אפשר לבדוק קוד אחד לפי השם שלו, אבל אי אפשר לקבל רשימה של כל הקודים
     match /codes/{code} {

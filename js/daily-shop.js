@@ -313,6 +313,7 @@ function renderDaily() {
         bonus.appendChild(bb);
     }
     box.appendChild(bonus);
+    if (typeof renderTmnt === 'function') renderTmnt();          // אירוע קהילתי (וגם מזיז את האתגרים לתחתית בזמן האירוע)
 }
 
 // טיימר המבצע בחנות
@@ -344,6 +345,7 @@ function playAgain() {
 
 function showResultReward(gameKey, score) {
     lastGameKey = gameKey;
+    if (typeof tmntGamePlayed === 'function') tmntGamePlayed(gameKey, score);     // אירוע קהילתי
     const box = document.getElementById('coupon-box');
     const txt = document.getElementById('coupon-text');
     const coinsEl = document.getElementById('coupon-coins');
