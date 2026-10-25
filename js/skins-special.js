@@ -1176,6 +1176,101 @@ function skShlukFront(c, sk, st) {
     skE(c, 0, -116, 7, 6, '#ffd54f', '#6a4a04', 1.5);
 }
 
+// מגהטרון - סוס רובוטי שחור: ראש מוארך משריון מתכת, אוזניים חדות, רעמה של להבי פלדה, עיניים אדומות זוהרות וליבת אנרגיה בחזה
+function skMegatronBack(c, sk, st) {
+    const t = st.t, out = '#050508';
+    const metal = (x0, y0, x1, y1, a, b) => { const g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, a || '#4a4e5a'); g.addColorStop(0.5, '#23252d'); g.addColorStop(1, b || '#0c0d11'); return g; };
+    const glow = 0.6 + 0.4 * Math.sin(t * 3);
+    skAuraBack(c, sk, t);
+    // רעמה: להבי פלדה לאורך הגב מאחורי הראש
+    for (let i = 0; i < 7; i++) {
+        const a = -2.2 + i * 0.32, r0 = 92, x = Math.cos(a) * r0 + 26, y = Math.sin(a) * r0 - 70;
+        c.save(); c.translate(x, y); c.rotate(a + Math.PI / 2 + 0.35);
+        c.beginPath(); c.moveTo(-14, 0); c.lineTo(0, -58 + (i % 2) * 14); c.lineTo(14, 0); c.closePath();
+        c.fillStyle = metal(-14, -58, 14, 0, '#5a5e6a'); c.fill(); c.strokeStyle = out; c.lineWidth = 2.5; c.stroke();
+        c.strokeStyle = 'rgba(255,40,40,' + (0.35 + 0.3 * glow) + ')'; c.lineWidth = 1.5;
+        c.beginPath(); c.moveTo(-8, -2); c.lineTo(0, -48 + (i % 2) * 14); c.stroke();
+        c.restore();
+    }
+    // צוואר וחזה משוריינים
+    const body = new Path2D();
+    body.moveTo(-50, 30); body.lineTo(50, 30); body.lineTo(120, 120); body.lineTo(128, 340); body.lineTo(-128, 340); body.lineTo(-120, 120); body.closePath();
+    c.fillStyle = metal(-128, 30, 128, 340); c.fill(body); c.strokeStyle = out; c.lineWidth = 3; c.stroke(body);
+    c.strokeStyle = 'rgba(140,150,170,0.35)'; c.lineWidth = 2;
+    for (const [x0, y0, x1, y1] of [[-120, 130, 0, 110], [120, 130, 0, 110], [-124, 210, 124, 210], [0, 110, 0, 340]]) { c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); }
+    for (const sd of [-1, 1]) {                                             // כתפיות
+        c.beginPath(); c.moveTo(sd * 70, 70); c.lineTo(sd * 140, 96); c.lineTo(sd * 132, 150); c.lineTo(sd * 92, 130); c.closePath();
+        c.fillStyle = metal(sd * 70, 70, sd * 140, 150, '#6a6e7a'); c.fill(); c.strokeStyle = out; c.lineWidth = 2.5; c.stroke();
+        for (const [x, y] of [[sd * 104, 104], [sd * 124, 128]]) skE(c, x, y, 3, 3, '#8a8e9a', out, 1);
+    }
+    // ליבת אנרגיה בחזה
+    skGlow(c, 0, 170, 46, '#ff2a2a', 0.45 * glow);
+    skE(c, 0, 170, 22, 22, '#2a0a0a', out, 3);
+    skE(c, 0, 170, 14, 14, 'rgba(255,' + Math.round(60 + 80 * glow) + ',60,0.95)');
+    skE(c, -4, 165, 4, 4, 'rgba(255,255,255,0.8)');
+    // אוזניים חדות
+    for (const sd of [-1, 1]) {
+        c.beginPath(); c.moveTo(sd * 30, -150); c.lineTo(sd * 62, -232); c.lineTo(sd * 80, -138); c.closePath();
+        c.fillStyle = metal(sd * 30, -232, sd * 80, -138, '#5a5e6a'); c.fill(); c.strokeStyle = out; c.lineWidth = 3; c.stroke();
+        c.beginPath(); c.moveTo(sd * 46, -152); c.lineTo(sd * 60, -208); c.lineTo(sd * 68, -150); c.closePath();
+        c.fillStyle = 'rgba(160,30,40,0.7)'; c.fill();
+    }
+    // ראש סוס מוארך: מצח רחב שמצטמצם לחוטם
+    const head = new Path2D();
+    head.moveTo(0, -176);
+    head.bezierCurveTo(60, -176, 96, -140, 92, -80);
+    head.bezierCurveTo(90, -40, 70, -20, 60, 10);
+    head.bezierCurveTo(52, 40, 30, 60, 0, 60);
+    head.bezierCurveTo(-30, 60, -52, 40, -60, 10);
+    head.bezierCurveTo(-70, -20, -90, -40, -92, -80);
+    head.bezierCurveTo(-96, -140, -60, -176, 0, -176);
+    head.closePath();
+    const hg = c.createRadialGradient(-30, -110, 10, 0, -40, 170);
+    hg.addColorStop(0, '#4c505c'); hg.addColorStop(0.5, '#1e2027'); hg.addColorStop(1, '#0a0b0e');
+    c.fillStyle = hg; c.fill(head); c.strokeStyle = out; c.lineWidth = 3.5; c.stroke(head);
+    c.save(); c.clip(head);
+    c.strokeStyle = 'rgba(150,160,180,0.35)'; c.lineWidth = 2;                // קווי לוחות שריון
+    c.beginPath(); c.moveTo(-60, -150); c.lineTo(0, -96); c.lineTo(60, -150); c.stroke();
+    for (const sd of [-1, 1]) {
+        c.beginPath(); c.moveTo(sd * 92, -40); c.lineTo(sd * 54, -26); c.lineTo(sd * 48, 40); c.stroke();
+        for (const [x, y] of [[sd * 72, -100], [sd * 70, -10], [sd * 52, 56]]) skE(c, x, y, 2.8, 2.8, '#7a7e8a', out, 1);
+    }
+    c.fillStyle = 'rgba(255,255,255,0.1)'; c.beginPath(); c.ellipse(-36, -128, 26, 12, -0.5, 0, Math.PI * 2); c.fill();
+    c.restore();
+    // סמל סגול על המצח
+    c.beginPath(); c.moveTo(0, -134); c.lineTo(18, -122); c.lineTo(12, -102); c.lineTo(0, -94); c.lineTo(-12, -102); c.lineTo(-18, -122); c.closePath();
+    c.fillStyle = '#6a2ab8'; c.fill(); c.strokeStyle = out; c.lineWidth = 2; c.stroke();
+    c.fillStyle = 'rgba(220,180,255,0.6)'; c.beginPath(); c.moveTo(0, -129); c.lineTo(8, -121); c.lineTo(0, -104); c.lineTo(-8, -121); c.closePath(); c.fill();
+    // בלורית של להבי מתכת שנופלת על המצח
+    for (const [x, a, len] of [[-16, 0.5, 40], [0, 0.15, 48], [16, -0.25, 40]]) {
+        c.save(); c.translate(x, -178); c.rotate(a);
+        c.beginPath(); c.moveTo(-9, 0); c.lineTo(0, len); c.lineTo(9, 0); c.closePath();
+        c.fillStyle = metal(-9, 0, 9, len, '#6a6e7a'); c.fill(); c.strokeStyle = out; c.lineWidth = 2; c.stroke();
+        c.restore();
+    }
+    // חוטם של סוס: לוח מתכת רחב ובולט סביב הפה, עם נחיריים גדולים זוהרים
+    const muz = new Path2D();
+    muz.moveTo(-58, -34); muz.bezierCurveTo(-20, -48, 20, -48, 58, -34);
+    muz.bezierCurveTo(96, -20, 100, 60, 64, 86); muz.bezierCurveTo(30, 108, -30, 108, -64, 86);
+    muz.bezierCurveTo(-100, 60, -96, -20, -58, -34); muz.closePath();
+    const mg = c.createLinearGradient(0, -48, 0, 108); mg.addColorStop(0, '#4a4e5a'); mg.addColorStop(1, '#16171c');
+    c.fillStyle = mg; c.fill(muz); c.strokeStyle = out; c.lineWidth = 3; c.stroke(muz);
+    c.strokeStyle = 'rgba(160,170,190,0.35)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-50, -26); c.bezierCurveTo(-16, -36, 16, -36, 50, -26); c.stroke();
+    for (const sd of [-1, 1]) {
+        c.beginPath(); c.moveTo(sd * 34, -32); c.bezierCurveTo(sd * 64, -36, sd * 76, -12, sd * 62, -6); c.bezierCurveTo(sd * 52, -4, sd * 44, -18, sd * 34, -32); c.closePath();
+        c.fillStyle = '#1a0404'; c.fill(); c.strokeStyle = out; c.lineWidth = 2; c.stroke();
+        skGlow(c, sd * 56, -18, 14, '#ff3a2a', 0.45 * glow);
+    }
+    skEyes(c, sk, st);
+    // גבות מתכת כועסות ועיניים אדומות זוהרות
+    for (const sd of [-1, 1]) {
+        c.beginPath(); c.moveTo(sd * 12, -86); c.lineTo(sd * 62, -96); c.lineTo(sd * 60, -82); c.lineTo(sd * 14, -74); c.closePath();
+        c.fillStyle = '#6a6e7a'; c.fill(); c.strokeStyle = out; c.lineWidth = 2; c.stroke();
+        skGlow(c, sd * 34, -62, 30, '#ff2020', 0.35 + 0.25 * glow);
+    }
+}
+
 function skDeniBack(c, sk, st) {
     const t = st.t, J = sk.jersey || DENI_PORTLAND;
     skJerseyBody(c, sk, t, J);

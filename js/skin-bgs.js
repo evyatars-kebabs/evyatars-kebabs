@@ -541,6 +541,27 @@ const SK_BG = {
         for (let i = 0; i < 4; i++) { c.fillStyle = i % 2 ? '#ffffff' : '#e8262a'; c.beginPath(); c.moveTo(0, -40); c.arc(0, -40, 36, Math.PI + i * Math.PI / 4, Math.PI + (i + 1) * Math.PI / 4); c.fill(); }
         c.restore();
     },
+    megatron(c, W, H, t) {                                      // מגהטרון: מפעל רובוטים אפל עם רשת משושים, קרן סריקה אדומה וניצוצות
+        bgLinear(c, W, H, ['#07070c', '#14141e', '#07070c']);
+        c.strokeStyle = 'rgba(120,130,160,0.14)'; c.lineWidth = 1.2;      // רשת משושים
+        const r = 18, hw = r * Math.sqrt(3);
+        for (let row = 0, y = 0; y < H + r; y += r * 1.5, row++) {
+            for (let x = (row % 2) * hw / 2; x < W + hw; x += hw) {
+                c.beginPath(); for (let k = 0; k < 6; k++) { const a = Math.PI / 6 + k * Math.PI / 3; c[k ? 'lineTo' : 'moveTo'](x + Math.cos(a) * r, y + Math.sin(a) * r); } c.closePath(); c.stroke();
+            }
+        }
+        const sy = ((t * 0.35) % 1.3 - 0.15) * H;                        // קרן סריקה
+        const sg = c.createLinearGradient(0, sy - 30, 0, sy + 30);
+        sg.addColorStop(0, 'rgba(255,30,30,0)'); sg.addColorStop(0.5, 'rgba(255,30,30,0.35)'); sg.addColorStop(1, 'rgba(255,30,30,0)');
+        c.fillStyle = sg; c.fillRect(0, sy - 30, W, 60);
+        for (const sx of [0.06, 0.94]) {                                // עמודי פלדה עם נורות
+            c.fillStyle = '#1c1c26'; c.fillRect(W * sx - 14, 0, 28, H);
+            c.strokeStyle = '#3a3a4a'; c.lineWidth = 2; c.strokeRect(W * sx - 14, -2, 28, H + 4);
+            for (let y = 30; y < H; y += 60) { const on = Math.sin(t * 4 + y) > 0; skE(c, W * sx, y, 4, 4, on ? '#ff3a3a' : '#4a1a1a'); if (on) bgGlow(c, W * sx, y, 12, '255,50,50', 0.6); }
+        }
+        bgGlow(c, W / 2, H * 0.45, W * 0.5, '170,40,255', 0.18);
+        bgRisers(c, W, H, t, 16, 371, (x, y, i) => { c.fillStyle = i % 3 ? 'rgba(255,170,60,0.85)' : 'rgba(255,255,200,0.9)'; c.fillRect(x, y, 2, 2); }, 40);
+    },
     nir(c, W, H, t) { bgCourt(c, W, H, t, '#0038b8', '#0038b8', '#ffffff'); },
     wizmouse(c, W, H, t) {                                      // מיקי המכשף: טירה בלילה, ירח וקסם מסתחרר
         bgLinear(c, W, H, ['#0a0a30', '#1e1a5a', '#2a1a5a']);

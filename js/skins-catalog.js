@@ -282,6 +282,8 @@ const SV_SKINS = [
     { id: 'trump', name: 'טראמפ', rarity: 6, tone: '#f2a764', hair: { style: 'custom', color: '#f4d06a' }, brow: '#e8c060',
       lips: '#d98a72', eyes: { iris: '#5a8ac8' }, look: 'm', blush: false, aura: { color: '#ffd23d', alpha: 0.3 },
       drawBack: skTrumpBack, drawFront: skTrumpFront },
+    { id: 'megatron', name: 'מגהטרון', rarity: 6, tone: '#23252d', brow: '#6a6e7a', lips: '#3a3e4a', eyes: { iris: '#ff2020' }, blush: false,
+      aura: { color: '#ff2a2a', alpha: 0.35 }, fx: { type: 'embers', count: 14, speed: 0.4 }, drawBack: skMegatronBack },
     { id: 'nir', name: 'ניר', rarity: 6, tone: '#f2c9a8', hair: { style: 'custom', color: '#5a3a1e' }, brow: '#3a2412',
       lips: '#d58a86', eyes: { iris: '#6f8796' }, face: ['freckles'], look: 'm',
       jersey: Object.assign({}, DENI_ISRAEL, { num: '7' }), aura: { color: '#3a7bff', alpha: 0.4, rings: true },
