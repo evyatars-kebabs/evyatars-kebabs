@@ -1186,4 +1186,6 @@
     color: #fff; background: var(--tc); cursor: pointer; }
 .ev-badge { margin-top: 7px; font-size: 0.78rem; font-weight: 700; color: var(--tc); }
 .ev-badge.ok { color: #7ee787; }
+.ev-count { font-size: 0.85rem; font-weight: 700; color: var(--tc); margin: 2px 0 4px; }
+.ev-full { margin-top: 8px; font-size: 0.72rem; color: #c9a99a; background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 6px; }
 .ev-mine { text-align: center; font-size: 0.75rem; color: #b9c8b4; margin-top: 8px; }

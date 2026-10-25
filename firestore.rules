@@ -40,10 +40,18 @@ service cloud.firestore {
     }
 
     // ---------- אירוע קהילתי: צבי הנינג'ה ----------
-    // מסמך אחד עם 12 מונים (צוות a/b x 6 מצבי משחק). כל כתיבה יכולה רק להוסיף 1 למונה אחד
+    // מסמך אחד עם מונים: צוות a/b x 6 מצבי משחק, ומספר החברים בכל צוות. כל כתיבה יכולה רק להוסיף 1 למונה אחד
     function tmntKeys() {
-      return ['a_delivery', 'a_kvk', 'a_ninja', 'a_shvartz', 'a_catch', 'a_goods',
-              'b_delivery', 'b_kvk', 'b_ninja', 'b_shvartz', 'b_catch', 'b_goods'];
+      return ['a_delivery', 'a_kvk', 'a_ninja', 'a_shvartz', 'a_catch', 'a_goods', 'a_members',
+              'b_delivery', 'b_kvk', 'b_ninja', 'b_shvartz', 'b_catch', 'b_goods', 'b_members'];
+    }
+    // הצטרפות לצוות (+1 ל-x_members) מותרת רק כשהצוות לא גדול מדי מהשני:
+    // ההפרש קטן מ-3, או קטן מ-15% מכל המשתתפים
+    function tmntJoinOk(me, other) {
+      return request.resource.data.get(me, 0) == resource.data.get(me, 0)
+          || (resource.data.get(me, 0) - resource.data.get(other, 0) < 3
+              || (resource.data.get(me, 0) - resource.data.get(other, 0)) * 100
+                 < 15 * (resource.data.get(me, 0) + resource.data.get(other, 0)));
     }
     function tmntSame(k) {
       return request.resource.data.get(k, 0) == resource.data.get(k, 0)
@@ -59,7 +67,9 @@ service cloud.firestore {
                     && tmntSame('a_delivery') && tmntSame('a_kvk') && tmntSame('a_ninja')
                     && tmntSame('a_shvartz') && tmntSame('a_catch') && tmntSame('a_goods')
                     && tmntSame('b_delivery') && tmntSame('b_kvk') && tmntSame('b_ninja')
-                    && tmntSame('b_shvartz') && tmntSame('b_catch') && tmntSame('b_goods');
+                    && tmntSame('b_shvartz') && tmntSame('b_catch') && tmntSame('b_goods')
+                    && tmntSame('a_members') && tmntSame('b_members')
+                    && tmntJoinOk('a_members', 'b_members') && tmntJoinOk('b_members', 'a_members');
       allow delete: if false;
     }
 

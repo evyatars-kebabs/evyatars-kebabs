@@ -2,11 +2,14 @@
    שני צוותים. כל משחק שמסתיים (חוץ מהחידון) מוסיף 1 לצוות של השחקן במצב המשחק הזה.
    כשצוות מגיע ל-200 משחקים בכל אחד מ-6 המצבים - כל חברי הצוות מקבלים את 3 הסקינים שלו.
    המונים המשותפים נשמרים במסמך אחד ב-Firestore: events/tmnt (שדות כמו a_delivery, b_ninja).
-   קריאה אחת מציגה את ההתקדמות של שני הצוותים, וכל משחק עולה כתיבה אחת. */
+   קריאה אחת מציגה את ההתקדמות של שני הצוותים, וכל משחק עולה כתיבה אחת.
+   שלב ראשון - בחירת צוותים: מ-pollStart ועד שהאירוע מתחיל (start) שחקנים רק בוחרים צוות, ורואים כמה הצטרפו לכל צד.
+   כשצוות אחד גדול מדי מהשני, אי אפשר להצטרף אליו (גם הכללים ב-Firestore אוכפים את זה). */
 
 const TMNT = {
-    start: Date.parse('2026-10-25T00:00:00+03:00'),
-    end: Date.parse('2026-11-08T23:59:59+02:00'),
+    pollStart: Date.parse('2026-10-25T00:00:00+03:00'),
+    start: null,                     // מתי מתחילה ספירת המשחקים (null = עוד לא נקבע - רק בחירת צוותים)
+    end: null,
     afterDays: 3,                    // כמה ימים אחרי הסיום עוד מציגים את התוצאות (ואפשר לקבל את הפרס)
     goal: 200,
     modes: [['delivery', '🛵', 'שליח'], ['kvk', '🧟', 'קולסקים'], ['ninja', '🥷', "נינג'ה"],
@@ -20,8 +23,17 @@ const TMNT_KEY = 'kebab_tmnt';               // { team, rewarded, mine } - נש�
 const TMNT_COUNTS_KEY = 'kebab_tmnt_counts'; // עותק אחרון של המונים, להצגה מיידית
 const TMNT_CACHE_MS = 90000;
 
-const tmntLive = () => { const n = Date.now(); return n >= TMNT.start && n <= TMNT.end; };
-const tmntVisible = () => { const n = Date.now(); return n >= TMNT.start && n <= TMNT.end + TMNT.afterDays * 864e5; };
+const tmntLive = () => { const n = Date.now(); return !!TMNT.start && n >= TMNT.start && n <= TMNT.end; };
+const tmntPoll = () => { const n = Date.now(); return n >= TMNT.pollStart && !(TMNT.start && n >= TMNT.start); };
+const tmntVisible = () => tmntPoll() || (!!TMNT.start && Date.now() >= TMNT.start && Date.now() <= TMNT.end + TMNT.afterDays * 864e5);
+
+// איזון: אי אפשר להצטרף לצוות שגדול מהשני ב-3 שחקנים או יותר וגם ב-15% או יותר מכל המשתתפים
+// (אותו חישוב בדיוק כמו בכללי Firestore)
+function tmntMembers(t) { return tmntCount(t, 'members'); }
+function tmntCanJoin(t) {
+    const o = t === 'a' ? 'b' : 'a', m = tmntMembers(t), n = tmntMembers(o), diff = m - n;
+    return diff < 3 || diff * 100 < 15 * (m + n);
+}
 
 // משחקים שעוד לא נשלחו נשמרים בנפרד ולא מסונכרנים לחשבון - כדי ששני מכשירים לא ישלחו את אותם משחקים פעמיים
 const TMNT_PENDING_KEY = 'kebab_tmnt_pending';
@@ -63,7 +75,7 @@ function tmntFetch(force) {
         .then(doc => {
             const d = doc.exists ? doc.data() : {};
             const next = {};
-            for (const t of ['a', 'b']) for (const [m] of TMNT.modes) { const v = d[t + '_' + m]; if (typeof v === 'number') next[t + '_' + m] = v; }
+            for (const t of ['a', 'b']) for (const m of TMNT.modes.map(x => x[0]).concat('members')) { const v = d[t + '_' + m]; if (typeof v === 'number') next[t + '_' + m] = v; }
             tmntCounts = next;
             store.set(TMNT_COUNTS_KEY, JSON.stringify(next));
             return true;
@@ -76,7 +88,7 @@ function tmntFetch(force) {
 // שולחים את המשחקים שנצברו במכשיר, אחד אחד (הכללים מאשרים רק +1 בכל כתיבה)
 let tmntFlushing = false;
 function tmntFlush() {
-    if (!db || tmntFlushing || !tmntLive()) return;
+    if (!db || tmntFlushing || !(tmntLive() || tmntPoll())) return;
     const st = tmntState();
     const f = Object.keys(st.pending).find(k => st.pending[k] > 0);
     if (!f) return;
@@ -91,7 +103,24 @@ function tmntFlush() {
             tmntFlushing = false;
             tmntFlush();
         })
-        .catch(err => { console.warn('אירוע: שליחת משחק נכשלה, ננסה שוב אחר כך', err.code || err.message || err); tmntFlushing = false; });
+        .catch(err => {
+            tmntFlushing = false;
+            // הצטרפות שנדחתה כי הצוות התמלא בינתיים: מבטלים את הבחירה ומבקשים לבחור שוב
+            // (אם לפי המספרים העדכניים הצוות לא מלא - זו בעיה אחרת, למשל כללים שעוד לא פורסמו: שומרים ומנסים שוב אחר כך)
+            if (f.endsWith('_members') && err && err.code === 'permission-denied') {
+                tmntFetch(true).then(() => {
+                    if (tmntCanJoin(f[0])) { console.warn('אירוע: ההצטרפות נדחתה (כללי Firestore?), ננסה שוב אחר כך'); return; }
+                    const s2 = tmntState();
+                    delete s2.pending[f];
+                    if (s2.team === f[0]) s2.team = null;
+                    tmntSave(s2);
+                    renderTmnt();
+                    showToast('הצוות התמלא בינתיים - בחרו שוב', false);
+                });
+                return;
+            }
+            console.warn('אירוע: שליחה נכשלה, ננסה שוב אחר כך', err.code || err.message || err);
+        });
 }
 
 // נקרא בסוף כל משחק (מתוך showResultReward)
@@ -120,22 +149,33 @@ function tmntCheckReward() {
 }
 
 function tmntPickTeam(team) {
-    const st = tmntState();
-    if (st.team || !tmntLive()) return;
-    const t = TMNT.teams[team];
-    const names = t.skins.map(id => skinById(id).name).join(', ');
-    if (!confirm('להצטרף ל' + t.name + ' (' + names + ')?\nאי אפשר להחליף צוות אחר כך.')) return;
-    st.team = team;
-    tmntSave(st);
-    if (typeof sfx !== 'undefined' && sfx.tap) sfx.tap();
-    renderTmnt();
+    if (tmntState().team || !(tmntLive() || tmntPoll())) return;
+    // בודקים מול המספרים העדכניים מהשרת לפני שמצטרפים
+    tmntFetch(true).then(() => {
+        const st = tmntState();
+        if (st.team) return;
+        const t = TMNT.teams[team];
+        if (!tmntCanJoin(team)) { showToast('🔒 ב' + t.name + ' יש כרגע יותר מדי שחקנים - הצטרפו לצוות השני', false); renderTmnt(); return; }
+        const names = t.skins.map(id => skinById(id).name).join(', ');
+        if (!confirm('להצטרף ל' + t.name + ' (' + names + ')?\nאי אפשר להחליף צוות אחר כך.')) return;
+        st.team = team;
+        st.pending[team + '_members'] = 1;
+        tmntSave(st);
+        if (typeof sfx !== 'undefined' && sfx.tap) sfx.tap();
+        renderTmnt();
+        tmntFlush();
+    });
 }
 
 function tmntCountdown() {
+    if (tmntPoll()) return TMNT.start ? '🗳️ מתחיל בעוד ' + tmntDur(TMNT.start - Date.now()) : '🗳️ בחירת צוותים';
     const ms = TMNT.end - Date.now();
     if (ms <= 0) return 'האירוע הסתיים';
+    return '⏳ ' + tmntDur(ms);
+}
+function tmntDur(ms) {
     const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4);
-    return '⏳ ' + (d > 0 ? d + ' ימים ' + h + ' שע\'' : h > 0 ? h + ' שע\' ' + m + ' דק\'' : m + ' דק\'');
+    return d > 0 ? d + ' ימים ' + h + ' שע\'' : h > 0 ? h + ' שע\' ' + m + ' דק\'' : m + ' דק\'';
 }
 
 function renderTmnt() {
@@ -155,7 +195,7 @@ function renderTmnt() {
     if (tmntLive()) { if (home.lastElementChild !== daily) home.appendChild(daily); }
     else if (box.nextElementSibling !== daily) home.insertBefore(daily, box.nextElementSibling);
 
-    const st = tmntState(), live = tmntLive();
+    const st = tmntState(), live = tmntLive(), poll = tmntPoll();
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
     box.innerHTML = '';
     const head = el('div', 'ev-head');
@@ -163,8 +203,9 @@ function renderTmnt() {
     const cd = el('div', 'ev-timer', tmntCountdown()); cd.id = 'ev-timer';
     head.appendChild(cd);
     box.appendChild(head);
-    box.appendChild(el('div', 'ev-sub', live
-        ? 'כל משחק שאתם מסיימים (חוץ מהחידון) מקדם את הצוות שלכם. צוות שמגיע ל-' + TMNT.goal + ' משחקים בכל מצב - כל חבריו מקבלים את 3 הסקינים שלו!'
+    box.appendChild(el('div', 'ev-sub', poll
+        ? 'בחרו צוות! כשהאירוע יתחיל, כל משחק שתסיימו (חוץ מהחידון) יקדם את הצוות שלכם. צוות שמגיע ל-' + TMNT.goal + ' משחקים בכל מצב - כל חבריו מקבלים את 3 הסקינים שלו!'
+        : live ? 'כל משחק שאתם מסיימים (חוץ מהחידון) מקדם את הצוות שלכם. צוות שמגיע ל-' + TMNT.goal + ' משחקים בכל מצב - כל חבריו מקבלים את 3 הסקינים שלו!'
         : 'האירוע הסתיים. הנה התוצאות:'));
 
     const row = el('div', 'ev-teams');
@@ -181,6 +222,14 @@ function renderTmnt() {
         card.appendChild(avs);
         card.appendChild(el('div', 'ev-tname', T.name));
         card.appendChild(el('div', 'ev-members', T.skins.map(id => skinById(id).name).join(' · ')));
+        card.appendChild(el('div', 'ev-count', '👥 ' + tmntMembers(t) + ' שחקנים'));
+        if (poll) {
+            if (st.team === t) card.appendChild(el('div', 'ev-badge', '⭐ הצוות שלכם'));
+            else if (!st.team && tmntCanJoin(t)) { const btn = el('button', 'ev-join', 'הצטרפו לצוות'); btn.onclick = () => tmntPickTeam(t); card.appendChild(btn); }
+            else if (!st.team) card.appendChild(el('div', 'ev-full', '🔒 יותר מדי שחקנים כרגע - הצטרפו לצוות השני'));
+            row.appendChild(card);
+            continue;
+        }
         const tot = el('div', 'ev-total');
         const bar = el('div', 'ev-bar'); const fill = el('i'); fill.style.width = (pct * 100).toFixed(1) + '%'; bar.appendChild(fill);
         tot.appendChild(bar); tot.appendChild(el('b', '', Math.floor(pct * 100) + '%'));
@@ -198,15 +247,15 @@ function renderTmnt() {
         card.appendChild(modes);
         if (done) card.appendChild(el('div', 'ev-badge ok', '✓ הצוות השלים!'));
         else if (st.team === t) card.appendChild(el('div', 'ev-badge', '⭐ הצוות שלכם'));
-        else if (!st.team && live) {
+        else if (!st.team && live && tmntCanJoin(t)) {
             const btn = el('button', 'ev-join', 'הצטרפו לצוות');
             btn.onclick = () => tmntPickTeam(t);
             card.appendChild(btn);
-        }
+        } else if (!st.team && live) card.appendChild(el('div', 'ev-full', '🔒 יותר מדי שחקנים כרגע - הצטרפו לצוות השני'));
         row.appendChild(card);
     }
     box.appendChild(row);
-    if (st.team) box.appendChild(el('div', 'ev-mine', 'תרמתם ' + st.mine + ' משחקים ל' + TMNT.teams[st.team].name));
+    if (st.team && !poll) box.appendChild(el('div', 'ev-mine', 'תרמתם ' + st.mine + ' משחקים ל' + TMNT.teams[st.team].name));
 
     tmntCheckReward();
     // טוענים מחדש מהשרת (לכל היותר פעם ב-90 שניות) ומציירים שוב כשמגיע מידע חדש
@@ -222,4 +271,6 @@ setInterval(() => {
     const t = document.getElementById('ev-timer');
     if (t) t.textContent = tmntCountdown();
     if (tmntShown !== tmntVisible() + '|' + tmntLive()) renderTmnt();
+    // בזמן בחירת הצוותים מרעננים את מספר השחקנים כשמסך הבית פתוח
+    else if (tmntPoll() && document.getElementById('screen-home').classList.contains('active') && Date.now() - tmntFetchedAt >= TMNT_CACHE_MS) renderTmnt();
 }, 30000);
