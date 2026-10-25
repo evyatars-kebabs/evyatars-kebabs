@@ -1155,7 +1155,7 @@
 }
 .ev-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .ev-title { font-family: 'Secular One', sans-serif; font-size: 1.15rem; color: #7ee787; }
-.ev-timer { font-size: 0.8rem; color: #cfe8d0; background: rgba(0, 0, 0, 0.35); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.ev-timer { font-variant-numeric: tabular-nums; font-size: 0.8rem; color: #cfe8d0; background: rgba(0, 0, 0, 0.35); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
 .ev-sub { font-size: 0.78rem; color: #b9c8b4; margin: 6px 0 10px; line-height: 1.35; }
 .ev-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .ev-team {

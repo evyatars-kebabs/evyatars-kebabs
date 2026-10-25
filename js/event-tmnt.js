@@ -8,8 +8,8 @@
 
 const TMNT = {
     pollStart: Date.parse('2026-10-25T00:00:00+03:00'),
-    start: null,                     // מתי מתחילה ספירת המשחקים (null = עוד לא נקבע - רק בחירת צוותים)
-    end: null,
+    start: Date.parse('2026-10-25T16:00:00+02:00'),    // 16:00 שעון ישראל - עד אז רק בחירת צוותים, עם ספירה לאחור
+    end: Date.parse('2026-11-08T23:59:59+02:00'),
     afterDays: 3,                    // כמה ימים אחרי הסיום עוד מציגים את התוצאות (ואפשר לקבל את הפרס)
     goal: 200,
     modes: [['delivery', '🛵', 'שליח'], ['kvk', '🧟', 'קולסקים'], ['ninja', '🥷', "נינג'ה"],
@@ -168,10 +168,17 @@ function tmntPickTeam(team) {
 }
 
 function tmntCountdown() {
-    if (tmntPoll()) return TMNT.start ? '🗳️ מתחיל בעוד ' + tmntDur(TMNT.start - Date.now()) : '🗳️ בחירת צוותים';
+    if (tmntPoll()) return TMNT.start ? '🗳️ מתחיל בעוד ' + tmntClock(TMNT.start - Date.now()) : '🗳️ בחירת צוותים';
     const ms = TMNT.end - Date.now();
     if (ms <= 0) return 'האירוע הסתיים';
     return '⏳ ' + tmntDur(ms);
+}
+// ספירה לאחור בשעון: 2:07:59 (ימים מוצגים בנפרד)
+function tmntClock(ms) {
+    const sec = Math.max(0, Math.ceil(ms / 1000)), d = Math.floor(sec / 86400);
+    const h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60), s2 = sec % 60;
+    const pad = n => String(n).padStart(2, '0');
+    return (d > 0 ? d + ' ימים ' : '') + h + ':' + pad(m) + ':' + pad(s2);
 }
 function tmntDur(ms) {
     const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4);
@@ -265,11 +272,14 @@ function renderTmnt() {
     tmntFlush();
 }
 
-// טיימר: מעדכנים את הספירה לאחור, ומציירים מחדש כשהאירוע מתחיל, נגמר או יורד מהמסך
+// טיימר: הספירה לאחור מתעדכנת כל שנייה, ומציירים מחדש ברגע שהאירוע מתחיל, נגמר או יורד מהמסך
 let tmntShown = null;
 setInterval(() => {
     const t = document.getElementById('ev-timer');
     if (t) t.textContent = tmntCountdown();
+    if (tmntShown !== null && tmntShown !== tmntVisible() + '|' + tmntLive()) renderTmnt();
+}, 1000);
+setInterval(() => {
     if (tmntShown !== tmntVisible() + '|' + tmntLive()) renderTmnt();
     // בזמן בחירת הצוותים מרעננים את מספר השחקנים כשמסך הבית פתוח
     else if (tmntPoll() && document.getElementById('screen-home').classList.contains('active') && Date.now() - tmntFetchedAt >= TMNT_CACHE_MS) renderTmnt();
