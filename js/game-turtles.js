@@ -103,7 +103,7 @@ function ttBoostRender() {
     buy.onclick = ttBoostBuy;
     box.appendChild(buy);
 }
-setInterval(() => { if (document.getElementById('screen-turtles').classList.contains('active') && !(tt && tt.running)) ttBoostRender(); }, 1000);
+setInterval(() => { const scr = document.getElementById('screen-turtles'); if (scr && scr.classList.contains('active') && !(tt && tt.running)) ttBoostRender(); }, 1000);
 
 function ttNewShells(round) {
     const sp = 1 + (round - 1) * 0.18;

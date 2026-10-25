@@ -27,6 +27,7 @@ const TMNT_KEY = 'kebab_tmnt';               // { team, rewarded, hits } - נש�
 const TMNT_COUNTS_KEY = 'kebab_tmnt_counts'; // עותק אחרון של המונים, להצגה מיידית
 const TMNT_CACHE_MS = 90000;
 
+const tmntHomeOn = () => { const h = document.getElementById('screen-home'); return !!h && h.classList.contains('active'); };
 const tmntLive = () => { const n = Date.now(); return !!TMNT.start && n >= TMNT.start && n <= TMNT.end; };
 const tmntPoll = () => { const n = Date.now(); return n >= TMNT.pollStart && !(TMNT.start && n >= TMNT.start); };
 const tmntVisible = () => tmntPoll() || (!!TMNT.start && Date.now() >= TMNT.start && Date.now() <= TMNT.end + TMNT.afterDays * 864e5);
@@ -312,7 +313,7 @@ function renderTmnt() {
     tmntCheckReward();
     // טוענים מחדש מהשרת (לכל היותר פעם ב-90 שניות) ומציירים שוב כשמגיע מידע חדש
     if (db && Date.now() - tmntFetchedAt >= TMNT_CACHE_MS && !tmntFetching) {
-        tmntFetch().then(fresh => { if (fresh && document.getElementById('screen-home').classList.contains('active')) renderTmnt(); });
+        tmntFetch().then(fresh => { if (fresh && tmntHomeOn()) renderTmnt(); });
     }
     tmntFlush();
 }
@@ -326,11 +327,11 @@ setInterval(() => {
 }, 1000);
 // חזרה לאפליקציה (מהרקע) - טוענים מיד את המספרים העדכניים
 document.addEventListener('visibilitychange', () => {
-    if (document.hidden || !tmntVisible() || !document.getElementById('screen-home').classList.contains('active')) return;
+    if (document.hidden || !tmntVisible() || !tmntHomeOn()) return;
     tmntFetch(true).then(fresh => { if (fresh) renderTmnt(); });
 });
 setInterval(() => {
     if (tmntShown !== tmntVisible() + '|' + tmntLive()) renderTmnt();
     // כל עוד מסך הבית פתוח - מרעננים את המספרים (כל דקה וחצי, או 15 שניות אחרי טעינה שנכשלה)
-    else if (tmntVisible() && document.getElementById('screen-home').classList.contains('active') && Date.now() - tmntFetchedAt >= TMNT_CACHE_MS) renderTmnt();
+    else if (tmntVisible() && tmntHomeOn() && Date.now() - tmntFetchedAt >= TMNT_CACHE_MS) renderTmnt();
 }, 15000);
