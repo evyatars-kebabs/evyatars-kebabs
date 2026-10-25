@@ -8,6 +8,8 @@ const DAILY_BONUS = 75;
 const WEEKLY_PRIZE = 400;                 // כל 7 ימים ברצף
 // on = סוג האירוע (שם המשחק, '*' לכל משחק, או 'coupon'); mode: max = הכי טוב במשחק אחד, sum = מצטבר, set = משחקים שונים
 const DAILY_POOL = [
+    { id: 'catch_max',   game: 'catch',   icon: '🍢', text: 'תפסו {t} קבבים במשחק אחד',               t: 12,  reward: 30, on: 'catch',   mode: 'max', val: e => e.score },
+    { id: 'catch_sum',   game: 'catch',   icon: '🍢', text: 'תפסו {t} קבבים בסך הכול',                 t: 35,  reward: 35, on: 'catch',   mode: 'sum', val: e => e.score },
     { id: 'dlv_sum',     game: 'delivery', icon: '🛵', text: 'מסרו {t} מנות בשליח הקבבים',             t: 15,  reward: 45, on: 'delivery', mode: 'sum', val: e => e.delivered },
     { id: 'dlv_max',     game: 'delivery', icon: '🛵', text: 'צברו {t} נקודות במשלוח אחד',              t: 120, reward: 45, on: 'delivery', mode: 'max', val: e => e.score },
     { id: 'ninja_slice', game: 'ninja',   icon: '🥷', text: 'חתכו {t} פריטים בקבב נינג\'ה',             t: 60,  reward: 40, on: 'ninja',   mode: 'sum', val: e => e.sliced },
@@ -336,7 +338,7 @@ setInterval(() => {
 
 let lastGameKey = null;
 function playAgain() {
-    const starters = { delivery: startDeliveryGame, trivia: startTriviaGame, goods: startGoodsSortGame, shvartz: startShvartzGame, ninja: startNinjaGame, kvk: startKvkGame };
+    const starters = { catch: startCatchGame, delivery: startDeliveryGame, trivia: startTriviaGame, goods: startGoodsSortGame, shvartz: startShvartzGame, ninja: startNinjaGame, kvk: startKvkGame };
     (starters[lastGameKey] || (() => switchTab('home')))();
 }
 

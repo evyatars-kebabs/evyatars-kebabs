@@ -43,6 +43,7 @@ const COUPONS = [
 // חידון לא מופיע כאן - הוא אף פעם לא נותן מטבעות.
 const GAME_REWARD = {
     delivery: { min: 60, great: 900 },
+    catch:   { min: 7,  great: 16 },
     goods:   { min: 16, great: 60 },
     shvartz: { min: 30, great: 140 },
     ninja:   { min: 10, great: 70 },

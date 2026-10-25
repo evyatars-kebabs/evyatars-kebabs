@@ -70,6 +70,12 @@
             <div class="gc-go">◀</div>
         </div>
 
+        <div class="game-card" onclick="startCatchGame()">
+            <div class="gc-icon">🍢</div>
+            <div class="gc-body"><h3>תפוס את הקבב</h3><p>עליכם לתפוס כמה שיותר קבבים ב-15 שניות בלבד</p></div>
+            <div class="gc-go">◀</div>
+        </div>
+
 		<div class="game-card" onclick="startGoodsSortGame()">
             <div class="gc-icon">🥫</div>
             <div class="gc-body"><h3>סידור המדפים</h3><p>סדרו 3 מוצרים זהים על אותו המדף כדי להעלים אותם!</p></div>
@@ -82,6 +88,14 @@
             <div class="gc-go">◀</div>
         </div>
 
+    </div>
+
+    <div id="screen-catch" class="screen">
+        <div class="hud">
+            <div class="hud-pill"><small>זמן</small><span id="catch-timer">15</span></div>
+            <div class="hud-pill"><small>ניקוד</small><span id="catch-score">0</span></div>
+        </div>
+        <div id="game-area"></div>
     </div>
 
     <div id="screen-trivia" class="screen">
@@ -195,6 +209,7 @@
 			<button id="sub-btn-goods" class="sub-tab-btn" onclick="switchLeaderboardTab('goods')">🥫 מדפים</button>
 			<button id="sub-btn-ninja" class="sub-tab-btn" onclick="switchLeaderboardTab('ninja')">🥷 נינג'ה</button>
 			<button id="sub-btn-kvk" class="sub-tab-btn" onclick="switchLeaderboardTab('kvk')">🍢 קולסקים</button>
+			<button id="sub-btn-main" class="sub-tab-btn" onclick="switchLeaderboardTab('main')">🍢 תפוס</button>
 			<input id="lb-search" class="lb-search" type="search" maxlength="20" autocomplete="off" placeholder="🔍 חיפוש שחקן לפי שם" oninput="lbSearchChanged()">
 		</div>
 
@@ -213,6 +228,10 @@
 
 		<div id="sub-screen-shvartz" class="leaderboard-sub-screen">
 			<ul id="shvartz-leaderboard-container" class="leaderboard-list"></ul>
+		</div>
+
+		<div id="sub-screen-main" class="leaderboard-sub-screen" style="display: none;">
+			<ul id="leaderboard-container" class="leaderboard-list"></ul>
 		</div>
 
 		<div id="sub-screen-goods" class="leaderboard-sub-screen" style="display: none;">
