@@ -33,59 +33,54 @@
     }
     document.getElementById('game-area').addEventListener('pointerdown', startCatchTimer);
 
-    let kebabImgFailed = false;   // אם kebab.png לא נטען - לא מנסים שוב בכל הופעה
+    // קבב אחד שנשאר במסך וזז ממקום למקום (בלי ליצור תמונה חדשה ולפענח אותה מחדש בכל הופעה - בטלפונים חלשים זה נתקע).
+    // התמונה מוקטנת מראש (kebab-small.png) ונטענת פעם אחת. אם היא לא נטענת - אימוג'י
+    let kebabEl = null;
+    const kebabImg = new Image();
+    kebabImg.src = 'kebab-small.png';
+    if (kebabImg.decode) kebabImg.decode().catch(() => {});
 
-    function makeKebabFallback() {
-        const fb = document.createElement('div');
-        fb.className = 'kebab';
-        fb.textContent = '🥙';
-        fb.style.fontSize = '2.8rem';
-        return fb;
+    function getKebabEl() {
+        if (kebabEl) return kebabEl;
+        const img = document.createElement('img');
+        img.className = 'kebab'; img.alt = ''; img.draggable = false; img.src = kebabImg.src;
+        img.onerror = () => {                            // גיבוי: אימוג'י באותו מקום
+            const fb = document.createElement('div');
+            fb.className = 'kebab'; fb.textContent = '🥙'; fb.style.fontSize = '2.8rem';
+            fb.style.left = img.style.left; fb.style.top = img.style.top;
+            fb.addEventListener('pointerdown', catchKebab);
+            img.replaceWith(fb); kebabEl = fb;
+        };
+        // תופסים ברגע הנגיעה (ולא ב-click, שמגיע מאוחר יותר - ואם הקבב כבר זז הלחיצה הולכת לאיבוד)
+        img.addEventListener('pointerdown', catchKebab);
+        kebabEl = img;
+        return img;
+    }
+
+    function catchKebab(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        if (catchTimer <= 0) return;
+        startCatchTimer();
+        catchScore += 1;
+        sfx.pop();
+        document.getElementById('catch-score').textContent = catchScore;
+        clearTimeout(kebabTimeout);
+        spawnKebab();
     }
 
     function spawnKebab() {
         const area = document.getElementById('game-area');
-        area.innerHTML = '';
-        if (catchTimer <= 0) return;
+        if (catchTimer <= 0) { area.innerHTML = ''; return; }
+        const kebab = getKebabEl();
+        if (kebab.parentNode !== area) { area.innerHTML = ''; area.appendChild(kebab); }
 
         const SIZE = 65;
         const maxX = Math.max(0, area.clientWidth - SIZE);
         const maxY = Math.max(0, area.clientHeight - SIZE);
-        const left = Math.floor(Math.random() * (maxX + 1)) + 'px';
-        const top = Math.floor(Math.random() * (maxY + 1)) + 'px';
+        kebab.style.left = Math.floor(Math.random() * (maxX + 1)) + 'px';
+        kebab.style.top = Math.floor(Math.random() * (maxY + 1)) + 'px';
 
-        let kebab;
-        if (kebabImgFailed) {
-            kebab = makeKebabFallback();
-        } else {
-            kebab = document.createElement('img');
-            kebab.className = 'kebab';
-            kebab.alt = '';
-            kebab.draggable = false;
-            kebab.src = 'kebab.png';
-            // גיבוי: אם התמונה לא נטענת מחליפים באימוג'י ושומרים על אותו מיקום
-            kebab.onerror = function () {
-                kebabImgFailed = true;
-                const fb = makeKebabFallback();
-                fb.style.left = this.style.left;
-                fb.style.top = this.style.top;
-                fb.onclick = this.onclick;
-                this.replaceWith(fb);
-            };
-        }
-        kebab.style.left = left;
-        kebab.style.top = top;
-
-        kebab.onclick = () => {
-            startCatchTimer();
-            catchScore += 1;
-            sfx.pop();
-            document.getElementById('catch-score').textContent = catchScore;
-            clearTimeout(kebabTimeout);
-            spawnKebab();
-        };
-
-        area.appendChild(kebab);
+        clearTimeout(kebabTimeout);
         if (catchStarted) kebabTimeout = setTimeout(spawnKebab, 850);
     }
 
