@@ -6,7 +6,7 @@ service cloud.firestore {
 
     // ---------- טבלאות השיאים ----------
     function isBoard(col) {
-      return col in ['leaderboard', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja', 'leaderboard_kvk', 'leaderboard_delivery'];
+      return col in ['leaderboard', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja', 'leaderboard_kvk', 'leaderboard_delivery', 'leaderboard_turtles'];
     }
     // רשומה בטבלה: שם, ניקוד, זמן, הסקין שנבחר, יתרת המטבעות (לפרופיל) והצוות באירוע
     function validEntry(d) {
@@ -43,8 +43,14 @@ service cloud.firestore {
     // ---------- אירוע קהילתי: צבי הנינג'ה ----------
     // מסמך אחד עם מונים: צוות a/b x 6 מצבי משחק, ומספר החברים בכל צוות. כל כתיבה יכולה רק להוסיף 1 למונה אחד
     function tmntKeys() {
-      return ['a_delivery', 'a_kvk', 'a_ninja', 'a_shvartz', 'a_catch', 'a_goods', 'a_members',
-              'b_delivery', 'b_kvk', 'b_ninja', 'b_shvartz', 'b_catch', 'b_goods', 'b_members'];
+      return ['a_delivery', 'a_kvk', 'a_ninja', 'a_shvartz', 'a_catch', 'a_goods', 'a_members', 'a_hits',
+              'b_delivery', 'b_kvk', 'b_ninja', 'b_shvartz', 'b_catch', 'b_goods', 'b_members', 'b_hits'];
+    }
+    // פגיעות בשריונים (אתגר צבי הנינג'ה): נשלחות בסוף משחק, עד 400 בכתיבה אחת
+    function tmntHits(k) {
+      return request.resource.data.get(k, 0) == resource.data.get(k, 0)
+          || (request.resource.data.get(k, 0) > resource.data.get(k, 0)
+              && request.resource.data.get(k, 0) <= resource.data.get(k, 0) + 400);
     }
     // הצטרפות לצוות (+1 ל-x_members) מותרת רק כשהצוות לא גדול מדי מהשני:
     // ההפרש קטן מ-3, או קטן מ-15% מכל המשתתפים
@@ -62,7 +68,8 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(tmntKeys())
                     && request.resource.data.size() == 1
-                    && request.resource.data.values().hasOnly([1]);
+                    && request.resource.data.values()[0] is int
+                    && request.resource.data.values()[0] >= 1 && request.resource.data.values()[0] <= 400;
       allow update: if request.resource.data.keys().hasOnly(tmntKeys())
                     && request.resource.data.diff(resource.data).affectedKeys().size() == 1
                     && tmntSame('a_delivery') && tmntSame('a_kvk') && tmntSame('a_ninja')
@@ -70,6 +77,7 @@ service cloud.firestore {
                     && tmntSame('b_delivery') && tmntSame('b_kvk') && tmntSame('b_ninja')
                     && tmntSame('b_shvartz') && tmntSame('b_catch') && tmntSame('b_goods')
                     && tmntSame('a_members') && tmntSame('b_members')
+                    && tmntHits('a_hits') && tmntHits('b_hits')
                     && tmntJoinOk('a_members', 'b_members') && tmntJoinOk('b_members', 'a_members');
       allow delete: if false;
     }

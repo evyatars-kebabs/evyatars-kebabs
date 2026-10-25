@@ -44,6 +44,7 @@ const COUPONS = [
 const GAME_REWARD = {
     delivery: { min: 60, great: 900 },
     catch:   { min: 7,  great: 16 },
+    turtles: { min: 8,  great: 60 },
     goods:   { min: 16, great: 60 },
     shvartz: { min: 30, great: 140 },
     ninja:   { min: 10, great: 70 },

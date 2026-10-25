@@ -1,8 +1,8 @@
 /* ---------- אירוע קהילתי: צבי הנינג'ה ----------
-   שני צוותים. כל משחק שמסתיים (חוץ מהחידון) מוסיף 1 לצוות של השחקן במצב המשחק הזה.
-   כשצוות מגיע ל-200 משחקים בכל אחד מ-6 המצבים - כל חברי הצוות מקבלים את 3 הסקינים שלו.
-   המונים המשותפים נשמרים במסמך אחד ב-Firestore: events/tmnt (שדות כמו a_delivery, b_ninja).
-   קריאה אחת מציגה את ההתקדמות של שני הצוותים, וכל משחק עולה כתיבה אחת.
+   שני צוותים. כל שריון שפוגעים בו במשחק לזמן מוגבל "אתגר צבי הנינג'ה" (js/game-turtles.js) נספר לצוות של השחקן.
+   צוות שמגיע ל-100,000 פגיעות - כל חבריו מקבלים את 3 הסקינים שלו.
+   המונים המשותפים נשמרים במסמך אחד ב-Firestore: events/tmnt (a_hits, b_hits, ומספר החברים a_members, b_members).
+   קריאה אחת מציגה את ההתקדמות של שני הצוותים, וכל משחק עולה כתיבה אחת (עד 400 פגיעות בכתיבה).
    שלב ראשון - בחירת צוותים: מ-pollStart ועד שהאירוע מתחיל (start) שחקנים רק בוחרים צוות, ורואים כמה הצטרפו לכל צד.
    כשצוות אחד גדול מדי מהשני, אי אפשר להצטרף אליו (גם הכללים ב-Firestore אוכפים את זה). */
 
@@ -11,15 +11,14 @@ const TMNT = {
     start: Date.parse('2026-10-25T16:00:00+02:00'),    // 16:00 שעון ישראל - עד אז רק בחירת צוותים, עם ספירה לאחור
     end: Date.parse('2026-11-08T23:59:59+02:00'),
     afterDays: 3,                    // כמה ימים אחרי הסיום עוד מציגים את התוצאות (ואפשר לקבל את הפרס)
-    goal: 200,
-    modes: [['delivery', '🛵', 'שליח'], ['kvk', '🧟', 'קולסקים'], ['ninja', '🥷', "נינג'ה"],
-            ['shvartz', '🥙', 'שוורץ'], ['catch', '🍢', 'תפוס'], ['goods', '🥫', 'מדפים']],
+    goal: 100000,                    // פגיעות בשריונים לכל צוות
+    maxPerWrite: 400,                // אותו גבול כמו בכללי Firestore
     teams: {
         a: { name: 'צוות ספלינטר', skins: ['tmnt_leo', 'tmnt_splinter', 'tmnt_don'] },
         b: { name: 'צוות שרדר', skins: ['tmnt_raph', 'tmnt_shredder', 'tmnt_mikey'] }
     }
 };
-const TMNT_KEY = 'kebab_tmnt';               // { team, rewarded, mine } - נשמר גם בחשבון
+const TMNT_KEY = 'kebab_tmnt';               // { team, rewarded, hits } - נשמר גם בחשבון
 const TMNT_COUNTS_KEY = 'kebab_tmnt_counts'; // עותק אחרון של המונים, להצגה מיידית
 const TMNT_CACHE_MS = 90000;
 
@@ -44,26 +43,24 @@ function tmntState() {
     st = st && typeof st === 'object' ? st : {};
     if (st.team !== 'a' && st.team !== 'b') st.team = null;
     st.pending = pend && typeof pend === 'object' ? pend : {};
-    st.mine = parseInt(st.mine) || 0;
+    st.hits = parseInt(st.hits) || 0;
     return st;
 }
 function tmntSave(st) {
-    store.set(TMNT_KEY, JSON.stringify({ team: st.team, rewarded: !!st.rewarded, mine: st.mine }));
+    store.set(TMNT_KEY, JSON.stringify({ team: st.team, rewarded: !!st.rewarded, hits: st.hits }));
     store.set(TMNT_PENDING_KEY, JSON.stringify(st.pending || {}));
 }
 
 let tmntCounts = (() => { try { return JSON.parse(store.get(TMNT_COUNTS_KEY) || '{}') || {}; } catch (e) { return {}; } })();
 let tmntFetchedAt = 0, tmntFetching = null;
 
-// כמה משחקים הצוות צבר במצב מסוים (כולל משחקים של השחקן שעוד לא נשלחו)
-function tmntCount(team, mode) {
-    const f = team + '_' + mode, st = tmntState();
+// מונה של צוות (hits / members), כולל מה שהשחקן עוד לא שלח
+function tmntCount(team, key) {
+    const f = team + '_' + key, st = tmntState();
     return (parseInt(tmntCounts[f]) || 0) + (st.team === team ? (st.pending[f] || 0) : 0);
 }
-function tmntTeamDone(team) { return TMNT.modes.every(([m]) => tmntCount(team, m) >= TMNT.goal); }
-function tmntTeamPct(team) {
-    return TMNT.modes.reduce((s, [m]) => s + Math.min(TMNT.goal, tmntCount(team, m)), 0) / (TMNT.goal * TMNT.modes.length);
-}
+function tmntTeamDone(team) { return tmntCount(team, 'hits') >= TMNT.goal; }
+function tmntTeamPct(team) { return Math.min(1, tmntCount(team, 'hits') / TMNT.goal); }
 
 // מחזיר true כשהגיע מידע חדש מהשרת
 function tmntFetch(force) {
@@ -75,7 +72,7 @@ function tmntFetch(force) {
         .then(doc => {
             const d = doc.exists ? doc.data() : {};
             const next = {};
-            for (const t of ['a', 'b']) for (const m of TMNT.modes.map(x => x[0]).concat('members')) { const v = d[t + '_' + m]; if (typeof v === 'number') next[t + '_' + m] = v; }
+            for (const t of ['a', 'b']) for (const m of ['hits', 'members']) { const v = d[t + '_' + m]; if (typeof v === 'number') next[t + '_' + m] = v; }
             tmntCounts = next;
             store.set(TMNT_COUNTS_KEY, JSON.stringify(next));
             return true;
@@ -85,7 +82,7 @@ function tmntFetch(force) {
     return tmntFetching;
 }
 
-// שולחים את המשחקים שנצברו במכשיר, אחד אחד (הכללים מאשרים רק +1 בכל כתיבה)
+// שולחים את מה שנצבר במכשיר: הצטרפות לצוות (+1), ופגיעות בחבילות של עד 400
 let tmntFlushing = false;
 function tmntFlush() {
     if (!db || tmntFlushing || !(tmntLive() || tmntPoll())) return;
@@ -93,13 +90,14 @@ function tmntFlush() {
     const f = Object.keys(st.pending).find(k => st.pending[k] > 0);
     if (!f) return;
     tmntFlushing = true;
-    db.collection('events').doc('tmnt').set({ [f]: firebase.firestore.FieldValue.increment(1) }, { merge: true })
+    const n = f.endsWith('_hits') ? Math.min(st.pending[f], TMNT.maxPerWrite) : 1;
+    db.collection('events').doc('tmnt').set({ [f]: firebase.firestore.FieldValue.increment(n) }, { merge: true })
         .then(() => {
             const s2 = tmntState();
-            s2.pending[f] = Math.max(0, (s2.pending[f] || 0) - 1);
+            s2.pending[f] = Math.max(0, (s2.pending[f] || 0) - n);
             if (!s2.pending[f]) delete s2.pending[f];
             tmntSave(s2);
-            tmntCounts[f] = (parseInt(tmntCounts[f]) || 0) + 1;
+            tmntCounts[f] = (parseInt(tmntCounts[f]) || 0) + n;
             tmntFlushing = false;
             tmntFlush();
         })
@@ -123,14 +121,14 @@ function tmntFlush() {
         });
 }
 
-// נקרא בסוף כל משחק (מתוך showResultReward)
+// נקרא בסוף כל משחק (מתוך showResultReward): רק הפגיעות באתגר צבי הנינג'ה נספרות
 function tmntGamePlayed(gameKey, score) {
-    if (!tmntLive() || !(score > 0) || !TMNT.modes.some(([m]) => m === gameKey)) return;
+    if (!tmntLive() || gameKey !== 'turtles' || !(score > 0)) return;
     const st = tmntState();
     if (!st.team) return;
-    const f = st.team + '_' + gameKey;
-    st.pending[f] = (st.pending[f] || 0) + 1;
-    st.mine++;
+    const f = st.team + '_hits';
+    st.pending[f] = (st.pending[f] || 0) + Math.floor(score);
+    st.hits += Math.floor(score);
     tmntSave(st);
     tmntFlush();
 }
@@ -204,6 +202,10 @@ function renderTmnt() {
     else if (box.nextElementSibling !== daily) home.insertBefore(daily, box.nextElementSibling);
 
     const st = tmntState(), live = tmntLive(), poll = tmntPoll();
+    // המשחק לזמן מוגבל ולשונית הטבלה שלו מופיעים רק בזמן האירוע
+    const card = document.getElementById('tt-card'), tab = document.getElementById('sub-btn-turtles');
+    if (card) card.style.display = live ? '' : 'none';
+    if (tab) tab.style.display = tmntVisible() ? '' : 'none';
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
     box.innerHTML = '';
     const head = el('div', 'ev-head');
@@ -211,15 +213,16 @@ function renderTmnt() {
     const cd = el('div', 'ev-timer', tmntCountdown()); cd.id = 'ev-timer';
     head.appendChild(cd);
     box.appendChild(head);
+    const goalTxt = TMNT.goal.toLocaleString('en-US');
     box.appendChild(el('div', 'ev-sub', poll
-        ? 'בחרו צוות! כשהאירוע יתחיל, כל משחק שתסיימו (חוץ מהחידון) יקדם את הצוות שלכם. צוות שמגיע ל-' + TMNT.goal + ' משחקים בכל מצב - כל חבריו מקבלים את 3 הסקינים שלו!'
-        : live ? 'כל משחק שאתם מסיימים (חוץ מהחידון) מקדם את הצוות שלכם. צוות שמגיע ל-' + TMNT.goal + ' משחקים בכל מצב - כל חבריו מקבלים את 3 הסקינים שלו!'
+        ? 'בחרו צוות! כשהאירוע יתחיל, כל שריון שתפגעו בו ב"אתגר צבי הנינג\'ה" ייספר לצוות שלכם. צוות שמגיע ל-' + goalTxt + ' פגיעות - כל חבריו מקבלים את 3 הסקינים שלו!'
+        : live ? 'שחקו ב"אתגר צבי הנינג\'ה": כל שריון שתפגעו בו נספר לצוות שלכם. צוות שמגיע ל-' + goalTxt + ' פגיעות - כל חבריו מקבלים את 3 הסקינים שלו!'
         : 'האירוע הסתיים. הנה התוצאות:'));
 
     const row = el('div', 'ev-teams');
     for (const t of ['a', 'b']) {
         const T = TMNT.teams[t], done = tmntTeamDone(t), pct = tmntTeamPct(t);
-        const card = el('div', 'ev-team ev-' + t + (st.team === t ? ' mine' : '') + (done ? ' done' : ''));
+        const tcard = el('div', 'ev-team ev-' + t + (st.team === t ? ' mine' : '') + (done ? ' done' : ''));
         const avs = el('div', 'ev-avs');
         T.skins.forEach(id => {
             const src = lbAvatar(id);
@@ -227,43 +230,39 @@ function renderTmnt() {
             const img = el('img'); img.src = src; img.alt = ''; img.title = skinById(id).name;
             avs.appendChild(img);
         });
-        card.appendChild(avs);
-        card.appendChild(el('div', 'ev-tname', T.name));
-        card.appendChild(el('div', 'ev-members', T.skins.map(id => skinById(id).name).join(' · ')));
-        card.appendChild(el('div', 'ev-count', '👥 ' + tmntMembers(t) + ' שחקנים'));
+        tcard.appendChild(avs);
+        tcard.appendChild(el('div', 'ev-tname', T.name));
+        tcard.appendChild(el('div', 'ev-members', T.skins.map(id => skinById(id).name).join(' · ')));
+        tcard.appendChild(el('div', 'ev-count', '👥 ' + tmntMembers(t) + ' שחקנים'));
         if (poll) {
-            if (st.team === t) card.appendChild(el('div', 'ev-badge', '⭐ הצוות שלכם'));
-            else if (!st.team && tmntCanJoin(t)) { const btn = el('button', 'ev-join', 'הצטרפו לצוות'); btn.onclick = () => tmntPickTeam(t); card.appendChild(btn); }
-            else if (!st.team) card.appendChild(el('div', 'ev-full', '🔒 יותר מדי שחקנים כרגע - הצטרפו לצוות השני'));
-            row.appendChild(card);
+            if (st.team === t) tcard.appendChild(el('div', 'ev-badge', '⭐ הצוות שלכם'));
+            else if (!st.team && tmntCanJoin(t)) { const btn = el('button', 'ev-join', 'הצטרפו לצוות'); btn.onclick = () => tmntPickTeam(t); tcard.appendChild(btn); }
+            else if (!st.team) tcard.appendChild(el('div', 'ev-full', '🔒 יותר מדי שחקנים כרגע - הצטרפו לצוות השני'));
+            row.appendChild(tcard);
             continue;
         }
         const tot = el('div', 'ev-total');
         const bar = el('div', 'ev-bar'); const fill = el('i'); fill.style.width = (pct * 100).toFixed(1) + '%'; bar.appendChild(fill);
         tot.appendChild(bar); tot.appendChild(el('b', '', Math.floor(pct * 100) + '%'));
-        card.appendChild(tot);
-        const modes = el('div', 'ev-modes');
-        TMNT.modes.forEach(([m, icon, label]) => {
-            const n = tmntCount(t, m), r = el('div', 'ev-mode' + (n >= TMNT.goal ? ' ok' : ''));
-            r.title = label;
-            r.appendChild(el('span', 'ev-ic', icon));
-            const b = el('div', 'ev-bar sm'); const f = el('i'); f.style.width = Math.min(100, n / TMNT.goal * 100) + '%'; b.appendChild(f);
-            r.appendChild(b);
-            r.appendChild(el('small', '', Math.min(n, TMNT.goal) + '/' + TMNT.goal));
-            modes.appendChild(r);
-        });
-        card.appendChild(modes);
-        if (done) card.appendChild(el('div', 'ev-badge ok', '✓ הצוות השלים!'));
-        else if (st.team === t) card.appendChild(el('div', 'ev-badge', '⭐ הצוות שלכם'));
+        tcard.appendChild(tot);
+        const hits = tmntCount(t, 'hits');
+        tcard.appendChild(el('div', 'ev-hits', '🎯 ' + Math.min(hits, TMNT.goal).toLocaleString('en-US') + ' / ' + goalTxt));
+        if (done) tcard.appendChild(el('div', 'ev-badge ok', '✓ הצוות השלים!'));
+        else if (st.team === t) tcard.appendChild(el('div', 'ev-badge', '⭐ הצוות שלכם'));
         else if (!st.team && live && tmntCanJoin(t)) {
             const btn = el('button', 'ev-join', 'הצטרפו לצוות');
             btn.onclick = () => tmntPickTeam(t);
-            card.appendChild(btn);
-        } else if (!st.team && live) card.appendChild(el('div', 'ev-full', '🔒 יותר מדי שחקנים כרגע - הצטרפו לצוות השני'));
-        row.appendChild(card);
+            tcard.appendChild(btn);
+        } else if (!st.team && live) tcard.appendChild(el('div', 'ev-full', '🔒 יותר מדי שחקנים כרגע - הצטרפו לצוות השני'));
+        row.appendChild(tcard);
     }
     box.appendChild(row);
-    if (st.team && !poll) box.appendChild(el('div', 'ev-mine', 'תרמתם ' + st.mine + ' משחקים ל' + TMNT.teams[st.team].name));
+    if (live) {
+        const play = el('button', 'ev-play', '🎯 שחקו באתגר צבי הנינג\'ה');
+        play.onclick = () => startTurtlesGame();
+        box.appendChild(play);
+    }
+    if (st.team && !poll) box.appendChild(el('div', 'ev-mine', 'פגעתם ב-' + st.hits.toLocaleString('en-US') + ' שריונים בשביל ' + TMNT.teams[st.team].name));
 
     tmntCheckReward();
     // טוענים מחדש מהשרת (לכל היותר פעם ב-90 שניות) ומציירים שוב כשמגיע מידע חדש

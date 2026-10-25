@@ -65,6 +65,7 @@ const firebaseConfig = {
 
     /* --- שיאים אישיים (מקומי) + שמירה בענן --- */
     const GAME_STATS = [
+        ['🐢 אתגר צבי הנינג\'ה', 'kebab_turtlesHighScore'],
         ['🛵 שליח הקבבים', 'kebab_dlvHighScore'],
         ['🍢 תפוס את הקבב', 'kebab_highScore'],
         ['🥷 קבב נינג\'ה', 'kebab_ninjaHighScore'],
@@ -289,7 +290,7 @@ const firebaseConfig = {
     const lbCache = {};
     const lbInflight = {};             // טעינות טבלה שעדיין בדרך
     const LB_LOCAL_KEY = {
-        leaderboard_delivery: 'kebab_dlvHighScore', leaderboard: 'kebab_highScore',
+        leaderboard_delivery: 'kebab_dlvHighScore', leaderboard: 'kebab_highScore', leaderboard_turtles: 'kebab_turtlesHighScore',
         leaderboard_goods: 'kebab_goodsHighScore', leaderboard_shvartz: 'kebab_shvartzHighScore',
         leaderboard_ninja: 'kebab_ninjaHighScore', leaderboard_kvk: 'kebab_kvkHighScore'
     };
@@ -499,6 +500,7 @@ const firebaseConfig = {
 
     /* --- עצירת כל הטיימרים של כל המשחקים --- */
     function stopAllGames() {
+        if (typeof ttStop === 'function') ttStop();
         clearInterval(catchInterval);
         clearTimeout(kebabTimeout);
         const area = document.getElementById('game-area');
@@ -539,10 +541,10 @@ const firebaseConfig = {
     const LB_ID_KEY = 'kebab_lbId';
     const PROGRESS_KEYS = ['kebab_lbId', 'kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
         'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
-        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt'];
+        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt', 'kebab_turtlesHighScore'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
     const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
-    const LB_BEST = [['leaderboard_delivery', 'kebab_dlvHighScore'], ['leaderboard', 'kebab_highScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
+    const LB_BEST = [['leaderboard_delivery', 'kebab_dlvHighScore'], ['leaderboard', 'kebab_highScore'], ['leaderboard_turtles', 'kebab_turtlesHighScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
         ['leaderboard_shvartz', 'kebab_shvartzHighScore'], ['leaderboard_ninja', 'kebab_ninjaHighScore'], ['leaderboard_kvk', 'kebab_kvkHighScore']];
 
     let accountUser = null;         // משתמש Firebase מחובר
@@ -832,7 +834,8 @@ const firebaseConfig = {
 		shvartz: () => loadShvartzLeaderboard(),
 		ninja:   () => loadNinjaLeaderboard(),
 		kvk:     () => loadKvkLeaderboard(),
-		main:    () => loadLeaderboard()
+		main:    () => loadLeaderboard(),
+		turtles: () => loadTurtlesLeaderboard()
 	};
 
 	function switchLeaderboardTab(type) {
@@ -858,7 +861,7 @@ const firebaseConfig = {
 
 		if (targetScreen) targetScreen.classList.add('active');
 		if (targetBtn) targetBtn.classList.add('active');
-		document.body.classList.toggle('in-game', ['catch', 'trivia', 'goods', 'shvartz', 'ninja', 'kvk', 'delivery'].includes(screenId));
+		document.body.classList.toggle('in-game', ['catch', 'trivia', 'goods', 'shvartz', 'ninja', 'kvk', 'delivery', 'turtles'].includes(screenId));
 
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
 		if (screenId === 'shop') renderShop();

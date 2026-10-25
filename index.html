@@ -46,6 +46,12 @@
         <div id="daily-box" class="daily-box"></div>
         <h2 style="font-weight: 400; text-align: center; margin-bottom: 15px; font-size: 1rem; color: #b9a38e;">בחר מסלול משחק</h2>
         
+        <div class="game-card tt-card" id="tt-card" onclick="startTurtlesGame()" style="display: none;">
+            <div class="gc-icon">🐢</div>
+            <div class="gc-body"><h3>אתגר צבי הנינג'ה <span class="new-badge tt-badge">זמן מוגבל</span></h3><p>זרקו קבבים על השריונים המסתובבים! כל פגיעה נספרת לצוות שלכם באירוע</p></div>
+            <div class="gc-go">◀</div>
+        </div>
+
         <div class="game-card" onclick="startDeliveryGame()">
             <div class="gc-icon">🛵</div>
             <div class="gc-body"><h3>שליח הקבבים <span class="new-badge">חדש</span></h3><p>התחמקו ממכוניות ובורות ומסרו לכל לקוח בדיוק את המנה שהזמין!</p></div>
@@ -140,6 +146,15 @@
         <div id="delivery-wrap"><canvas id="delivery-canvas"></canvas></div>
     </div>
 
+    <div id="screen-turtles" class="screen">
+        <div class="hud">
+            <div class="hud-pill"><small>זמן</small><span id="tt-timer">40</span></div>
+            <div id="tt-round" class="hud-combo"></div>
+            <div class="hud-pill"><small>פגיעות</small><span id="tt-score">0</span></div>
+        </div>
+        <div id="turtles-wrap"><canvas id="turtles-canvas"></canvas></div>
+    </div>
+
     <div id="screen-ninja" class="screen">
         <div class="hud">
             <div class="hud-pill"><small>זמן</small><span id="nj-timer">45</span></div>
@@ -204,6 +219,7 @@
 		<h2>🏆 טבלת אלופי הקבב</h2>
 
 		<div class="sub-tabs">
+			<button id="sub-btn-turtles" class="sub-tab-btn" onclick="switchLeaderboardTab('turtles')" style="display: none;">🐢 צבים</button>
 			<button id="sub-btn-delivery" class="sub-tab-btn" onclick="switchLeaderboardTab('delivery')">🛵 שליח</button>
 			<button id="sub-btn-shvartz" class="sub-tab-btn active" onclick="switchLeaderboardTab('shvartz')">🥙 שוורץ</button>
 			<button id="sub-btn-goods" class="sub-tab-btn" onclick="switchLeaderboardTab('goods')">🥫 מדפים</button>
@@ -213,6 +229,10 @@
 			<input id="lb-search" class="lb-search" type="search" maxlength="20" autocomplete="off" placeholder="🔍 חיפוש שחקן לפי שם" oninput="lbSearchChanged()">
 		</div>
 
+
+		<div id="sub-screen-turtles" class="leaderboard-sub-screen" style="display: none;">
+			<ul id="turtles-leaderboard-container" class="leaderboard-list"></ul>
+		</div>
 
 		<div id="sub-screen-delivery" class="leaderboard-sub-screen" style="display: none;">
 			<ul id="delivery-leaderboard-container" class="leaderboard-list"></ul>
@@ -283,6 +303,7 @@
 <script src="js/game-ninja.js"></script>
 <script src="js/game-kvk.js"></script>
 <script src="js/game-delivery.js"></script>
+<script src="js/game-turtles.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/sw-register.js"></script>
 </body>

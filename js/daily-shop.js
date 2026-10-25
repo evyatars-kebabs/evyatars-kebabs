@@ -339,7 +339,7 @@ setInterval(() => {
 
 let lastGameKey = null;
 function playAgain() {
-    const starters = { catch: startCatchGame, delivery: startDeliveryGame, trivia: startTriviaGame, goods: startGoodsSortGame, shvartz: startShvartzGame, ninja: startNinjaGame, kvk: startKvkGame };
+    const starters = { turtles: startTurtlesGame, catch: startCatchGame, delivery: startDeliveryGame, trivia: startTriviaGame, goods: startGoodsSortGame, shvartz: startShvartzGame, ninja: startNinjaGame, kvk: startKvkGame };
     (starters[lastGameKey] || (() => switchTab('home')))();
 }
 
