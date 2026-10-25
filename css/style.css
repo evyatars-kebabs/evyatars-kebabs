@@ -1212,3 +1212,14 @@
     font: inherit; font-weight: 700; font-size: 1rem; color: #0b1a10; background: linear-gradient(180deg, #8ef0a0, #3fb950);
     box-shadow: 0 4px 0 #1f7a33; }
 .ev-play:active { transform: translateY(2px); box-shadow: 0 2px 0 #1f7a33; }
+
+/* מכפיל שריונים x2 באתגר צבי הנינג'ה */
+.tt-boost { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding: 6px 8px; border-radius: 14px;
+    background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 210, 60, 0.35); }
+.tt-boost.on { border-color: #ffd23d; box-shadow: 0 0 14px rgba(255, 210, 60, 0.4); }
+.tt-boost-info { flex: 1; font-size: 0.78rem; font-weight: 700; color: #ffe08a; font-variant-numeric: tabular-nums; }
+.tt-boost.on .tt-boost-info { font-size: 0.95rem; color: #ffd23d; text-align: center; }
+.tt-boost-btn { border: none; border-radius: 10px; padding: 6px 10px; font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.tt-boost-btn.use { background: linear-gradient(180deg, #ffe066, #f5b81a); color: #3a2400; }
+.tt-boost-btn.buy { background: rgba(255, 255, 255, 0.08); color: #ffe08a; border: 1px solid rgba(255, 210, 60, 0.4); }
+.tt-boost-btn:disabled { opacity: 0.4; cursor: default; }

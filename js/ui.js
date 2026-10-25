@@ -255,7 +255,9 @@ const REDEEM_CODES = {
     'MEGATRONKEBAB8':    { skin: 'megatron' },
     // סקין רגיל מהחנות (אגדי) - הקוד נותן אותו בחינם, אבל אפשר גם לקנות אותו
     'AVATARBL88':        { skin: 'avatar' },
-    'SHLUK7':            { skin: 'shluk' }
+    'SHLUK7':            { skin: 'shluk' },
+    // מכפיל שריונים x2 לאתגר צבי הנינג'ה (פעם אחת לשחקן, גם מעבר לגבול של 5)
+    'SHELLX2':           { ttBoost: 1 }
 };
 // קודי פיתוח: שמורים רק כטביעת אצבע (SHA-256) של הקוד - הקוד עצמו לא מופיע בקבצים,
 // והבדיקה נעשית במכשיר, בלי קריאה מהשרת (עובד גם כשנגמרה המכסה היומית של Firebase)
@@ -288,6 +290,10 @@ function applyReward(reward) {
         saveOwnedSkins(owned);
         store.set(SKIN_EQ_KEY, reward.skin);
         parts.push('סקין חדש: ' + skinById(reward.skin).name);
+    }
+    if (reward.ttBoost && typeof ttBoostFromCode === 'function') {
+        if (!ttBoostFromCode()) return { ok: false, msg: 'כבר השתמשתם בקוד הזה' };
+        parts.push('⚡ מכפיל שריונים x2');
     }
     if (!parts.length) return { ok: false, msg: 'הקוד לא תקין' };
     return { ok: true, msg: 'הקוד הופעל! ' + parts.join('  ·  ') };

@@ -20,6 +20,91 @@ let tt = null;
 let ttRaf = 0;
 let ttCtx = null;
 
+/* ---------- מכפיל שריונים x2 ----------
+   כל פגיעה שווה 2 שריונים, במשך 120 שניות של משחק (הזמן רץ רק בזמן ששוחקים במצב הזה).
+   מקבלים אחד בחינם כל 6 שעות, אפשר לקנות ב-200 מטבעות, ומחזיקים עד 5 (קוד יכול לעבור את הגבול). */
+const TT_BOOST_KEY = 'kebab_tt_boost';
+const TT_BOOST_MAX = 5, TT_BOOST_EVERY = 6 * 36e5, TT_BOOST_SECS = 120, TT_BOOST_PRICE = 200;
+function ttBoost() {
+    let b = null;
+    try { b = JSON.parse(store.get(TT_BOOST_KEY) || 'null'); } catch (e) { b = null; }
+    const now = Date.now();
+    if (!b || typeof b !== 'object') b = { n: 1, last: now, left: 0 };       // שחקן חדש מתחיל עם אחד
+    b.n = Math.max(0, parseInt(b.n) || 0); b.left = Math.max(0, Number(b.left) || 0); b.last = Number(b.last) || now;
+    // מילוי חינמי: אחד כל 6 שעות עד 5. כשהמלאי מלא השעון מחכה, ומתחיל לספור מחדש אחרי שמשתמשים באחד
+    if (b.n >= TT_BOOST_MAX) b.last = Math.max(b.last, now - TT_BOOST_EVERY + 1);
+    else {
+        const k = Math.floor((now - b.last) / TT_BOOST_EVERY);
+        if (k > 0) { b.n = Math.min(TT_BOOST_MAX, b.n + k); b.last += k * TT_BOOST_EVERY; if (b.n >= TT_BOOST_MAX) b.last = now; }
+    }
+    return b;
+}
+function ttBoostSave(b) { store.set(TT_BOOST_KEY, JSON.stringify({ n: b.n, last: b.last, left: Math.round(b.left * 10) / 10, code: !!b.code })); }
+function ttBoostActivate() {
+    const b = ttBoost();
+    if (b.left > 0) return;
+    if (b.n <= 0) { showToast('אין לכם מכפילים כרגע - קנו אחד או חכו למילוי החינמי', false); return; }
+    if (b.n >= TT_BOOST_MAX) b.last = Date.now();      // מתחילים לספור 6 שעות לאחד הבא
+    b.n--; b.left = TT_BOOST_SECS;
+    ttBoostSave(b);
+    sfx.coin();
+    if (tt) tt.boostLeft = b.left;
+    ttBoostRender();
+}
+function ttBoostBuy() {
+    const b = ttBoost();
+    if (b.n >= TT_BOOST_MAX) { showToast('אפשר להחזיק עד ' + TT_BOOST_MAX + ' מכפילים', false); return; }
+    if (!spendCoins(TT_BOOST_PRICE)) { showToast('אין מספיק מטבעות (צריך ' + TT_BOOST_PRICE + ' 🪙)', false); return; }
+    b.n++;
+    ttBoostSave(b);
+    sfx.buy();
+    showToast('⚡ קניתם מכפיל שריונים x2', true);
+    ttBoostRender();
+}
+// מהקוד: מוסיף אחד גם מעבר לגבול של 5 (פעם אחת לכל שחקן)
+function ttBoostFromCode() {
+    const b = ttBoost();
+    if (b.code) return false;
+    b.n++; b.code = true;
+    ttBoostSave(b);
+    ttBoostRender();
+    return true;
+}
+const ttClock = s => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+let ttBoostShown = '';
+function ttBoostRender() {
+    const box = document.getElementById('tt-boost');
+    if (!box) return;
+    const b = ttBoost(), left = tt && tt.running ? tt.boostLeft : b.left;
+    const next = b.n >= TT_BOOST_MAX ? '' : ttClock((b.last + TT_BOOST_EVERY - Date.now()) / 6e4);   // שעות:דקות עד המכפיל החינמי הבא
+    const key = [b.n, Math.ceil(left), next, getCoins() >= TT_BOOST_PRICE].join('|');
+    if (key === ttBoostShown) return;
+    ttBoostShown = key;
+    box.innerHTML = '';
+    const info = document.createElement('div');
+    info.className = 'tt-boost-info';
+    // מספרים ואותיות לועזיות בתוך bdi, כדי שיוצגו נכון בתוך טקסט מימין לשמאל
+    const ltr = t => { const e = document.createElement('bdi'); e.dir = 'ltr'; e.textContent = t; return e; };
+    if (left > 0) info.append('⚡ ', ltr('x2'), ' פעיל · ', ltr(ttClock(left)));
+    else {
+        info.append('⚡ ', ltr('x2'), ' · ', ltr(b.n + (b.n > TT_BOOST_MAX ? '' : '/' + TT_BOOST_MAX)));
+        if (next) info.append(' · 🎁 ', ltr(next));
+    }
+    info.title = 'מכפיל שריונים: כל פגיעה שווה 2 במשך 2 דקות משחק. אחד בחינם כל 6 שעות (עד ' + TT_BOOST_MAX + ')';
+    if (left > 0) box.classList.add('on'); else box.classList.remove('on');
+    box.appendChild(info);
+    if (left > 0) return;
+    const use = document.createElement('button');
+    use.className = 'tt-boost-btn use'; use.textContent = 'הפעל (2 דק\')'; use.disabled = b.n <= 0;
+    use.onclick = ttBoostActivate;
+    box.appendChild(use);
+    const buy = document.createElement('button');
+    buy.className = 'tt-boost-btn buy'; buy.textContent = '+1 · ' + TT_BOOST_PRICE + ' 🪙'; buy.disabled = b.n >= TT_BOOST_MAX;
+    buy.onclick = ttBoostBuy;
+    box.appendChild(buy);
+}
+setInterval(() => { if (document.getElementById('screen-turtles').classList.contains('active') && !(tt && tt.running)) ttBoostRender(); }, 1000);
+
 function ttNewShells(round) {
     const sp = 1 + (round - 1) * 0.18;
     return Array.from({ length: TT_LANES }, (_, i) => ({
@@ -34,7 +119,7 @@ function ttNewState() {
     return {
         running: false, started: false, time: TT_SECONDS, score: 0, round: 1, t: 0, last: 0,
         shells: ttNewShells(1), kebabs: [], fx: [], banner: null, nextRoundIn: 0,
-        shownTime: -1, shownScore: -1, shownRound: ''
+        shownTime: -1, shownScore: -1, shownRound: '', boostLeft: ttBoost().left
     };
 }
 
@@ -50,6 +135,8 @@ function startTurtlesGame() {
     ttUpdateHud();
     tt.running = true;
     tt.last = performance.now();
+    ttBoostShown = '';
+    ttBoostRender();
     ttRaf = requestAnimationFrame(ttLoop);
 }
 
@@ -85,6 +172,12 @@ function ttStep(dt) {
     tt.t += dt;
     if (tt.started) {
         tt.time -= dt;
+        if (tt.boostLeft > 0) {                        // זמן המכפיל רץ רק בזמן משחק
+            tt.boostLeft = Math.max(0, tt.boostLeft - dt);
+            if (Math.floor(tt.boostLeft) !== Math.floor(tt.boostLeft + dt) || tt.boostLeft === 0) {
+                const b = ttBoost(); b.left = tt.boostLeft; ttBoostSave(b); ttBoostRender();
+            }
+        }
         if (tt.time <= 0) { tt.time = 0; ttEnd(); return; }
     }
     tt.shells.forEach(s => {
@@ -103,10 +196,11 @@ function ttStep(dt) {
         const s = tt.shells[k.lane], x = (k.lane + 0.5) * TT_LW;
         if (!s.frozen && Math.abs(s.y - TT_LINE) <= TT_HIT) {
             s.frozen = true; s.frozenT = 0;
-            tt.score++;
+            const gain = tt.boostLeft > 0 ? 2 : 1;          // מכפיל x2: שני שריונים על כל פגיעה
+            tt.score += gain;
             sfx.pop();
             try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { /* ignore */ }
-            tt.fx.push({ x, y: s.y - 34, text: '+1', color: '#7ee787', size: 24, t: 0, life: 0.7 });
+            tt.fx.push({ x, y: s.y - 34, text: '+' + gain, color: gain > 1 ? '#ffd23d' : '#7ee787', size: gain > 1 ? 28 : 24, t: 0, life: 0.7 });
             if (tt.shells.every(sh => sh.frozen)) tt.nextRoundIn = 0.55;
         } else {
             tt.fx.push({ x, y: TT_LINE, splat: true, t: 0, life: 0.35 });
@@ -140,10 +234,11 @@ function ttUpdateHud() {
 function ttEnd() {
     if (!tt.running) return;
     tt.running = false;
+    { const b = ttBoost(); b.left = tt.boostLeft; ttBoostSave(b); }
     cancelAnimationFrame(ttRaf);
     saveBestScore('leaderboard_turtles', tt.score, 'kebab_turtlesHighScore');
     document.getElementById('result-desc').textContent =
-        `פגעתם ב-${tt.score} שריונים והגעתם לסיבוב ${tt.round}!`;
+        `צברתם ${tt.score} שריונים והגעתם לסיבוב ${tt.round}!`;
     dailyEvent('turtles', { score: tt.score });
     showResultReward('turtles', tt.score);
     switchTab('result');
@@ -196,6 +291,9 @@ function ttDraw() {
     const g = c.createLinearGradient(0, 0, 0, TT_H);
     g.addColorStop(0, '#0c1a14'); g.addColorStop(1, '#14301f');
     c.fillStyle = g; c.fillRect(0, 0, TT_W, TT_H);
+    if (tt.boostLeft > 0) {                            // מכפיל פעיל: מסגרת זהב
+        c.strokeStyle = 'rgba(255,210,60,' + (0.5 + 0.3 * Math.sin(tt.t * 6)) + ')'; c.lineWidth = 6; c.strokeRect(3, 3, TT_W - 6, TT_H - 6);
+    }
     // מסלולים
     for (let i = 0; i < TT_LANES; i++) {
         c.fillStyle = i % 2 ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.12)';
