@@ -1437,6 +1437,133 @@ function skMegatronBack(c, sk, st) {
     }
 }
 
+/* ---------- האלווין ---------- */
+// זומבי: תפרים על הפנים, פלסטר, חולצה קרועה עם חורים וכתמי בוץ
+function skZombieExtra(c, sk, st) {
+    const out = SK_OUT;
+    c.strokeStyle = '#3a2a1a'; c.lineWidth = 2.2; c.lineCap = 'round';                // צלקת תפורה על הלחי
+    c.beginPath(); c.moveTo(-70, -30); c.quadraticCurveTo(-52, -10, -40, 14); c.stroke();
+    for (let i = 0; i < 4; i++) { const t = i / 3, x = -70 + 30 * t, y = -30 + 44 * t; c.beginPath(); c.moveTo(x - 6, y + 4); c.lineTo(x + 6, y - 4); c.stroke(); }
+    c.save(); c.translate(54, -112); c.rotate(0.5);                                    // פלסטר על המצח
+    skR(c, -18, -7, 36, 14, 4, '#e8d0a8', out, 1.5);
+    c.fillStyle = 'rgba(120,90,60,0.5)'; for (const x of [-8, 0, 8]) { c.beginPath(); c.arc(x, 0, 1.5, 0, Math.PI * 2); c.fill(); }
+    c.restore();
+    skE(c, -30, -84, 10, 6, 'rgba(60,80,40,0.35)');                                    // כתם על המצח
+    // חולצה קרועה: שוליים משוננים וחורים
+    c.save(); skTorsoPath(c); c.clip();
+    c.fillStyle = sk.tone;
+    for (const [x, y, r] of [[-60, 150, 14], [50, 190, 12], [10, 230, 10]]) {
+        c.beginPath();
+        for (let k = 0; k < 9; k++) { const a = k * Math.PI * 2 / 9, rr = r * (k % 2 ? 0.55 : 1); c[k ? 'lineTo' : 'moveTo'](x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+        c.closePath(); c.fill(); c.strokeStyle = 'rgba(30,20,10,0.6)'; c.lineWidth = 1.5; c.stroke();
+    }
+    c.fillStyle = 'rgba(70,50,30,0.35)'; for (const [x, y] of [[-30, 110], [70, 140], [-80, 220]]) { c.beginPath(); c.ellipse(x, y, 14, 8, 0.4, 0, Math.PI * 2); c.fill(); }
+    c.restore();
+}
+
+// שלד: גולגולת עם ארובות עיניים שחורות, אף משולש ולסת עם שיניים, וצלעות על חולצה שחורה
+function skSkeletonExtra(c, sk, st) {
+    const out = SK_OUT, bone = '#f4f0e6';
+    // ארובות עיניים גדולות עם נקודת אור קטנה שזזה לכיוון המטרה
+    const lx = Math.max(-5, Math.min(5, (st.tx - st.x) * 0.02)), ly = Math.max(-4, Math.min(4, (st.ty - st.y + 62) * 0.02));
+    for (const o of [-34, 34]) {
+        c.beginPath(); c.moveTo(o - 24, -66); c.quadraticCurveTo(o - 22, -88, o, -88); c.quadraticCurveTo(o + 22, -88, o + 24, -66);
+        c.quadraticCurveTo(o + 18, -40, o, -42); c.quadraticCurveTo(o - 18, -40, o - 24, -66); c.closePath();
+        c.fillStyle = '#16121a'; c.fill(); c.strokeStyle = out; c.lineWidth = 2; c.stroke();
+        skE(c, o + lx, -64 + ly, 5, 5, '#fff7d8');
+    }
+    // אף משולש
+    c.beginPath(); c.moveTo(0, -42); c.lineTo(-11, -18); c.lineTo(11, -18); c.closePath(); c.fillStyle = '#16121a'; c.fill();
+    // סדקים וקווי לסת עם שיניים בצדי הפה
+    c.strokeStyle = 'rgba(80,70,60,0.6)'; c.lineWidth = 1.8;
+    c.beginPath(); c.moveTo(40, -122); c.lineTo(50, -108); c.lineTo(44, -96); c.stroke();
+    for (const sd of [-1, 1]) {
+        c.beginPath(); c.moveTo(sd * 80, -20); c.quadraticCurveTo(sd * 70, 20, sd * 50, 30); c.stroke();
+        for (let k = 0; k < 3; k++) { c.beginPath(); c.moveTo(sd * (54 + k * 6), 6 + k * 6); c.lineTo(sd * (62 + k * 6), 4 + k * 6); c.stroke(); }
+    }
+    // צלעות על החולצה השחורה
+    c.save(); skTorsoPath(c); c.clip();
+    c.strokeStyle = bone; c.lineCap = 'round';
+    c.lineWidth = 10; c.beginPath(); c.moveTo(0, 80); c.lineTo(0, 260); c.stroke();             // עצם החזה
+    c.lineWidth = 8;
+    for (let k = 0; k < 5; k++) {
+        const y = 100 + k * 34, w = 70 - k * 4;
+        for (const sd of [-1, 1]) { c.beginPath(); c.moveTo(0, y); c.quadraticCurveTo(sd * w, y - 12, sd * (w + 10), y + 18); c.stroke(); }
+    }
+    for (const sd of [-1, 1]) { c.lineWidth = 12; c.beginPath(); c.moveTo(sd * 30, 76); c.lineTo(sd * 96, 92); c.stroke(); }   // עצמות הבריח
+    c.restore();
+}
+
+// מכשפה: כובע מחודד עם קצה כפוף ואבזם, מטאטא מאחור ושיקוי ירוק על שרשרת
+function skWitchExtra(c, sk, st) {
+    const out = SK_OUT, t = st.t;
+    skBehind(c, () => {
+        c.lineCap = 'round';                                                   // מקל המטאטא
+        c.strokeStyle = out; c.lineWidth = 12; c.beginPath(); c.moveTo(-150, 300); c.lineTo(140, -40); c.stroke();
+        c.strokeStyle = '#8a5a2a'; c.lineWidth = 8; c.stroke();
+        c.save(); c.translate(-150, 300); c.rotate(-0.86);                      // קש
+        c.beginPath(); c.moveTo(-6, -10); c.lineTo(-60, -34); c.lineTo(-64, 34); c.lineTo(-6, 10); c.closePath();
+        c.fillStyle = '#e0b84a'; c.fill(); c.strokeStyle = out; c.lineWidth = 2.5; c.stroke();
+        c.strokeStyle = '#a8801a'; c.lineWidth = 1.5; for (let k = -2; k <= 2; k++) { c.beginPath(); c.moveTo(-8, k * 4); c.lineTo(-62, k * 12); c.stroke(); }
+        c.restore();
+    });
+    // שיקוי ירוק מבעבע על שרשרת
+    c.strokeStyle = '#2a2a2a'; c.lineWidth = 2; c.beginPath(); c.moveTo(-30, 64); c.quadraticCurveTo(0, 120, 30, 64); c.stroke();
+    c.beginPath(); c.moveTo(-6, 112); c.lineTo(-6, 102); c.lineTo(6, 102); c.lineTo(6, 112); c.quadraticCurveTo(18, 120, 14, 134); c.quadraticCurveTo(0, 144, -14, 134); c.quadraticCurveTo(-18, 120, -6, 112); c.closePath();
+    c.fillStyle = '#5ad84a'; c.fill(); c.strokeStyle = out; c.lineWidth = 2; c.stroke();
+    skGlow(c, 0, 126, 22, '#7aff5a', 0.35 + 0.15 * Math.sin(t * 4));
+    skR(c, -5, 96, 10, 7, 2, '#8a5a2a', out, 1.2);
+    // כובע מכשפה עם קצה כפוף
+    skE(c, 0, -104, 132, 24, '#1c1826', out, 3);
+    const hat = new Path2D();
+    hat.moveTo(-66, -108); hat.quadraticCurveTo(-40, -190, -6, -238); hat.quadraticCurveTo(26, -268, 66, -252);
+    hat.quadraticCurveTo(28, -246, 22, -208); hat.quadraticCurveTo(30, -150, 66, -108); hat.closePath();
+    c.fillStyle = '#241e32'; c.fill(hat); c.strokeStyle = out; c.lineWidth = 3; c.stroke(hat);
+    c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 6; c.beginPath(); c.moveTo(-40, -120); c.quadraticCurveTo(-26, -180, -6, -226); c.stroke();
+    skR(c, -64, -126, 128, 18, 3, '#7a3ac8', out, 2);
+    skR(c, -12, -128, 24, 22, 4, '#e9c46a', out, 2); skR(c, -6, -122, 12, 10, 2, '#7a3ac8');
+}
+
+// דלעת האלווין: דלעת מחורצת עם גבעול ועלה, עיניים משולשות זוהרות, ורגלי גפן
+function skPumpkinBack(c, sk, st) {
+    const t = st.t, out = '#3a1a04';
+    const flick = 0.75 + 0.25 * Math.sin(t * 9) * Math.sin(t * 5.3);
+    skAuraBack(c, sk, t);
+    for (const s of [-1, 1]) {                                                     // רגליים של גפן
+        c.strokeStyle = '#2e6a1e'; c.lineWidth = 16; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(s * 44, 80); c.quadraticCurveTo(s * 60, 130, s * 52, 170); c.stroke();
+        skE(c, s * 60, 172, 24, 11, '#2e6a1e', out, 2);
+    }
+    // הדלעת: רחבה ועגולה, בנויה מפלחים (החיצוניים קודם, האמצעי אחרון)
+    for (const [x, rx] of [[-104, 62], [104, 62], [-58, 76], [58, 76], [0, 84]]) {
+        const g = c.createRadialGradient(x - 24, -70, 10, x, -24, 140);
+        g.addColorStop(0, '#ffb24a'); g.addColorStop(0.6, '#f07a12'); g.addColorStop(1, '#b04a06');
+        skE(c, x, -24, rx, 102, g, out, 3);
+    }
+    // גבעול ועלה
+    c.save(); c.translate(4, -132); c.rotate(0.15);
+    skR(c, -9, -30, 18, 34, 5, '#5a7a2a', out, 2.5);
+    c.restore();
+    c.save(); c.translate(14, -150); c.rotate(-0.5 + Math.sin(t * 2) * 0.08);
+    skE(c, 30, 0, 30, 12, '#3fa33a', out, 2.5);
+    c.strokeStyle = '#2a6a26'; c.lineWidth = 2; c.beginPath(); c.moveTo(2, 0); c.lineTo(56, 0); c.stroke();
+    c.restore();
+    c.strokeStyle = '#2e6a1e'; c.lineWidth = 3; c.beginPath(); c.moveTo(-6, -146); c.bezierCurveTo(-40, -170, -60, -140, -44, -128); c.stroke();   // סליל
+    // עיניים משולשות זוהרות (עם אישונים קטנים שעוקבים אחרי האוכל)
+    const lx = Math.max(-6, Math.min(6, (st.tx - st.x) * 0.02)), ly = Math.max(-4, Math.min(4, (st.ty - st.y + 62) * 0.02));
+    for (const sd of [-1, 1]) {
+        skGlow(c, sd * 36, -62, 44, '#ffcf3a', 0.5 * flick);
+        c.beginPath(); c.moveTo(sd * 10, -42); c.lineTo(sd * 62, -42); c.lineTo(sd * 36, -92); c.closePath();
+        const eg = c.createLinearGradient(0, -92, 0, -42); eg.addColorStop(0, '#fff2a0'); eg.addColorStop(1, '#ffb020');
+        c.fillStyle = eg; c.fill(); c.strokeStyle = '#3a1004'; c.lineWidth = 3; c.stroke();
+        c.fillStyle = 'rgba(120,40,0,' + (0.35 * (1 - flick)) + ')'; c.fill();       // הבהוב של נר
+        skE(c, sd * 36 + lx, -58 + ly, 6, 6, '#3a1004');
+    }
+    // אף משולש קטן
+    c.beginPath(); c.moveTo(0, -38); c.lineTo(-9, -22); c.lineTo(9, -22); c.closePath();
+    c.fillStyle = 'rgba(255,190,60,' + (0.8 * flick) + ')'; c.fill(); c.strokeStyle = '#3a1004'; c.lineWidth = 2; c.stroke();
+}
+
 function skDeniBack(c, sk, st) {
     const t = st.t, J = sk.jersey || DENI_PORTLAND;
     skJerseyBody(c, sk, t, J);
