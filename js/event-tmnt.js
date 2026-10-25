@@ -12,6 +12,10 @@ const TMNT = {
     end: Date.parse('2026-11-08T23:59:59+02:00'),
     afterDays: 3,                    // כמה ימים אחרי הסיום עוד מציגים את התוצאות (ואפשר לקבל את הפרס)
     goal: 100000,                    // פגיעות בשריונים לכל צוות
+    // בוטים בצוות שרדר: כל בוט "משחק" 5 שעות ביום (5 משחקים בשעה x 12 סיבובים x 5 פגיעות = 1,500 פגיעות ביום).
+    // הפגיעות שלהם מחושבות לפי השעה (בלי כתיבות לשרת), כך שכל המכשירים מציגים את אותו מספר
+    bots: { team: 'b', from: Date.parse('2026-10-25T17:00:00+02:00'), perDay: 1500, hours: 5,
+            startHours: [12, 17, 20] },     // שעת ההתחלה של כל בוט (שעון ישראל); מספר הבוטים = אורך הרשימה (וגם ב-firestore.rules)
     maxPerWrite: 400,                // אותו גבול כמו בכללי Firestore
     teams: {
         a: { name: 'צוות ספלינטר', skins: ['tmnt_leo', 'tmnt_splinter', 'tmnt_don'] },
@@ -53,11 +57,32 @@ function tmntSave(st) {
 
 let tmntCounts = (() => { try { return JSON.parse(store.get(TMNT_COUNTS_KEY) || '{}') || {}; } catch (e) { return {}; } })();
 let tmntFetchedAt = 0, tmntFetching = null;
+let tmntLoaded = Object.keys(tmntCounts).length > 0;     // עד הטעינה הראשונה מציגים "…" ולא 0
 
-// מונה של צוות (hits / members), כולל מה שהשחקן עוד לא שלח
+// כמה פגיעות הבוטים צברו עד עכשיו: בכל יום, בחלון של 5 שעות לכל בוט, בקצב קבוע (עם שינוי קטן מיום ליום)
+function tmntBotHits(now) {
+    const B = TMNT.bots;
+    if (!B || !B.startHours.length) return 0;
+    const end = Math.min(now || Date.now(), TMNT.end || Infinity), DAY = 864e5, IL = 2 * 36e5;
+    if (end <= B.from) return 0;
+    let total = 0;
+    for (let day = Math.floor((B.from + IL) / DAY); day * DAY - IL <= end; day++) {
+        B.startHours.forEach((h, i) => {
+            const ws = day * DAY - IL + h * 36e5, we = ws + B.hours * 36e5;   // חלון המשחק של הבוט ביום הזה
+            const a = Math.max(ws, B.from), b = Math.min(we, end);
+            if (b <= a) return;
+            const x = Math.sin(day * 12.9898 + i * 78.233) * 43758.5453, mult = 0.85 + 0.3 * (x - Math.floor(x));
+            total += B.perDay * mult * (b - a) / (we - ws);
+        });
+    }
+    return Math.floor(total);
+}
+// מונה של צוות (hits / members), כולל מה שהשחקן עוד לא שלח, והבוטים
 function tmntCount(team, key) {
     const f = team + '_' + key, st = tmntState();
-    return (parseInt(tmntCounts[f]) || 0) + (st.team === team ? (st.pending[f] || 0) : 0);
+    let n = (parseInt(tmntCounts[f]) || 0) + (st.team === team ? (st.pending[f] || 0) : 0);
+    if (TMNT.bots && TMNT.bots.team === team) n += key === 'members' ? TMNT.bots.startHours.length : key === 'hits' ? tmntBotHits() : 0;
+    return n;
 }
 function tmntTeamDone(team) { return tmntCount(team, 'hits') >= TMNT.goal; }
 function tmntTeamPct(team) { return Math.min(1, tmntCount(team, 'hits') / TMNT.goal); }
@@ -68,12 +93,25 @@ function tmntFetch(force) {
     if (!force && Date.now() - tmntFetchedAt < TMNT_CACHE_MS) return Promise.resolve(false);
     if (tmntFetching) return tmntFetching;
     tmntFetchedAt = Date.now();                     // גם כשהטעינה נכשלת - לא מנסים שוב לפני שעבר הזמן
-    tmntFetching = db.collection('events').doc('tmnt').get({ source: 'server' })
-        .then(doc => {
-            const d = doc.exists ? doc.data() : {};
+    // קריאה ישירה דרך ה-REST של Firestore (מהירה גם כשה-SDK עוד מתחבר בטלפון); אם נכשלת - דרך ה-SDK
+    const url = 'https://firestore.googleapis.com/v1/projects/' + firebaseConfig.projectId +
+        '/databases/(default)/documents/events/tmnt?key=' + firebaseConfig.apiKey;
+    const viaRest = () => fetch(url, { cache: 'no-store' }).then(r => {
+        if (r.status === 404) return {};
+        if (!r.ok) return Promise.reject(new Error('HTTP ' + r.status));
+        return r.json().then(j => {
+            const out = {};
+            for (const [k, v] of Object.entries(j.fields || {})) { const n = Number(v.integerValue !== undefined ? v.integerValue : v.doubleValue); if (!isNaN(n)) out[k] = n; }
+            return out;
+        });
+    });
+    const viaSdk = () => db.collection('events').doc('tmnt').get({ source: 'server' }).then(doc => (doc.exists ? doc.data() : {}));
+    tmntFetching = viaRest().catch(() => viaSdk())
+        .then(d => {
             const next = {};
             for (const t of ['a', 'b']) for (const m of ['hits', 'members']) { const v = d[t + '_' + m]; if (typeof v === 'number') next[t + '_' + m] = v; }
             tmntCounts = next;
+            tmntLoaded = true;
             store.set(TMNT_COUNTS_KEY, JSON.stringify(next));
             return true;
         })
@@ -237,7 +275,7 @@ function renderTmnt() {
         tcard.appendChild(avs);
         tcard.appendChild(el('div', 'ev-tname', T.name));
         tcard.appendChild(el('div', 'ev-members', T.skins.map(id => skinById(id).name).join(' · ')));
-        tcard.appendChild(el('div', 'ev-count', '👥 ' + tmntMembers(t) + ' שחקנים'));
+        tcard.appendChild(el('div', 'ev-count', '👥 ' + (tmntLoaded ? tmntMembers(t) : '…') + ' שחקנים'));
         if (poll) {
             if (st.team === t) tcard.appendChild(el('div', 'ev-badge', '⭐ הצוות שלכם'));
             else if (!st.team && tmntCanJoin(t)) { const btn = el('button', 'ev-join', 'הצטרפו לצוות'); btn.onclick = () => tmntPickTeam(t); tcard.appendChild(btn); }
@@ -250,7 +288,7 @@ function renderTmnt() {
         tot.appendChild(bar); tot.appendChild(el('b', '', Math.floor(pct * 100) + '%'));
         tcard.appendChild(tot);
         const hits = tmntCount(t, 'hits');
-        tcard.appendChild(el('div', 'ev-hits', '🎯 ' + Math.min(hits, TMNT.goal).toLocaleString('en-US') + ' / ' + goalTxt));
+        tcard.appendChild(el('div', 'ev-hits', '🎯 ' + (tmntLoaded ? Math.min(hits, TMNT.goal).toLocaleString('en-US') : '…') + ' / ' + goalTxt));
         if (done) tcard.appendChild(el('div', 'ev-badge ok', '✓ הצוות השלים!'));
         else if (st.team === t) tcard.appendChild(el('div', 'ev-badge', '⭐ הצוות שלכם'));
         else if (!st.team && live && tmntCanJoin(t)) {
