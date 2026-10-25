@@ -115,12 +115,19 @@ const firebaseConfig = {
         const userRef = db.collection(collectionName).doc(playerId);
         const entry = { name: playerName, score, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
         // שמירה אחת עם הסקין והמטבעות; אם הכללים בשרת לא מאפשרים אותם - מנסים בלי מטבעות, ואז רק את השיא עצמו
-        const tries = [lbExtras(), { skin: currentSkinId() }, {}];
+        // שמירה אחת עם הסקין, המטבעות והצוות; אם הכללים בשרת לא מאפשרים חלק מהם - מורידים אותם אחד אחד
+        const full = lbExtras();
+        const tries = [full];
+        if ('team' in full) { const d = Object.assign({}, full); delete d.team; tries.push(d); }
+        tries.push({ skin: currentSkinId() }, {});
         const attempt = i => userRef.set(Object.assign({}, entry, tries[i]), { merge: true }).catch(err => {
-            if (err && err.code === 'permission-denied' && i < tries.length - 1) { if (i === 0) lbCoinsOk = false; return attempt(i + 1); }
+            if (err && err.code === 'permission-denied' && i < tries.length - 1) {
+                if ('team' in tries[i]) lbTeamOk = false; else if ('coins' in tries[i]) lbCoinsOk = false;
+                return attempt(i + 1);
+            }
             throw err;
         });
-        const p = attempt(lbCoinsOk ? 0 : 1)
+        const p = attempt(0)
             .then(() => {
                 const pend = lbPending(); delete pend[collectionName]; store.set(LB_PENDING_KEY, JSON.stringify(pend));
                 lbPatchCache(collectionName, { score, name: playerName, ts: Date.now() });
@@ -148,7 +155,7 @@ const firebaseConfig = {
         else if (upd.score !== undefined) {
             const last = lb.rows[lb.rows.length - 1];
             if (lb.rows.length >= LB_LIMIT && last && upd.score <= last.score) return;   // לא נכנס ל-100 המובילים
-            lb.rows.push(Object.assign({ id: playerId, name: playerName, skin: currentSkinId(), coins: getCoins(), ts: Date.now() }, upd));
+            lb.rows.push(Object.assign({ id: playerId, name: playerName, skin: currentSkinId(), coins: getCoins(), team: lbTeam(), ts: Date.now() }, upd));
         } else return;
         lbSortRows(lb.rows);
         if (lb.rows.length > LB_LIMIT) lb.rows.length = LB_LIMIT;
@@ -163,16 +170,26 @@ const firebaseConfig = {
     function currentSkinId() {
         return typeof getEquippedSkinId === 'function' ? getEquippedSkinId() : 'classic';
     }
-    // הסקין והמטבעות נשמרים ליד השיא. אם הכללים בשרת עוד לא מאפשרים מטבעות - שומרים רק את הסקין
-    let lbCoinsOk = true;
-    const lbExtras = () => lbCoinsOk ? { skin: currentSkinId(), coins: getCoins() } : { skin: currentSkinId() };
+    // הסקין, המטבעות והצוות באירוע נשמרים ליד השיא. אם הכללים בשרת עוד לא מאפשרים חלק מהם - שומרים בלעדיהם
+    let lbCoinsOk = true, lbTeamOk = true;
+    const lbTeam = () => (typeof tmntState === 'function' ? tmntState().team : null);
+    const lbExtras = () => {
+        const d = { skin: currentSkinId() };
+        if (lbCoinsOk) d.coins = getCoins();
+        const team = lbTeamOk && lbTeam();
+        if (team) d.team = team;
+        return d;
+    };
     function lbWriteExtras(write) {
-        const data = lbExtras();
-        return write(data).catch(err => {
-            // כל כתיבה שנדחתה עם מטבעות מנסה שוב בלי מטבעות (גם כשכמה כתיבות רצות במקביל)
-            if (err && err.code === 'permission-denied' && 'coins' in data) { lbCoinsOk = false; return write({ skin: data.skin }); }
+        const tryWrite = data => write(data).catch(err => {
+            // כתיבה שנדחתה מנסה שוב בלי הצוות, ואז בלי המטבעות (גם כשכמה כתיבות רצות במקביל)
+            if (err && err.code === 'permission-denied') {
+                if ('team' in data) { lbTeamOk = false; const d = Object.assign({}, data); delete d.team; return tryWrite(d); }
+                if ('coins' in data) { lbCoinsOk = false; return tryWrite({ skin: data.skin }); }
+            }
             throw err;
         });
+        return tryWrite(lbExtras());
     }
     function saveLbSkin(ref) {
         return lbWriteExtras(d => ref.set(d, { merge: true }))
@@ -185,7 +202,7 @@ const firebaseConfig = {
         clearTimeout(lbSkinTimer);
         lbSkinTimer = setTimeout(() => {
             if (!db) return;
-            const mark = playerId + '|' + currentSkinId() + '|' + getCoins();
+            const mark = playerId + '|' + currentSkinId() + '|' + getCoins() + '|' + (lbTeam() || '');
             if (store.get('kebab_lbSkin') === mark) return;
             const jobs = Object.keys(LB_LOCAL_KEY).map(col => {
                 const ref = db.collection(col).doc(playerId);
@@ -320,6 +337,14 @@ const firebaseConfig = {
             }
             // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
             left.appendChild(document.createTextNode(' ' + safeName(row.name) + (row.id === playerId ? ' (אתה)' : '')));
+            // הצוות שהשחקן בחר באירוע (מוצג כל עוד האירוע על המסך)
+            const team = row.id === playerId ? lbTeam() : row.team;
+            if (team && typeof tmntVisible === 'function' && tmntVisible()) {
+                const chip = document.createElement('span');
+                chip.className = 'lb-team lb-team-' + team;
+                chip.textContent = team === 'a' ? '🐀 ספלינטר' : '⚔️ שרדר';
+                left.appendChild(chip);
+            }
 
             const right = document.createElement('span');
             right.style.cssText = 'color: var(--accent-gold); font-weight: bold;';
@@ -353,7 +378,8 @@ const firebaseConfig = {
                         const d = doc.data();
                         if (typeof d.score !== 'number' || shownIds.has(doc.id) || isRudeName(d.name)) return;
                         found.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score,
-                                     skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic', coins: typeof d.coins === 'number' ? d.coins : null });
+                                     skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic', coins: typeof d.coins === 'number' ? d.coins : null,
+                                     team: d.team === 'a' || d.team === 'b' ? d.team : null });
                     });
                     found.sort((a, b) => b.score - a.score);
                     if (!found.length) { noteLi.textContent = 'לא נמצאו עוד שחקנים ששמם מתחיל ב-"' + q + '"'; return; }
@@ -445,7 +471,7 @@ const firebaseConfig = {
                     const ts = d.timestamp && typeof d.timestamp.toMillis === 'function' ? d.timestamp.toMillis() : Infinity;
                     rows.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score, ts,
                                 skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic',
-                                coins: typeof d.coins === 'number' ? d.coins : null });
+                                coins: typeof d.coins === 'number' ? d.coins : null, team: d.team === 'a' || d.team === 'b' ? d.team : null });
                 });
                 // חשבונות שנוצרו לפני התיקון נשארו גם עם רשומת האורח הישנה.
                 // מסתירים רשומת אורח (player_...) כשיש חשבון באותו שם עם ניקוד זהה או גבוה יותר.

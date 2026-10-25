@@ -161,6 +161,7 @@ function tmntPickTeam(team) {
         st.team = team;
         st.pending[team + '_members'] = 1;
         tmntSave(st);
+        if (typeof syncLeaderboardSkin === 'function') syncLeaderboardSkin(0);     // הצוות מופיע מיד בשורות שלכם בטבלאות
         if (typeof sfx !== 'undefined' && sfx.tap) sfx.tap();
         renderTmnt();
         tmntFlush();
