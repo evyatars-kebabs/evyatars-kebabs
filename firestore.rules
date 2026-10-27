@@ -54,9 +54,8 @@ service cloud.firestore {
     }
     // הצטרפות לצוות (+1 ל-x_members) מותרת רק כשהצוות לא גדול מדי מהשני:
     // ההפרש קטן מ-3, או קטן מ-15% מכל המשתתפים
-    // בוטים שלא שמורים במסמך: 1 בצוות a (ספלינטר) ו-3 בצוות b (שרדר) - מוסיפים אותם כאן, בדיוק כמו במשחק (TMNT.bots)
     function tmntMembersOf(k) {
-      return resource.data.get(k, 0) + (k == 'b_members' ? 3 : (k == 'a_members' ? 1 : 0));
+      return resource.data.get(k, 0);
     }
     function tmntJoinOk(me, other) {
       return request.resource.data.get(me, 0) == resource.data.get(me, 0)

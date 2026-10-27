@@ -1,6 +1,6 @@
 /* ---------- אירוע קהילתי: צבי הנינג'ה ----------
    שני צוותים. כל שריון שפוגעים בו במשחק לזמן מוגבל "אתגר צבי הנינג'ה" (js/game-turtles.js) נספר לצוות של השחקן.
-   צוות שמגיע ל-100,000 פגיעות - כל חבריו מקבלים את 3 הסקינים שלו.
+   צוות שמגיע ל-30,000 פגיעות - כל חבריו מקבלים את 3 הסקינים שלו.
    המונים המשותפים נשמרים במסמך אחד ב-Firestore: events/tmnt (a_hits, b_hits, ומספר החברים a_members, b_members).
    קריאה אחת מציגה את ההתקדמות של שני הצוותים, וכל משחק עולה כתיבה אחת (עד 400 פגיעות בכתיבה).
    שלב ראשון - בחירת צוותים: מ-pollStart ועד שהאירוע מתחיל (start) שחקנים רק בוחרים צוות, ורואים כמה הצטרפו לכל צד.
@@ -11,12 +11,7 @@ const TMNT = {
     start: Date.parse('2026-10-25T16:00:00+02:00'),    // 16:00 שעון ישראל - עד אז רק בחירת צוותים, עם ספירה לאחור
     end: Date.parse('2026-11-08T23:59:59+02:00'),
     afterDays: 3,                    // כמה ימים אחרי הסיום עוד מציגים את התוצאות (ואפשר לקבל את הפרס)
-    goal: 100000,                    // פגיעות בשריונים לכל צוות
-    // בוטים: כל בוט "משחק" 5 שעות ביום (5 משחקים בשעה x 12 סיבובים x 5 פגיעות = 1,500 פגיעות ביום).
-    // הפגיעות שלהם מחושבות לפי השעה (בלי כתיבות לשרת), כך שכל המכשירים מציגים את אותו מספר
-    bots: { from: Date.parse('2026-10-25T17:00:00+02:00'), perDay: 1500, hours: 5,
-            // שעת ההתחלה של כל בוט בכל צוות (שעון ישראל); מספר הבוטים = אורך הרשימה (וגם ב-firestore.rules)
-            startHours: { a: [18], b: [12, 17, 20] } },
+    goal: 30000,                     // פגיעות בשריונים לכל צוות
     maxPerWrite: 400,                // אותו גבול כמו בכללי Firestore
     teams: {
         a: { name: 'צוות ספלינטר', skins: ['tmnt_leo', 'tmnt_splinter', 'tmnt_don'] },
@@ -61,31 +56,10 @@ let tmntCounts = (() => { try { return JSON.parse(store.get(TMNT_COUNTS_KEY) || 
 let tmntFetchedAt = 0, tmntFetching = null;
 let tmntLoaded = Object.keys(tmntCounts).length > 0;     // עד הטעינה הראשונה מציגים "…" ולא 0
 
-// כמה פגיעות הבוטים צברו עד עכשיו: בכל יום, בחלון של 5 שעות לכל בוט, בקצב קבוע (עם שינוי קטן מיום ליום)
-function tmntBotCount(team) { return TMNT.bots ? (TMNT.bots.startHours[team] || []).length : 0; }
-function tmntBotHits(team, now) {
-    const B = TMNT.bots, hours = B ? B.startHours[team] || [] : [];
-    if (!hours.length) return 0;
-    const end = Math.min(now || Date.now(), TMNT.end || Infinity), DAY = 864e5, IL = 2 * 36e5;
-    if (end <= B.from) return 0;
-    let total = 0;
-    for (let day = Math.floor((B.from + IL) / DAY); day * DAY - IL <= end; day++) {
-        hours.forEach((h, j) => {
-            const i = (team === 'a' ? 10 : 0) + j;          // שינוי יומי שונה לכל בוט
-            const ws = day * DAY - IL + h * 36e5, we = ws + B.hours * 36e5;   // חלון המשחק של הבוט ביום הזה
-            const a = Math.max(ws, B.from), b = Math.min(we, end);
-            if (b <= a) return;
-            const x = Math.sin(day * 12.9898 + i * 78.233) * 43758.5453, mult = 0.85 + 0.3 * (x - Math.floor(x));
-            total += B.perDay * mult * (b - a) / (we - ws);
-        });
-    }
-    return Math.floor(total);
-}
-// מונה של צוות (hits / members), כולל מה שהשחקן עוד לא שלח, והבוטים
+// מונה של צוות (hits / members), כולל מה שהשחקן עוד לא שלח
 function tmntCount(team, key) {
     const f = team + '_' + key, st = tmntState();
     let n = (parseInt(tmntCounts[f]) || 0) + (st.team === team ? (st.pending[f] || 0) : 0);
-    n += key === 'members' ? tmntBotCount(team) : key === 'hits' ? tmntBotHits(team) : 0;
     return n;
 }
 function tmntTeamDone(team) { return tmntCount(team, 'hits') >= TMNT.goal; }
