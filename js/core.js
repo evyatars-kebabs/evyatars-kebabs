@@ -173,32 +173,31 @@ const firebaseConfig = {
     // הסקין, המטבעות, הצוות באירוע, הרמה והשליטה נשמרים ליד השיא. אם הכללים בשרת עוד לא מאפשרים חלק מהם - שומרים בלעדיהם.
     // הסדר: קודם מוותרים על החדשים ביותר
     const LB_OPTIONAL = [['team'], ['mst'], ['lvl', 'title', 'frame'], ['coins']];
-    const lbFieldOk = { team: true, mst: true, lvl: true, coins: true };
     const lbMst = m => typeof mstOk === 'function' && mstOk(m) ? m : null;
     const lbTeam = () => (typeof tmntState === 'function' ? tmntState().team : null);
     const lbExtras = () => {
-        const d = { skin: currentSkinId() };
-        if (lbFieldOk.coins) d.coins = getCoins();
-        const team = lbFieldOk.team && lbTeam();
+        const d = { skin: currentSkinId(), coins: getCoins() };
+        const team = lbTeam();
         if (team) d.team = team;
-        if (lbFieldOk.lvl && typeof xpPublic === 'function') { const x = xpPublic(); d.lvl = x.lvl; d.title = x.title; d.frame = x.frame; }   // רמה, תואר ומסגרת
-        if (lbFieldOk.mst && typeof mstPublic === 'function') d.mst = mstPublic();                                                      // דרגות השליטה
+        if (typeof xpPublic === 'function') { const x = xpPublic(); d.lvl = x.lvl; d.title = x.title; d.frame = x.frame; }   // רמה, תואר ומסגרת
+        if (typeof mstPublic === 'function') d.mst = mstPublic();                                                      // דרגות השליטה
         return d;
     };
     // אחרי דחייה: אותם נתונים בלי הקבוצה הבאה ברשימה (או null אם לא נשאר על מה לוותר).
-    // remember - לזכור שהשדה נדחה. בשמירת שיא לא זוכרים: שם דחייה יכולה לבוא גם מניקוד נמוך מזה שבשרת
-    function lbDropNext(data, remember) {
+    // לא זוכרים את הדחייה לשאר הכתיבות: דחייה יכולה לבוא גם מסיבה אחרת (ניקוד נמוך מזה שבשרת, או עדכון של רשומה שלא קיימת),
+    // ואז שדה תקין היה נעלם מכל הטבלאות עד סוף הביקור
+    function lbDropNext(data) {
         const g = LB_OPTIONAL.find(g => g[0] in data);
         if (!g) return null;
-        if (remember) lbFieldOk[g[0]] = false;
         const d = Object.assign({}, data);
         g.forEach(k => delete d[k]);
         return d;
     }
+    // מחזיר את הנתונים שנשמרו בפועל
     function lbWriteExtras(write) {
-        // כתיבה שנדחתה מנסה שוב בלי השדה החדש ביותר (גם כשכמה כתיבות רצות במקביל)
-        const tryWrite = data => write(data).catch(err => {
-            const less = err && err.code === 'permission-denied' ? lbDropNext(data, true) : null;
+        // כתיבה שנדחתה מנסה שוב בלי השדה החדש ביותר
+        const tryWrite = data => write(data).then(() => data, err => {
+            const less = err && err.code === 'permission-denied' ? lbDropNext(data) : null;
             if (less) return tryWrite(less);
             throw err;
         });
@@ -210,7 +209,7 @@ const firebaseConfig = {
     }
     // אחרי החלפת סקין, שינוי במטבעות או פתיחת האפליקציה - מעדכנים את כל הטבלאות שבהן השחקן כבר מופיע.
     // update בלי קריאה מראש: בטבלה שהשחקן לא נמצא בה העדכון פשוט נכשל (not-found)
-    let lbSkinTimer = null;
+    let lbSkinTimer = null, lbPartialTried = null;
     function syncLeaderboardSkin(delay) {
         clearTimeout(lbSkinTimer);
         lbSkinTimer = setTimeout(() => {
@@ -218,16 +217,23 @@ const firebaseConfig = {
             const xp = typeof xpPublic === 'function' ? xpPublic() : {};
             const mark = playerId + '|' + currentSkinId() + '|' + getCoins() + '|' + (lbTeam() || '') + '|' + [xp.lvl, xp.title, xp.frame].join('/') +
                          '|' + (typeof mstPublic === 'function' ? mstPublic() : '');
-            if (store.get('kebab_lbSkin') === mark) return;
-            const jobs = Object.keys(LB_LOCAL_KEY).map(col => {
+            // סימון חלקי (השרת דחה שדות) - מנסים שוב פעם אחת בכל פתיחה של האפליקציה, לא בכל שינוי
+            const last = store.get('kebab_lbSkin');
+            if (last === mark || (last === mark + '|partial' && lbPartialTried === mark)) return;
+            lbPartialTried = mark;
+            // רק טבלאות שהשחקן כבר שיחק בהן: עדכון של רשומה שלא קיימת נדחה בשרת כ-permission-denied (ולא not-found)
+            const full = Object.keys(lbExtras()).length;
+            let partial = false;
+            const jobs = Object.keys(LB_LOCAL_KEY).filter(col => (parseInt(store.get(LB_LOCAL_KEY[col])) || 0) > 0).map(col => {
                 const ref = db.collection(col).doc(playerId);
-                return lbWriteExtras(d => ref.update(d)).then(() => {
+                return lbWriteExtras(d => ref.update(d)).then(saved => {
+                    if (Object.keys(saved).length < full) partial = true;
                     const row = lbCache[col] && lbCache[col].rows.find(r => r.id === playerId);
-                    if (row) Object.assign(row, lbExtras());            // מעדכנים את הטבלה השמורה בלי לטעון אותה שוב
-                }, err => { if (!err || err.code !== 'not-found') throw err; });
+                    if (row) Object.assign(row, saved);                 // מעדכנים את הטבלה השמורה בלי לטעון אותה שוב
+                }, err => { if (!err || !['not-found', 'permission-denied'].includes(err.code)) throw err; });
             });
             // אם השרת דחה חלק מהשדות - נשמר סימון חלקי, כדי לנסות שוב בפתיחה הבאה (למשל אחרי עדכון הכללים)
-            Promise.all(jobs).then(() => { store.set('kebab_lbSkin', mark + (Object.values(lbFieldOk).every(Boolean) ? '' : '|partial')); delete profileCache[playerId]; })
+            Promise.all(jobs).then(() => { store.set('kebab_lbSkin', mark + (partial ? '|partial' : '')); delete profileCache[playerId]; })
                 .catch(err => console.warn('לא עודכן הסקין בטבלאות:', err.code || err.message || err));
         }, delay === undefined ? 1500 : delay);
     }
