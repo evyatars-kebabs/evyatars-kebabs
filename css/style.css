@@ -978,7 +978,9 @@
         #player-stats .leaderboard-item { margin-bottom: 7px; }
 
         /* תוצאה */
-        #screen-result { justify-content: center; }
+        /* ממורכז כשהכול נכנס במסך; כשלא - מתחיל מלמעלה ונגלל (justify-content: center היה דוחף את הכותרת מעל הקצה, למקום שאי אפשר לגלול אליו) */
+        #screen-result > :first-child { margin-top: auto; }
+        #screen-result > :last-child { margin-bottom: auto; }
         #screen-result h2 { font-size: 1.9rem !important; color: var(--accent-gold) !important; text-shadow: 0 0 20px rgba(255, 140, 30, 0.6); animation: titleDrop .6s cubic-bezier(.2, 1.6, .4, 1); }
         @keyframes titleDrop { from { transform: translateY(-30px) scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
         .coupon-box {
