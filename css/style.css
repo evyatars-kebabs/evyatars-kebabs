@@ -1490,3 +1490,10 @@
     animation: mtCosmic 8s ease-in-out infinite; }
 #screen-trivia.mt5 .trivia-option { border-color: rgba(255, 140, 230, 0.45); }
 @keyframes mtCosmic { 0%, 100% { background-position: 0 0, 0 0, 0 0, 0 0, 0% 50%; } 50% { background-position: 0 0, 0 0, 0 0, 0 0, 100% 50%; } }
+
+/* ---------- סרגל הניווט בתחתית המסך ---------- */
+.app-container { padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+.top-bar { order: 99; margin: 10px 0 0; box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.35), inset 0 2px 6px rgba(0, 0, 0, 0.4); }
+.icon-btn.active { transform: translateY(-3px); }
+.screen { padding-bottom: 4px; }
+#toast { bottom: 88px; }
