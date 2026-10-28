@@ -257,7 +257,10 @@ const REDEEM_CODES = {
     'AVATARBL88':        { skin: 'avatar' },
     'SHLUK7':            { skin: 'shluk' },
     // מכפיל שריונים x2 לאתגר צבי הנינג'ה (פעם אחת לשחקן, גם מעבר לגבול של 5)
-    'SHELLX2':           { ttBoost: 1 }
+    'SHELLX2':           { ttBoost: 1 },
+    // סקינים של אירוע צבי הנינג'ה: כל קוד נותן את 3 הסקינים של צוות אחד
+    'SPLINTERTEAM3':     { skins: ['tmnt_splinter', 'tmnt_leo', 'tmnt_don'] },
+    'SHREDDERTEAM3':     { skins: ['tmnt_shredder', 'tmnt_raph', 'tmnt_mikey'] }
 };
 // קודי פיתוח: שמורים רק כטביעת אצבע (SHA-256) של הקוד - הקוד עצמו לא מופיע בקבצים,
 // והבדיקה נעשית במכשיר, בלי קריאה מהשרת (עובד גם כשנגמרה המכסה היומית של Firebase)
@@ -290,6 +293,16 @@ function applyReward(reward) {
         saveOwnedSkins(owned);
         store.set(SKIN_EQ_KEY, reward.skin);
         parts.push('סקין חדש: ' + skinById(reward.skin).name);
+    }
+    if (Array.isArray(reward.skins)) {                // כמה סקינים בקוד אחד - הראשון נבחר
+        const ids = reward.skins.filter(id => SV_SKINS.some(s => s.id === id));
+        if (ids.length) {
+            const owned = getOwnedSkins();
+            ids.forEach(id => owned.add(id));
+            saveOwnedSkins(owned);
+            store.set(SKIN_EQ_KEY, ids[0]);
+            parts.push(ids.length + ' סקינים חדשים: ' + ids.map(id => skinById(id).name).join(', '));
+        }
     }
     if (reward.ttBoost && typeof ttBoostFromCode === 'function') {
         if (!ttBoostFromCode()) return { ok: false, msg: 'כבר השתמשתם בקוד הזה' };
