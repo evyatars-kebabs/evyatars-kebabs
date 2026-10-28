@@ -375,7 +375,7 @@ const firebaseConfig = {
                 const row = top[i];
                 const spot = document.createElement('div');
                 if (!row) { spot.className = 'lb-pod empty'; li.appendChild(spot); return; }
-                const place = i + 1;
+                const place = Math.min(3, row.rank || i + 1);    // בתיקו - אותו מקום, אותו צבע ואותו גובה
                 spot.className = 'lb-pod p' + place + (row.id === playerId ? ' me' : '');
                 spot.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
                                                        lvl: row.lvl, title: row.title, frame: row.frame,
@@ -387,7 +387,7 @@ const firebaseConfig = {
                 const src = lbAvatar(row.id === playerId ? currentSkinId() : row.skin);
                 if (src) { const img = document.createElement('img'); img.src = src; img.alt = ''; av.appendChild(img); }
                 const medal = document.createElement('span');
-                medal.className = 'lb-pod-medal'; medal.textContent = ['🥇', '🥈', '🥉'][Math.min(2, (row.rank || place) - 1)];
+                medal.className = 'lb-pod-medal'; medal.textContent = ['🥇', '🥈', '🥉'][place - 1];
                 av.appendChild(medal);
                 if (px.lvl) { const b = document.createElement('span'); b.className = 'lb-lvl'; b.textContent = px.lvl; av.appendChild(b); }
                 spot.appendChild(av);
@@ -399,7 +399,7 @@ const firebaseConfig = {
                 sc.className = 'lb-pod-score'; sc.textContent = row.score + " נק'";
                 spot.appendChild(sc);
                 const block = document.createElement('div');
-                block.className = 'lb-pod-block'; block.textContent = row.rank || place;
+                block.className = 'lb-pod-block'; block.textContent = place;
                 spot.appendChild(block);
                 li.appendChild(spot);
             });
