@@ -369,5 +369,7 @@ document.getElementById('code-modal').addEventListener('click', e => { if (e.tar
 
 renderCoinBadges();
 renderDaily();
+// אוספי סקינים שכבר הושלמו (גם לשחקנים ותיקים): נקודה על כפתור החנות והודעה
+setTimeout(() => { if (typeof collNotify === 'function') collNotify(getOwnedSkins()); }, 2500);
 syncLeaderboardSkin(4000);
 setTimeout(retryPendingScores, 5000);              // שיאים שלא נשמרו בפעם הקודמת (אין חיבור / מכסה)

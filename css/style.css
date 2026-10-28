@@ -1245,3 +1245,20 @@
 .lb-pod.p1 .lb-pod-block { height: 92px; } .lb-pod.p2 .lb-pod-block { height: 68px; } .lb-pod.p3 .lb-pod-block { height: 52px; }
 .lb-pod.p1 .lb-pod-name { font-size: 0.9rem; color: #ffe27a; }
 .lb-pod.me .lb-pod-av img { outline: 3px solid #fff; outline-offset: 2px; }
+
+/* אוספי סקינים: פס התקדמות ופרס מתחת לכל קטגוריה */
+.shop-coll { display: flex; align-items: center; gap: 8px; margin: -2px 0 10px; }
+.shop-coll-bar { flex: 1; height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.shop-coll-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ffe27a, #ffb020); transition: width 0.6s ease; }
+.shop-coll-txt { font-size: 0.72rem; color: #c9b39a; white-space: nowrap; }
+.shop-coll.ready .shop-coll-bar i { background: linear-gradient(90deg, #8ef0a0, #3fb950); }
+.shop-coll.claimed .shop-coll-bar i { background: #3fb950; }
+.shop-coll.claimed .shop-coll-txt { color: #7ee787; font-weight: 700; }
+.shop-coll-claim { border: none; border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 800; font-size: 0.82rem; cursor: pointer;
+    color: #2a1600; background: linear-gradient(180deg, #ffe27a, #ffb020); box-shadow: 0 0 0 0 rgba(255, 194, 51, 0.7); animation: collPulse 1.4s infinite; }
+@keyframes collPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 194, 51, 0.7); } 70% { box-shadow: 0 0 0 12px rgba(255, 194, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 194, 51, 0); } }
+/* נקודה אדומה: יש פרס אוסף שמחכה */
+.shop-cat.has-dot, .icon-btn.has-dot { position: relative; }
+.shop-cat.has-dot::after, .icon-btn.has-dot::after { content: ''; position: absolute; top: 2px; left: 4px; width: 10px; height: 10px; border-radius: 50%;
+    background: #ff3b3b; border: 2px solid #1a0f0a; animation: collPulseDot 1.2s infinite; }
+@keyframes collPulseDot { 50% { transform: scale(1.25); } }

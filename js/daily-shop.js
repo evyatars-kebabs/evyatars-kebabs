@@ -616,6 +616,76 @@ const SHOP_CATEGORIES = [
 
 const VARIANT_KEY = 'kebab_skin_variant';        // הגרסה שנבחרה במתג לכל כרטיס
 
+/* ---------- אוספי סקינים ----------
+   כל קטגוריה בחנות היא אוסף. מי שמשיג את כל הסקינים של קטגוריה מקבל פרס מטבעות (פעם אחת לכל אוסף):
+   רבע מהמחיר של כל הסקינים בקטגוריה, מעוגל ל-50 ולפחות 200. */
+const COLL_KEY = 'kebab_collections';            // { [קטגוריה]: 'claimed' | 'ready' } - נשמר גם בחשבון
+function collState() { try { return JSON.parse(store.get(COLL_KEY) || '{}') || {}; } catch (e) { return {}; } }
+function collSave(st) { store.set(COLL_KEY, JSON.stringify(st)); }
+function collSkins(cat) {
+    return SV_SKINS.filter(s => cat.ids.includes(s.id) && !s.variantOf && s.rarity >= 0 && !(SK_RARITY[s.rarity] && SK_RARITY[s.rarity].codeOnly));
+}
+function collReward(cat) {
+    const total = collSkins(cat).reduce((sum, s) => sum + (SK_RARITY[s.rarity] ? SK_RARITY[s.rarity].price : 0), 0);
+    return Math.max(200, Math.round(total * 0.25 / 50) * 50);
+}
+function collProgress(cat, owned) {
+    const skins = collSkins(cat), have = skins.filter(s => owned.has(s.id)).length;
+    return { have, total: skins.length, done: skins.length > 0 && have === skins.length };
+}
+// אוספים שהושלמו ועוד לא נאסף הפרס שלהם (בשביל הנקודה על כפתור החנות)
+function collReadyCount(owned) {
+    owned = owned || getOwnedSkins();
+    const st = collState();
+    return SHOP_CATEGORIES.filter(cat => st[cat.id] !== 'claimed' && collProgress(cat, owned).done).length;
+}
+function collNotify(owned) {
+    const st = collState();
+    let changed = false;
+    SHOP_CATEGORIES.forEach(cat => {
+        if (st[cat.id] || !collProgress(cat, owned).done) return;
+        st[cat.id] = 'ready'; changed = true;
+        showToast('🏆 השלמתם את אוסף "' + cat.title + '"! אספו את הפרס בחנות', true);
+        if (typeof confettiBurst === 'function') confettiBurst(40);
+        sfx.win();
+    });
+    if (changed) collSave(st);
+    const dot = document.getElementById('btn-shop');
+    if (dot) dot.classList.toggle('has-dot', collReadyCount(owned) > 0);
+}
+function collClaim(cat, btn) {
+    const st = collState();
+    if (st[cat.id] === 'claimed' || !collProgress(cat, getOwnedSkins()).done) return;
+    const amount = collReward(cat);
+    st[cat.id] = 'claimed';
+    collSave(st);
+    sfx.chest();
+    haptic([60, 40, 120]);
+    if (typeof confettiBurst === 'function') confettiBurst(70);
+    flyCoins(btn, amount);
+    showToast('🎉 פרס האוסף "' + cat.title + '": +' + amount + ' 🪙', true);
+    setTimeout(renderShop, 1400);
+}
+// פס התקדמות של האוסף מתחת לכותרת הקטגוריה
+function collBar(cat, owned) {
+    const pr = collProgress(cat, owned), st = collState()[cat.id], amount = collReward(cat);
+    const box = document.createElement('div');
+    box.className = 'shop-coll' + (pr.done ? (st === 'claimed' ? ' claimed' : ' ready') : '');
+    const bar = document.createElement('div'); bar.className = 'shop-coll-bar';
+    const fill = document.createElement('i'); fill.style.width = (pr.total ? pr.have / pr.total * 100 : 0) + '%';
+    bar.appendChild(fill);
+    const txt = document.createElement('div'); txt.className = 'shop-coll-txt';
+    if (pr.done && st === 'claimed') txt.textContent = '✅ האוסף הושלם';
+    else if (pr.done) {
+        const btn = document.createElement('button');
+        btn.className = 'shop-coll-claim'; btn.textContent = '🎁 אספו ' + amount.toLocaleString('en-US') + ' 🪙';
+        btn.onclick = e => { e.stopPropagation(); collClaim(cat, btn); };
+        txt.appendChild(btn);
+    } else txt.textContent = '🏆 השלימו את האוסף: ' + amount.toLocaleString('en-US') + ' 🪙 · עוד ' + (pr.total - pr.have);
+    box.appendChild(bar); box.appendChild(txt);
+    return box;
+}
+
 // הגרסה שמוצגת בכרטיס: זו שבשימוש אם הסקין נבחר, אחרת מה שנבחר במתג, אחרת הראשית
 function shopVariantOf(base) {
     const eq = getEquippedSkinId();
@@ -849,6 +919,7 @@ function renderShop() {
     const coins = getCoins();
     const prevScroll = document.getElementById('screen-shop').scrollTop;
     grid.innerHTML = '';
+    collNotify(owned);                                  // אוסף שהרגע הושלם: הודעה וחגיגה
 
     const byRarity = (a, b) => a.rarity - b.rarity;
     const isSpecial = s => s.rarity >= 0 && SK_RARITY[s.rarity] && SK_RARITY[s.rarity].codeOnly;
@@ -871,9 +942,11 @@ function renderShop() {
     // קיצורי דרך לקטגוריות
     const chips = document.createElement('div');
     chips.className = 'shop-cats';
+    const collSt = collState();
     visible.filter(g => g.id !== 'default').forEach(g => {
         const chip = document.createElement('button');
-        chip.className = 'shop-cat';
+        const cc = SHOP_CATEGORIES.find(c => c.id === g.id);
+        chip.className = 'shop-cat' + (cc && collSt[cc.id] !== 'claimed' && collProgress(cc, owned).done ? ' has-dot' : '');
         chip.textContent = g.icon + ' ' + g.title;
         chip.onclick = () => {                         // בחירת קטגוריה פותחת אותה במלואה
             shopExpanded.add(g.id);
@@ -900,6 +973,8 @@ function renderShop() {
         head.appendChild(l);
         head.appendChild(r);
         grid.appendChild(head);
+        const cat = SHOP_CATEGORIES.find(c => c.id === g.id);
+        if (cat) grid.appendChild(collBar(cat, owned));                 // אוסף: התקדמות ופרס
 
         const wrap = document.createElement('div');
         wrap.className = 'shop-cards';
