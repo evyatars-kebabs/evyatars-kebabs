@@ -1439,10 +1439,14 @@
 @keyframes frMaster { to { --mst-a: 360deg; } }
 
 /* בפרופיל של שחקן */
-.player-mst { display: flex; justify-content: center; gap: 6px; margin: 6px 0 2px; flex-wrap: wrap; }
-.player-mst-i { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-.player-mst-i small { font-size: 0.7rem; line-height: 1; }
-.player-mst-i.none { opacity: 0.4; }
+.player-mst { margin: 10px 0 4px; padding: 8px 6px 7px; border-radius: 14px; background: linear-gradient(160deg, rgba(120, 70, 20, 0.35), rgba(40, 20, 8, 0.45));
+    border: 1px solid rgba(255, 190, 90, 0.3); }
+.player-mst-h { font-size: 0.78rem; font-weight: 700; color: #f0dcc8; text-align: center; margin-bottom: 6px; }
+.player-mst-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.player-mst-i { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.player-mst-i small { font-size: 0.72rem; line-height: 1; }
+.player-mst-i b { font-size: 0.6rem; line-height: 1; white-space: nowrap; }
+.player-mst-i.none { opacity: 0.45; }
 
 /* תפוס את הקבב: קבב זהב / יהלום / בוער */
 .kebab.mc3 { filter: sepia(1) saturate(3.5) hue-rotate(-8deg) brightness(1.15) drop-shadow(0 0 8px rgba(255, 205, 60, 0.95)); }

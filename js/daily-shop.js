@@ -886,17 +886,27 @@ function openPlayerModal(p) {
     const list = document.createElement('ul'); list.className = 'player-bests';
     const li = document.createElement('li'); li.className = 'player-bests-wait'; li.textContent = 'טוען שיאים...';
     list.appendChild(li);
-    // דרגות השליטה בכל המשחקים
+    // דרגות השליטה בכל 7 המשחקים (מוצג לכל שחקן שהדרגות שלו נשמרו בטבלה, גם כשעוד אין לו דרגות)
     const mm = p.id === playerId && typeof mstPublic === 'function' ? mstPublic() : (typeof mstOk === 'function' && mstOk(p.mst) ? p.mst : null);
-    const mstLine = document.createElement('div'); mstLine.className = 'player-mst';
-    if (mm && /[1-5]/.test(mm)) MST_GAMES.forEach((g, i) => {
-        const it = document.createElement('span'); it.className = 'player-mst-i' + (+mm[i] ? '' : ' none');
-        it.title = g.name + ': ' + MST_RANKS[+mm[i]].name;
-        it.appendChild(mstBadge(+mm[i], 26));
-        const ic = document.createElement('small'); ic.textContent = g.icon; it.appendChild(ic);
-        mstLine.appendChild(it);
-    });
-    body.appendChild(nm); if (px.lvl) body.appendChild(lvlLine); if (mstLine.firstChild) body.appendChild(mstLine); body.appendChild(skl); body.appendChild(coinsEl); body.appendChild(list);
+    const mstBox = document.createElement('div'); mstBox.className = 'player-mst';
+    if (mm) {
+        const head = document.createElement('div'); head.className = 'player-mst-h';
+        const best = Math.max(...mm.split('').map(Number));
+        head.textContent = '🏅 שליטה במשחקים' + (best ? ' · הכי גבוה: ' + MST_RANKS[best].name : ' · עוד אין דרגות');
+        mstBox.appendChild(head);
+        const grid = document.createElement('div'); grid.className = 'player-mst-grid';
+        MST_GAMES.forEach((g, i) => {
+            const r = +mm[i];
+            const it = document.createElement('div'); it.className = 'player-mst-i' + (r ? '' : ' none');
+            it.title = g.name + ': ' + MST_RANKS[r].name;
+            it.appendChild(mstBadge(r, 30));
+            const ic = document.createElement('small'); ic.textContent = g.icon; it.appendChild(ic);
+            const rn = document.createElement('b'); rn.className = 'mst-rk r' + r; rn.textContent = r ? MST_RANKS[r].name : '—'; it.appendChild(rn);
+            grid.appendChild(it);
+        });
+        mstBox.appendChild(grid);
+    }
+    body.appendChild(nm); if (px.lvl) body.appendChild(lvlLine); body.appendChild(skl); body.appendChild(coinsEl); if (mm) body.appendChild(mstBox); body.appendChild(list);
     card.appendChild(x); card.appendChild(cv); card.appendChild(body);
     el.appendChild(card);
     el.addEventListener('click', e => { if (e.target === el) closeSkinModal(); });

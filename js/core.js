@@ -226,7 +226,8 @@ const firebaseConfig = {
                     if (row) Object.assign(row, lbExtras());            // מעדכנים את הטבלה השמורה בלי לטעון אותה שוב
                 }, err => { if (!err || err.code !== 'not-found') throw err; });
             });
-            Promise.all(jobs).then(() => { store.set('kebab_lbSkin', mark); delete profileCache[playerId]; })
+            // אם השרת דחה חלק מהשדות - נשמר סימון חלקי, כדי לנסות שוב בפתיחה הבאה (למשל אחרי עדכון הכללים)
+            Promise.all(jobs).then(() => { store.set('kebab_lbSkin', mark + (Object.values(lbFieldOk).every(Boolean) ? '' : '|partial')); delete profileCache[playerId]; })
                 .catch(err => console.warn('לא עודכן הסקין בטבלאות:', err.code || err.message || err));
         }, delay === undefined ? 1500 : delay);
     }
