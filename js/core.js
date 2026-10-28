@@ -116,21 +116,16 @@ const firebaseConfig = {
 
         const userRef = db.collection(collectionName).doc(playerId);
         const entry = { name: playerName, score, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
-        // שמירה אחת עם הסקין והמטבעות; אם הכללים בשרת לא מאפשרים אותם - מנסים בלי מטבעות, ואז רק את השיא עצמו
-        // שמירה אחת עם הסקין, המטבעות והצוות; אם הכללים בשרת לא מאפשרים חלק מהם - מורידים אותם אחד אחד
-        const full = lbExtras();
-        const tries = [full];
-        if ('team' in full) { const d = Object.assign({}, full); delete d.team; tries.push(d); }
-        if ('lvl' in full) { const d = Object.assign({}, tries[tries.length - 1]); delete d.lvl; delete d.title; delete d.frame; tries.push(d); }
-        tries.push({ skin: currentSkinId() }, {});
-        const attempt = i => userRef.set(Object.assign({}, entry, tries[i]), { merge: true }).catch(err => {
-            if (err && err.code === 'permission-denied' && i < tries.length - 1) {
-                if ('team' in tries[i]) lbTeamOk = false; else if ('lvl' in tries[i]) lbProgOk = false; else if ('coins' in tries[i]) lbCoinsOk = false;
-                return attempt(i + 1);
+        // שמירה אחת עם הסקין, המטבעות, הצוות, הרמה והשליטה; אם הכללים בשרת לא מאפשרים חלק מהם - מורידים אותם אחד אחד, ובסוף שומרים רק את השיא
+        const attempt = extra => userRef.set(Object.assign({}, entry, extra), { merge: true }).catch(err => {
+            if (err && err.code === 'permission-denied') {
+                const less = lbDropNext(extra);
+                if (less) return attempt(less);
+                if ('skin' in extra) return attempt({});
             }
             throw err;
         });
-        const p = attempt(0)
+        const p = attempt(lbExtras())
             .then(() => {
                 const pend = lbPending(); delete pend[collectionName]; store.set(LB_PENDING_KEY, JSON.stringify(pend));
                 lbPatchCache(collectionName, { score, name: playerName, ts: Date.now() });
@@ -158,7 +153,8 @@ const firebaseConfig = {
         else if (upd.score !== undefined) {
             const last = lb.rows[lb.rows.length - 1];
             if (lb.rows.length >= LB_LIMIT && last && upd.score <= last.score) return;   // לא נכנס ל-100 המובילים
-            lb.rows.push(Object.assign({ id: playerId, name: playerName, skin: currentSkinId(), coins: getCoins(), team: lbTeam(), ts: Date.now() },
+            lb.rows.push(Object.assign({ id: playerId, name: playerName, skin: currentSkinId(), coins: getCoins(), team: lbTeam(), ts: Date.now(),
+                                         mst: typeof mstPublic === 'function' ? mstPublic() : null },
                                        typeof xpPublic === 'function' ? xpPublic() : {}, upd));
         } else return;
         lbSortRows(lb.rows);
@@ -174,25 +170,36 @@ const firebaseConfig = {
     function currentSkinId() {
         return typeof getEquippedSkinId === 'function' ? getEquippedSkinId() : 'classic';
     }
-    // הסקין, המטבעות והצוות באירוע נשמרים ליד השיא. אם הכללים בשרת עוד לא מאפשרים חלק מהם - שומרים בלעדיהם
-    let lbCoinsOk = true, lbTeamOk = true, lbProgOk = true;
+    // הסקין, המטבעות, הצוות באירוע, הרמה והשליטה נשמרים ליד השיא. אם הכללים בשרת עוד לא מאפשרים חלק מהם - שומרים בלעדיהם.
+    // הסדר: קודם מוותרים על החדשים ביותר
+    const LB_OPTIONAL = [['team'], ['mst'], ['lvl', 'title', 'frame'], ['coins']];
+    const lbFieldOk = { team: true, mst: true, lvl: true, coins: true };
+    const lbMst = m => typeof mstOk === 'function' && mstOk(m) ? m : null;
     const lbTeam = () => (typeof tmntState === 'function' ? tmntState().team : null);
     const lbExtras = () => {
         const d = { skin: currentSkinId() };
-        if (lbCoinsOk) d.coins = getCoins();
-        const team = lbTeamOk && lbTeam();
+        if (lbFieldOk.coins) d.coins = getCoins();
+        const team = lbFieldOk.team && lbTeam();
         if (team) d.team = team;
-        if (lbProgOk && typeof xpPublic === 'function') { const x = xpPublic(); d.lvl = x.lvl; d.title = x.title; d.frame = x.frame; }   // רמה, תואר ומסגרת
+        if (lbFieldOk.lvl && typeof xpPublic === 'function') { const x = xpPublic(); d.lvl = x.lvl; d.title = x.title; d.frame = x.frame; }   // רמה, תואר ומסגרת
+        if (lbFieldOk.mst && typeof mstPublic === 'function') d.mst = mstPublic();                                                      // דרגות השליטה
         return d;
     };
+    // אחרי דחייה: אותם נתונים בלי הקבוצה הבאה ברשימה (או null אם לא נשאר על מה לוותר).
+    // remember - לזכור שהשדה נדחה. בשמירת שיא לא זוכרים: שם דחייה יכולה לבוא גם מניקוד נמוך מזה שבשרת
+    function lbDropNext(data, remember) {
+        const g = LB_OPTIONAL.find(g => g[0] in data);
+        if (!g) return null;
+        if (remember) lbFieldOk[g[0]] = false;
+        const d = Object.assign({}, data);
+        g.forEach(k => delete d[k]);
+        return d;
+    }
     function lbWriteExtras(write) {
+        // כתיבה שנדחתה מנסה שוב בלי השדה החדש ביותר (גם כשכמה כתיבות רצות במקביל)
         const tryWrite = data => write(data).catch(err => {
-            // כתיבה שנדחתה מנסה שוב בלי הצוות, ואז בלי המטבעות (גם כשכמה כתיבות רצות במקביל)
-            if (err && err.code === 'permission-denied') {
-                if ('team' in data) { lbTeamOk = false; const d = Object.assign({}, data); delete d.team; return tryWrite(d); }
-                if ('lvl' in data) { lbProgOk = false; const d = Object.assign({}, data); delete d.lvl; delete d.title; delete d.frame; return tryWrite(d); }
-                if ('coins' in data) { lbCoinsOk = false; return tryWrite({ skin: data.skin }); }
-            }
+            const less = err && err.code === 'permission-denied' ? lbDropNext(data, true) : null;
+            if (less) return tryWrite(less);
             throw err;
         });
         return tryWrite(lbExtras());
@@ -209,7 +216,8 @@ const firebaseConfig = {
         lbSkinTimer = setTimeout(() => {
             if (!db) return;
             const xp = typeof xpPublic === 'function' ? xpPublic() : {};
-            const mark = playerId + '|' + currentSkinId() + '|' + getCoins() + '|' + (lbTeam() || '') + '|' + [xp.lvl, xp.title, xp.frame].join('/');
+            const mark = playerId + '|' + currentSkinId() + '|' + getCoins() + '|' + (lbTeam() || '') + '|' + [xp.lvl, xp.title, xp.frame].join('/') +
+                         '|' + (typeof mstPublic === 'function' ? mstPublic() : '');
             if (store.get('kebab_lbSkin') === mark) return;
             const jobs = Object.keys(LB_LOCAL_KEY).map(col => {
                 const ref = db.collection(col).doc(playerId);
@@ -326,11 +334,20 @@ const firebaseConfig = {
             container.appendChild(li);
         };
 
+        // תג דרגת השליטה של השחקן במשחק של הטבלה הזאת (מארד ומעלה)
+        const mstIdx = typeof MST_GAMES !== 'undefined' ? MST_GAMES.findIndex(g => g.col === collectionName) : -1;
+        const lbMstBadge = (row, size) => {
+            const m = row.id === playerId && typeof mstPublic === 'function' ? mstPublic() : row.mst;
+            const r = mstIdx >= 0 && m ? +m[mstIdx] : 0;
+            if (!r) return null;
+            const b = mstBadge(r, size); b.classList.add('lb-mst');
+            return b;
+        };
         const makeRow = row => {
             const li = document.createElement('li');
             li.className = 'leaderboard-item' + (row.rank && row.rank <= 3 ? ' r' + row.rank : '') + (row.id === playerId ? ' me' : '');
             li.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
-                                                 lvl: row.lvl, title: row.title, frame: row.frame,
+                                                 lvl: row.lvl, title: row.title, frame: row.frame, mst: row.mst,
                                                  known: row.rank ? { col: collectionName, score: row.score, rank: row.rank, coins: row.coins } : null });
 
             const left = document.createElement('span');
@@ -350,6 +367,8 @@ const firebaseConfig = {
             }
             // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
             left.appendChild(document.createTextNode(' ' + safeName(row.name) + (row.id === playerId ? ' (אתה)' : '')));
+            const mb = lbMstBadge(row, 18);                                                  // דרגת השליטה במשחק של הטבלה
+            if (mb) left.appendChild(mb);
             // הצוות שהשחקן בחר באירוע (מוצג כל עוד האירוע על המסך)
             const team = row.id === playerId ? lbTeam() : row.team;
             if (team && typeof tmntVisible === 'function' && tmntVisible()) {
@@ -378,7 +397,7 @@ const firebaseConfig = {
                 const place = Math.min(3, row.rank || i + 1);    // בתיקו - אותו מקום, אותו צבע ואותו גובה
                 spot.className = 'lb-pod p' + place + (row.id === playerId ? ' me' : '');
                 spot.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
-                                                       lvl: row.lvl, title: row.title, frame: row.frame,
+                                                       lvl: row.lvl, title: row.title, frame: row.frame, mst: row.mst,
                                                        known: { col: collectionName, score: row.score, rank: row.rank, coins: row.coins } });
                 if (place === 1) { const crown = document.createElement('div'); crown.className = 'lb-pod-crown'; crown.textContent = '👑'; spot.appendChild(crown); }
                 const av = document.createElement('div');
@@ -394,6 +413,8 @@ const firebaseConfig = {
                 const nm = document.createElement('div');
                 nm.className = 'lb-pod-name';
                 nm.textContent = safeName(row.name) + (row.id === playerId ? ' (אתה)' : '');   // textContent - בלי הזרקת קוד
+                const mb = lbMstBadge(row, 16);
+                if (mb) nm.appendChild(mb);
                 spot.appendChild(nm);
                 const sc = document.createElement('div');
                 sc.className = 'lb-pod-score'; sc.textContent = row.score + " נק'";
@@ -432,7 +453,7 @@ const firebaseConfig = {
                                      skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic', coins: typeof d.coins === 'number' ? d.coins : null,
                                      team: d.team === 'a' || d.team === 'b' ? d.team : null,
                                      lvl: Number.isInteger(d.lvl) && d.lvl > 0 ? d.lvl : null, title: typeof xpTitleOk === 'function' && xpTitleOk(d.title) ? d.title : null,
-                                frame: typeof xpFrameOk === 'function' && xpFrameOk(d.frame) ? d.frame : '' });
+                                     frame: typeof xpFrameOk === 'function' && xpFrameOk(d.frame) ? d.frame : '', mst: lbMst(d.mst) });
                     });
                     found.sort((a, b) => b.score - a.score);
                     if (!found.length) { noteLi.textContent = 'לא נמצאו עוד שחקנים ששמם מתחיל ב-"' + q + '"'; return; }
@@ -529,7 +550,7 @@ const firebaseConfig = {
                                 skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic',
                                 coins: typeof d.coins === 'number' ? d.coins : null, team: d.team === 'a' || d.team === 'b' ? d.team : null,
                                 lvl: Number.isInteger(d.lvl) && d.lvl > 0 ? d.lvl : null, title: typeof xpTitleOk === 'function' && xpTitleOk(d.title) ? d.title : null,
-                                frame: typeof xpFrameOk === 'function' && xpFrameOk(d.frame) ? d.frame : '' });
+                                frame: typeof xpFrameOk === 'function' && xpFrameOk(d.frame) ? d.frame : '', mst: lbMst(d.mst) });
                 });
                 // חשבונות שנוצרו לפני התיקון נשארו גם עם רשומת האורח הישנה.
                 // מסתירים רשומת אורח (player_...) כשיש חשבון באותו שם עם ניקוד זהה או גבוה יותר.
@@ -598,7 +619,7 @@ const firebaseConfig = {
     const LB_ID_KEY = 'kebab_lbId';
     const PROGRESS_KEYS = ['kebab_lbId', 'kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
         'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
-        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt', 'kebab_turtlesHighScore', 'kebab_tt_boost', 'kebab_collections', 'kebab_xp'];
+        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt', 'kebab_turtlesHighScore', 'kebab_tt_boost', 'kebab_collections', 'kebab_xp', 'kebab_mastery'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
     const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
     const LB_BEST = [['leaderboard_delivery', 'kebab_dlvHighScore'], ['leaderboard', 'kebab_highScore'], ['leaderboard_turtles', 'kebab_turtlesHighScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
@@ -923,7 +944,7 @@ const firebaseConfig = {
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
 		if (screenId === 'shop') renderShop();
 		if (screenId === 'profile' && typeof renderXpProfile === 'function') renderXpProfile();
-		if (screenId === 'home') renderDaily();
+		if (screenId === 'home') { renderDaily(); if (typeof mstCelebrateSoon === 'function') mstCelebrateSoon(900); }
 
 		if (screenId === 'leaderboard') {
 			const active = document.querySelector('.sub-tab-btn.active');

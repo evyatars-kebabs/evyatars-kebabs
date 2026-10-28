@@ -58,7 +58,8 @@ function kvNewState() {
         running: false, started: false, over: false, endT: 0, t: 0, last: 0,
         bank: KV_START_BANK, bankBump: 0, score: 0, kills: 0,
         wave: 0, waveState: 'grace', waveTimer: 25, queue: [], spawnIn: 0, waveTotal: 0, waveDone: 0, lastLane: -1,
-        kebabs: [], kols: [], shots: [], pickups: [], flying: [], fx: [], knifeRuns: [],
+        kebabs: [], kols: [], shots: [], pickups: [], flying: [], fx: [], knifeRuns: [], mfx: [],
+        cos: typeof mstCos === 'function' ? mstCos('kvk') : 0,          // מראה הגריל מדרגת השליטה (זהב / יהלום / בוער)
         knives: [true, true, true, true], cds, selected: null, shovel: false, drag: null, hover: null,
         skyIn: 7, guide: false, banner: null, shake: 0, tut: null, pool: [], shownWave: -1, shownScore: -1
     };
@@ -670,7 +671,7 @@ function kvDrawKebabShape(c, type, k) {
         c.beginPath(); c.moveTo(-14, -12); c.lineTo(-20, 0); c.moveTo(14, -12); c.lineTo(20, 0); c.stroke();
         skGlow(c, 0, -30, 26, '#ff6a1a', 0.35 + 0.45 * glow + 0.1 * Math.sin(t * 4));
         c.beginPath(); c.moveTo(-24, -32); c.lineTo(24, -32); c.quadraticCurveTo(22, -10, 0, -10); c.quadraticCurveTo(-22, -10, -24, -32); c.closePath();
-        c.fillStyle = '#3a3d46'; c.fill(); c.strokeStyle = '#111'; c.lineWidth = 2; c.stroke();
+        c.fillStyle = kv && kv.cos ? ['', '', '', '#c9962a', '#8fcde8', '#6a1408'][kv.cos] : '#3a3d46'; c.fill(); c.strokeStyle = '#111'; c.lineWidth = 2; c.stroke();
         for (const [x, y] of [[-12, -35], [0, -37], [12, -35], [-6, -40], [7, -41]]) kvDrawCoal(c, x, y, 5, 0.4 + glow);
         c.strokeStyle = '#9aa1ae'; c.lineWidth = 1.5;
         for (let x = -20; x <= 20; x += 8) { c.beginPath(); c.moveTo(x, -33); c.lineTo(x, -31); c.stroke(); }
@@ -738,6 +739,20 @@ function kvNameTag(c, text, x, y) {
     c.fillText(text, x, y + 0.5);
 }
 
+// צבעי השורות לפי מראה השליטה, ופסי הרשת של הגריל
+const KV_LANE_COLORS = { 0: ['#43281a', '#3a2214'], 3: ['#3d2a0e', '#33230a'], 4: ['#1e2c3e', '#182536'], 5: ['#36120a', '#2b0d07'] };
+function kvDrawGrate(c, y, LH) {
+    const col = kv.cos === 3 ? 'rgba(255, 210, 70, 0.5)' : kv.cos === 4 ? 'rgba(170, 230, 255, 0.35)'
+        : 'rgba(255, ' + Math.round(100 + 40 * Math.sin(kv.t * 3)) + ', 30, 0.5)';
+    c.strokeStyle = col; c.lineWidth = 2;
+    for (let i = 1; i < 4; i++) { const yy = y + LH * i / 4; c.beginPath(); c.moveTo(KV_GX, yy); c.lineTo(KV_W, yy); c.stroke(); }
+    if (kv.cos === 5) {                                                  // גחלים לוחשות מתחת לרשת
+        const g = c.createLinearGradient(0, y + LH * 0.6, 0, y + LH);
+        g.addColorStop(0, 'rgba(255, 80, 20, 0)'); g.addColorStop(1, 'rgba(255, 80, 20, ' + (0.16 + 0.06 * Math.sin(kv.t * 2 + y)) + ')');
+        c.fillStyle = g; c.fillRect(0, y + LH * 0.6, KV_W, LH * 0.4);
+    }
+}
+
 function kvDraw() {
     const c = kvCtx;
     if (!c) return;
@@ -749,7 +764,8 @@ function kvDraw() {
     c.fillStyle = '#170c07'; c.fillRect(-10, -10, KV_W + 20, kvH + 20);
     for (let l = 0; l < KV_LANES; l++) {
         const y = kvLaneTop(l);
-        c.fillStyle = l % 2 ? '#3a2214' : '#43281a'; c.fillRect(0, y, KV_W, LH);
+        c.fillStyle = (KV_LANE_COLORS[kv.cos] || KV_LANE_COLORS[0])[l % 2]; c.fillRect(0, y, KV_W, LH);
+        if (kv.cos) kvDrawGrate(c, y, LH);
         for (let j = 0; j < KV_COLS; j++) if ((l + j) % 2) { c.fillStyle = 'rgba(255,190,120,0.045)'; c.fillRect(KV_GX + j * KV_TILE, y, KV_TILE, LH); }
         c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 2;
         c.beginPath(); c.moveTo(0, y); c.lineTo(KV_W, y); c.stroke();
@@ -762,6 +778,13 @@ function kvDraw() {
             skE(c, 10, ky + 1, 1.5, 1.5, '#e9c46a');
         }
     }
+    // גריל בוער: גחלים שעולות מהשורות; גריל יהלום: ניצוצות פה ושם
+    if (kv.cos >= 4 && !kv.over && Math.random() < (kv.cos === 5 ? 0.5 : 0.12)) {
+        const l = Math.floor(Math.random() * KV_LANES);
+        mstFx.burst(kv.mfx, KV_GX + Math.random() * (KV_W - KV_GX), kvLaneTop(l) + LH * (0.3 + Math.random() * 0.6), 1,
+                    kv.cos === 5 ? MST_FIRE : MST_SPARK, kv.cos === 5 ? 18 : 6, kv.cos === 5 ? 1.4 : 0.7, kv.cos === 5 ? -40 : 0);
+    }
+    if (kv.mfx.length) mstFx.draw(c, kv.mfx);
     // סימון משבצות כשבוחרים קבב
     if (kv.selected && !kv.over) {
         for (let l = 0; l < KV_LANES; l++) for (let j = 0; j < KV_COLS; j++) {

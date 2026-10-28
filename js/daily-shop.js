@@ -351,6 +351,7 @@ function showResultReward(gameKey, score) {
     lastGameKey = gameKey;
     if (typeof tmntGamePlayed === 'function') tmntGamePlayed(gameKey, score);     // אירוע קהילתי
     if (typeof xpOnGame === 'function') xpOnGame(gameKey, score);                 // XP ורמות
+    if (typeof mstOnGame === 'function') mstOnGame(gameKey, score);               // שליטה במשחק
     const box = document.getElementById('coupon-box');
     const txt = document.getElementById('coupon-text');
     const coinsEl = document.getElementById('coupon-coins');
@@ -885,7 +886,17 @@ function openPlayerModal(p) {
     const list = document.createElement('ul'); list.className = 'player-bests';
     const li = document.createElement('li'); li.className = 'player-bests-wait'; li.textContent = 'טוען שיאים...';
     list.appendChild(li);
-    body.appendChild(nm); if (px.lvl) body.appendChild(lvlLine); body.appendChild(skl); body.appendChild(coinsEl); body.appendChild(list);
+    // דרגות השליטה בכל המשחקים
+    const mm = p.id === playerId && typeof mstPublic === 'function' ? mstPublic() : (typeof mstOk === 'function' && mstOk(p.mst) ? p.mst : null);
+    const mstLine = document.createElement('div'); mstLine.className = 'player-mst';
+    if (mm && /[1-5]/.test(mm)) MST_GAMES.forEach((g, i) => {
+        const it = document.createElement('span'); it.className = 'player-mst-i' + (+mm[i] ? '' : ' none');
+        it.title = g.name + ': ' + MST_RANKS[+mm[i]].name;
+        it.appendChild(mstBadge(+mm[i], 26));
+        const ic = document.createElement('small'); ic.textContent = g.icon; it.appendChild(ic);
+        mstLine.appendChild(it);
+    });
+    body.appendChild(nm); if (px.lvl) body.appendChild(lvlLine); if (mstLine.firstChild) body.appendChild(mstLine); body.appendChild(skl); body.appendChild(coinsEl); body.appendChild(list);
     card.appendChild(x); card.appendChild(cv); card.appendChild(body);
     el.appendChild(card);
     el.addEventListener('click', e => { if (e.target === el) closeSkinModal(); });

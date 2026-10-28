@@ -34,6 +34,7 @@ function dlvNewState() {
         running: false, started: false, paused: false, over: false, endT: 0, t: 0, playT: 0, last: 0,
         hearts: DLV_HEARTS, score: 0, delivered: 0, combo: 0, dist: 0, speed: 170,
         air: null, lane: 1, laneX: dlvLaneX(1), vx: 0, tilt: 0, bump: 0, hurtT: 0, shake: 0, flash: 0, puffs: [], puffIn: 0, press: [0, 0, 0, 0],
+        cos: typeof mstCos === 'function' ? mstCos('delivery') : 0,      // מראה הקטנוע מדרגת השליטה (זהב / כרום-יהלום / בוער)
         obstacles: [], customers: [], throws: [], pickups: [], fx: [],
         obsIn: 1.6, custIn: 1.2, pickIn: 14, scroll: 0,
         down: null,
@@ -380,6 +381,36 @@ function dlvDrawRamp(c, o, t) {
     c.fillText('⬆', 0, 0);
     c.restore();
 }
+// צבע גוף הקטנוע לפי מראה השליטה
+function dlvBodyFill(c) {
+    if (!dlv.cos) return '#d6291f';
+    const g = dlv.cos === 5 ? c.createLinearGradient(0, -30, 0, 26) : c.createLinearGradient(-14, 0, 14, 0);
+    const stops = dlv.cos === 3 ? ['#a8730f', '#ffe27a', '#c48a12'] : dlv.cos === 4 ? ['#7f93ad', '#f4fbff', '#9db3cc'] : ['#ffb03a', '#e8341a', '#5a0a04'];
+    stops.forEach((col, i) => g.addColorStop(i / 2, col));
+    return g;
+}
+// להבות שמתנפנפות מאחורי הקטנוע הבוער ולאורך הצדדים שלו
+function dlvDrawFlames(c, t) {
+    c.save();
+    c.globalCompositeOperation = 'lighter';
+    for (const side of [-1, 1]) for (let i = 0; i < 5; i++) {             // לשונות אש בצדדים, נמשכות אחורה
+        const y0 = -18 + i * 13, len = 16 + 7 * Math.sin(t * 21 + i * 1.9 + side), x0 = side * 13;
+        const g = c.createLinearGradient(0, y0, 0, y0 + len);
+        g.addColorStop(0, 'rgba(255, 220, 120, 0.85)'); g.addColorStop(0.5, 'rgba(255, 120, 30, 0.6)'); g.addColorStop(1, 'rgba(255, 50, 10, 0)');
+        c.fillStyle = g;
+        c.beginPath(); c.moveTo(x0, y0 - 4);
+        c.quadraticCurveTo(x0 + side * (11 + 3 * Math.sin(t * 17 + i)), y0 + len * 0.4, x0 + side * (4 + 3 * Math.sin(t * 13 + i)), y0 + len);
+        c.quadraticCurveTo(x0 + side * 2, y0 + len * 0.5, x0, y0 + 6); c.fill();
+    }
+    for (let i = 6; i >= 0; i--) {
+        const w = (13 - i * 1.5) * (0.8 + 0.3 * Math.sin(t * 23 + i * 1.3));
+        const yy = 56 + i * 7 + Math.sin(t * 19 + i) * 2;
+        c.fillStyle = i < 2 ? 'rgba(255,240,170,0.8)' : i < 4 ? 'rgba(255,160,40,0.6)' : 'rgba(255,70,20,' + (0.55 - i * 0.06) + ')';
+        c.beginPath(); c.ellipse(Math.sin(t * 17 + i * 2) * 2.5, yy, Math.max(2, w), 7.5, 0, 0, Math.PI * 2); c.fill();
+    }
+    c.restore();
+}
+
 function dlvDraw() {
     const c = dlvCtx;
     if (!c) return;
@@ -452,7 +483,7 @@ function dlvDraw() {
     const py = dlvPlayerY();
     for (const pf of dlv.puffs) {                                         // עשן מהאגזוז
         const k = pf.t / 0.6;
-        skE(c, pf.x, pf.y, 4 + k * 9, 4 + k * 9, 'rgba(220,220,230,' + (0.45 * (1 - k)) + ')');
+        skE(c, pf.x, pf.y, 4 + k * 9, 4 + k * 9, (dlv.cos === 5 ? 'rgba(255,130,40,' : 'rgba(220,220,230,') + (0.45 * (1 - k)) + ')');
     }
     const blink = dlv.hurtT > 0 && Math.floor(t * 12) % 2 === 0;
     if (!blink) {
@@ -474,10 +505,18 @@ function dlvDraw() {
         };
         c.save(); c.translate(dlv.laneX, py + bob); c.rotate(dlv.tilt); c.scale(1.25 * grow, 1.25 * grow);
         if (!airK) { c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(5, 8, 24, 52, 0, 0, Math.PI * 2); c.fill(); }
+        if (dlv.cos === 5) dlvDrawFlames(c, t);                          // קטנוע בוער: להבות מאחור
         wheel(46, 0);                                                     // גלגל אחורי
         wheel(-42, steer);                                                // גלגל קדמי שמסתובב לכיוון הפנייה
-        skR(c, -14, -30, 28, 56, 12, '#d6291f', SK_OUT, 2.5);             // גוף הקטנוע
+        skR(c, -14, -30, 28, 56, 12, dlvBodyFill(c), SK_OUT, 2.5);        // גוף הקטנוע
         skR(c, -9, -16, 18, 10, 4, 'rgba(255,255,255,0.25)');
+        if (dlv.cos === 4) {                                              // כרום: פס ברק שעובר על הגוף
+            c.save(); skR(c, -14, -30, 28, 56, 12); c.clip();
+            const sy = ((t * 70) % 140) - 50;
+            c.fillStyle = 'rgba(255,255,255,0.55)';
+            c.beginPath(); c.moveTo(-16, sy); c.lineTo(16, sy - 12); c.lineTo(16, sy - 4); c.lineTo(-16, sy + 8); c.fill();
+            c.restore();
+        }
         c.save(); c.translate(0, -30); c.rotate(steer);                   // כידון
         c.strokeStyle = SK_OUT; c.lineWidth = 6; c.lineCap = 'round';
         c.beginPath(); c.moveTo(-17, 0); c.lineTo(17, 0); c.stroke();

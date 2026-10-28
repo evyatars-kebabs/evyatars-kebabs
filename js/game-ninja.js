@@ -18,7 +18,8 @@ let njCtx = null;
 function njNewState() {
     return {
         running: false, time: NJ_SECONDS, score: 0, sliced: 0, t: 0, last: 0,
-        spawnIn: 0.5, items: [], halves: [], drops: [], trail: [], fx: [],
+        spawnIn: 0.5, items: [], halves: [], drops: [], trail: [], fx: [], mfx: [],
+        cos: typeof mstCos === 'function' ? mstCos('ninja') : 0,     // מראה הלהב מדרגת השליטה (זהב / קרח / קשת)
         flash: 0, shake: 0, strokeSlices: 0, comboT: 0, aim: false, lastPt: null,
         shownTime: -1, shownScore: -1, shownCombo: '#', started: false, playT: 0
     };
@@ -297,14 +298,24 @@ function njDraw() {
             const a = nj.trail[i - 1], b = nj.trail[i];
             const life = 1 - b.t / 0.22;
             c.lineCap = 'round';
-            c.strokeStyle = 'rgba(255, 190, 80, ' + (0.5 * life) + ')';
-            c.lineWidth = 14 * life + 2;
+            c.strokeStyle = nj.cos === 3 ? 'rgba(255, 196, 30, ' + (0.7 * life) + ')'
+                : nj.cos === 4 ? 'rgba(100, 200, 255, ' + (0.65 * life) + ')'
+                : nj.cos === 5 ? 'hsla(' + Math.round((i * 16 + nj.t * 300) % 360) + ', 100%, 60%, ' + (0.8 * life) + ')'
+                : 'rgba(255, 190, 80, ' + (0.5 * life) + ')';
+            c.lineWidth = (nj.cos ? 17 : 14) * life + 2;
             c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
-            c.strokeStyle = 'rgba(255, 255, 255, ' + (0.95 * life) + ')';
+            c.strokeStyle = nj.cos === 3 ? 'rgba(255, 248, 200, ' + (0.95 * life) + ')'
+                : nj.cos === 4 ? 'rgba(235, 250, 255, ' + (0.95 * life) + ')'
+                : 'rgba(255, 255, 255, ' + (0.95 * life) + ')';
             c.lineWidth = 6 * life + 1;
             c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
         }
+        // להב קרח וקשת: ניצוצות שנופלים מקצה הלהב
+        const tip = nj.trail[nj.trail.length - 1];
+        if (nj.cos >= 4 && tip.t < 0.05 && Math.random() < 0.6)
+            mstFx.burst(nj.mfx, tip.x, tip.y, 2, nj.cos === 4 ? MST_SPARK : ['#ff5ad1', '#ffd23d', '#5affc8', '#6aa8ff'], 90, 0.5, 300);
     }
+    if (nj.mfx.length) mstFx.draw(c, nj.mfx);
 
     // טקסטים צפים
     for (const f of nj.fx) {

@@ -13,6 +13,7 @@
         
         switchTab('catch');
         catchStarted = false;
+        catchCos = typeof mstCos === 'function' ? mstCos('catch') : 0;
         spawnKebab();
     }
 
@@ -36,6 +37,7 @@
     // קבב אחד שנשאר במסך וזז ממקום למקום (בלי ליצור תמונה חדשה ולפענח אותה מחדש בכל הופעה - בטלפונים חלשים זה נתקע).
     // התמונה מוקטנת מראש (kebab-small.png) ונטענת פעם אחת. אם היא לא נטענת - אימוג'י
     let kebabEl = null;
+    let catchCos = 0;                                   // מראה הקבב מדרגת השליטה: 3 זהב, 4 יהלום, 5 בוער
     const kebabImg = new Image();
     kebabImg.src = 'kebab-small.png';
     if (kebabImg.decode) kebabImg.decode().catch(() => {});
@@ -61,6 +63,7 @@
         if (e) { e.preventDefault(); e.stopPropagation(); }
         if (catchTimer <= 0) return;
         startCatchTimer();
+        if (catchCos >= 4) catchBurst();
         catchScore += 1;
         sfx.pop();
         document.getElementById('catch-score').textContent = catchScore;
@@ -68,10 +71,29 @@
         spawnKebab();
     }
 
+    // קבב יהלום / בוער: ניצוצות שמתפזרים מהמקום שבו הוא נתפס
+    function catchBurst() {
+        const area = document.getElementById('game-area'), k = kebabEl;
+        if (!k || !area) return;
+        const x = k.offsetLeft + k.offsetWidth / 2, y = k.offsetTop + k.offsetHeight / 2;
+        const cols = catchCos === 4 ? MST_SPARK : MST_FIRE;
+        for (let i = 0; i < 10; i++) {
+            const p = document.createElement('span');
+            p.className = 'catch-spark';
+            p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.background = p.style.color = cols[i % cols.length];
+            area.appendChild(p);
+            const a = Math.random() * Math.PI * 2, d = 30 + Math.random() * 40;
+            p.animate([{ transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                       { transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d}px)) scale(0.2)`, opacity: 0 }],
+                      { duration: 450 + Math.random() * 200, easing: 'ease-out' }).onfinish = () => p.remove();
+        }
+    }
+
     function spawnKebab() {
         const area = document.getElementById('game-area');
         if (catchTimer <= 0) { area.innerHTML = ''; return; }
         const kebab = getKebabEl();
+        kebab.className = 'kebab' + (catchCos ? ' mc' + catchCos : '');
         if (kebab.parentNode !== area) { area.innerHTML = ''; area.appendChild(kebab); }
 
         const SIZE = 65;
@@ -206,6 +228,9 @@
         
         const shuffled = shuffleArray(allTriviaQuestions);
         activeTriviaQuestions = shuffled.slice(0, 5);
+        // מראה כרטיס השאלה מדרגת השליטה: זהב / יהלום / קוסמי
+        const tc = typeof mstCos === 'function' ? mstCos('trivia') : 0;
+        ['mt3', 'mt4', 'mt5'].forEach(c => document.getElementById('screen-trivia').classList.toggle(c, c === 'mt' + tc));
         
         switchTab('trivia');
         showTriviaQuestion();
@@ -321,6 +346,9 @@ function startGoodsSortGame() {
 
     switchTab('goods');   // עוצר טיימרים קודמים
     goodsStarted = false;
+    // מראה המדפים מדרגת השליטה: שיש / קריסטל / ניאון
+    const gc = typeof mstCos === 'function' ? mstCos('goods') : 0;
+    ['mg3', 'mg4', 'mg5'].forEach(c => document.getElementById('goods-board').classList.toggle(c, c === 'mg' + gc));
     initGoodsBoard();
 }
 

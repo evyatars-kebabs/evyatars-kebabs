@@ -33,7 +33,9 @@ function svNewState() {
         mouth: { x: SV_W / 2, y: SV_BASE_Y, hw: SV_TIERS[0].hw, amp: 0, bob: 0, phase: 0, chew: 0 },
         tier: SV_TIERS[0],
         fx: [], aim: null, hasShot: false, t: 0, last: 0,
-        shownTime: -1, shownScore: -1, shownCombo: '#', skin: null, started: false
+        shownTime: -1, shownScore: -1, shownCombo: '#', skin: null, started: false,
+        cos: typeof mstCos === 'function' ? mstCos('shvartz') : 0,       // מראה מדרגת השליטה: 3 שובל זהב, 4 + ניצוצות, 5 + כתר וזיקוקים
+        streakPts: [], mfx: []
     };
 }
 
@@ -231,6 +233,15 @@ function svScoreShot() {
     sv.fx.push({ x: m.x, y: m.y - 70, text: '+' + pts, color: '#ffd700', size: 30, t: 0, life: 0.9 });
     if (clean) sv.fx.push({ x: m.x, y: m.y - 100, text: SV_SWISH[Math.floor(Math.random() * SV_SWISH.length)], color: '#7ee787', size: 20, t: 0, life: 0.9 });
     if (mult > 1) sv.fx.push({ x: m.x, y: m.y - 128, text: '🔥 x' + mult, color: '#ff7b3d', size: 20, t: 0, life: 0.9 });
+    if (sv.cos >= 4) mstFx.burst(sv.mfx, m.x, m.y, 26, sv.cos === 5 ? MST_GOLD.concat(MST_SPARK) : MST_SPARK, 230, 0.6, 200);
+    if (sv.cos === 5 && mult > 1) {                    // זיקוקים בשמיים על רצף
+        const st = sv;
+        for (let i = 0; i < mult; i++) setTimeout(() => {
+            if (sv !== st) return;
+            const cols = [['#ff5ad1', '#ffd23d'], ['#5affc8', '#6aa8ff'], ['#ffd23d', '#ff7b3d']][i % 3];
+            mstFx.burst(sv.mfx, 50 + Math.random() * (SV_W - 100), 50 + Math.random() * 90, 36, cols.concat('#ffffff'), 170, 1.1, 120);
+        }, i * 260);
+    }
     try { if (navigator.vibrate) navigator.vibrate(clean ? 18 : 10); } catch (e) { /* ignore */ }
 }
 
@@ -365,6 +376,7 @@ function svDraw() {
         svDrawBody(c);
         svDrawMouthBack(c);
         // כדור (אחרי החלק האחורי של הפה ולפני השפה התחתונה - כך הוא נראה "נכנס" פנימה)
+        svDrawStreak(c, b);
         if (b) svDrawBall(c, b);
         svDrawLowerLip(c);
     } else {
@@ -373,6 +385,7 @@ function svDraw() {
         skMouthBack(c, skin, st);
         skDrawHumanFront(c, skin, st);
         svDrawCounter(c);                       // הדלפק מסתיר את תחתית הגוף
+        svDrawStreak(c, b);
         if (b) svDrawBall(c, b);
         skMouthFront(c, skin, st);
         skDrawHumanFx(c, skin, st);
@@ -415,6 +428,33 @@ function svDraw() {
         c.fillText(f.text, f.x, f.y - p * 38);
     }
     c.globalAlpha = 1;
+    if (sv.mfx.length) mstFx.draw(c, sv.mfx);
+    if (sv.cos === 5) {                                // כתר מרחף מעל שוורץ
+        c.save();
+        c.translate(m.x, m.y - 168 + Math.sin(sv.t * 2.4) * 4);           // על הראש (מעליו אין מקום בקנבס)
+        c.rotate(Math.sin(sv.t * 1.7) * 0.08);
+        skGlow(c, 0, 0, 40, '#ffd23d', 0.4);
+        drawEmoji(c, '👑', 40);
+        c.restore();
+    }
+}
+// שובל אחרי האוכל שעף (זהב, או כחול-קרח בדרגת יהלום)
+function svDrawStreak(c, b) {
+    if (!sv.cos) return;
+    const pts = sv.streakPts;
+    if (b && b.state === 'flying') { pts.push({ x: b.x, y: b.y, r: SV_BALL_R * svScale(b.y) }); if (pts.length > 14) pts.shift(); }
+    else if (pts.length) pts.shift();
+    if (pts.length < 2) return;
+    c.save();
+    c.globalCompositeOperation = 'lighter';
+    c.lineCap = 'round';
+    for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1], q = pts[i], k = i / pts.length;
+        c.strokeStyle = (sv.cos === 4 ? 'rgba(120, 210, 255, ' : 'rgba(255, 200, 50, ') + (0.55 * k) + ')';
+        c.lineWidth = q.r * 1.5 * k;
+        c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(q.x, q.y); c.stroke();
+    }
+    c.restore();
 }
 
 function svDrawCounter(c) {

@@ -25,8 +25,9 @@ function xpTitles(lvl) {
     for (let l = 125, n = 2; l <= Math.max(lvl, 125); l += 25, n++) list.push({ lvl: l, name: 'קבב מאסטר ★' + n });
     return list;
 }
-const xpTitleOk = t => typeof t === 'string' && (XP_TITLES.some(x => x[1] === t) || /^קבב מאסטר ★\d{1,4}$/.test(t));
-const xpFrameOk = f => XP_FRAMES.some(x => x[1] === f);
+// "אדון הקבביה" ומסגרת המאסטר - פרס על מאסטר בכל המשחקים (js/mastery.js)
+const xpTitleOk = t => typeof t === 'string' && (XP_TITLES.some(x => x[1] === t) || /^קבב מאסטר ★\d{1,4}$/.test(t) || t === 'אדון הקבביה');
+const xpFrameOk = f => XP_FRAMES.some(x => x[1] === f) || f === 'master';
 const xpMilestone = L => XP_TITLES.some(x => x[0] === L) || XP_FRAMES.some(x => x[0] === L) || (L > 100 && (L - 100) % 25 === 0);
 const xpCoinsFor = L => Math.min(20 + 5 * L, 250) + (xpMilestone(L) ? 300 : 0);
 
@@ -318,19 +319,28 @@ function renderXpProfile() {
         if (open) c.onclick = () => { const s = xpState(); s.title = t.name; xpSave(s); sfx.tap(); renderXpProfile(); renderXpCard(); if (typeof syncLeaderboardSkin === 'function') syncLeaderboardSkin(1500); };
         tl.appendChild(c);
     });
+    if (typeof mstAllMaster === 'function') {                 // התואר של מאסטר בכל המשחקים
+        const open = mstAllMaster();
+        const c = xpEl('button', 'xp-pick mst-title' + (st.title === MST_TITLE ? ' on' : '') + (open ? '' : ' locked'), open ? MST_TITLE : '🔒 ' + MST_TITLE + ' · מאסטר בכל המשחקים');
+        if (open) c.onclick = () => { const s = xpState(); s.title = MST_TITLE; xpSave(s); sfx.tap(); renderXpProfile(); renderXpCard(); if (typeof syncLeaderboardSkin === 'function') syncLeaderboardSkin(1500); };
+        tl.appendChild(c);
+    }
     box.appendChild(tl);
 
     box.appendChild(xpEl('div', 'xp-prof-h', '🖼️ מסגרת לתמונה'));
     const fl = xpEl('div', 'xp-frames');
-    [[1, '', 'בלי']].concat(XP_FRAMES).forEach(([lv, id, name]) => {
-        const open = lv <= l.lvl;
+    const frames = [[1, '', 'בלי']].concat(XP_FRAMES);
+    if (typeof mstAllMaster === 'function') frames.push([0, MST_FRAME, 'מאסטר']);
+    frames.forEach(([lv, id, name]) => {
+        const open = id === 'master' ? mstAllMaster() : lv <= l.lvl;
         const c = xpEl('button', 'xp-frame-pick' + ((st.frame || '') === id ? ' on' : '') + (open ? '' : ' locked'));
         c.appendChild(xpAvatar(currentSkinId(), id, 0, 40));
-        c.appendChild(xpEl('small', '', open ? name : '🔒 רמה ' + lv));
+        c.appendChild(xpEl('small', '', open ? name : id === 'master' ? '🔒 מאסטר' : '🔒 רמה ' + lv));
         if (open) c.onclick = () => { const s = xpState(); s.frame = id; xpSave(s); sfx.tap(); renderXpProfile(); renderXpCard(); if (typeof syncLeaderboardSkin === 'function') syncLeaderboardSkin(1500); };
         fl.appendChild(c);
     });
     box.appendChild(fl);
+    if (typeof renderMstProfile === 'function') renderMstProfile();
 }
 
 /* ---------- התחלה: שחקנים ותיקים מקבלים רמת פתיחה לפי השיאים שלהם (בלי מטבעות על הרמות שדילגו עליהן) ---------- */

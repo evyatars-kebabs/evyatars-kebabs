@@ -1374,3 +1374,115 @@
 .xp-frame-pick small { font-size: 0.62rem; }
 .xp-frame-pick.on { border-color: #ffe27a; background: rgba(255, 226, 122, 0.12); }
 .player-lvl { font-size: 0.85rem; font-weight: 700; color: #ffe27a; margin-top: 2px; }
+
+/* ---------- שליטה במשחקים ---------- */
+/* תג הדרגה: מגן בצבע הדרגה */
+.mst-b { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 24px; height: 24px; font-size: 13px;
+    line-height: 1; font-weight: 900; color: #fff; clip-path: polygon(50% 0, 100% 18%, 100% 62%, 50% 100%, 0 62%, 0 18%);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55); vertical-align: middle; }
+.mst-b.r0 { background: linear-gradient(180deg, #4a3c34, #2a201a); color: #7a6a5e; }
+.mst-b.r1 { background: linear-gradient(160deg, #f0b27a, #b8682a 55%, #7a3e14); }
+.mst-b.r2 { background: linear-gradient(160deg, #ffffff, #c8cdd8 50%, #7c8496); color: #4a5060; text-shadow: 0 1px 0 #fff; }
+.mst-b.r3 { background: linear-gradient(160deg, #fff3b0, #ffd23d 45%, #b07a00); color: #7a4a00; text-shadow: 0 1px 0 #fff3b0; }
+.mst-b.r4 { background: linear-gradient(160deg, #ffffff, #8fe6ff 40%, #2a7fd0); color: #fff; animation: mstShine 2.4s ease-in-out infinite; }
+.mst-b.r5 { background: linear-gradient(160deg, #ffd6f4, #ff5ad1 35%, #8a3bff 70%, #ffd23d); background-size: 200% 200%; color: #fff3b0;
+    animation: mstMaster 3s linear infinite; }
+@keyframes mstShine { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+@keyframes mstMaster { 0% { background-position: 0 0; filter: brightness(1); } 50% { background-position: 100% 100%; filter: brightness(1.3); } 100% { background-position: 0 0; filter: brightness(1); } }
+.mst-b.pop { animation: xpPop 0.5s cubic-bezier(.3, 1.8, .5, 1); }
+.mst-rk { font-weight: 800; }
+.mst-rk.r0 { color: #9a8a7e; } .mst-rk.r1 { color: #f0a868; } .mst-rk.r2 { color: #dfe3ec; } .mst-rk.r3 { color: #ffd23d; } .mst-rk.r4 { color: #8fe6ff; } .mst-rk.r5 { color: #ff8ae0; }
+.mst-bar i { background: linear-gradient(90deg, #ff9a3d, #ffd23d 60%, #fff3b0); box-shadow: 0 0 10px rgba(255, 200, 60, 0.55); }
+.mst-sub { font-size: 0.68rem; color: #c9b8a8; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.lb-mst { margin-right: 6px; }
+.lb-pod-name .lb-mst { margin-right: 4px; vertical-align: -3px; }
+
+/* במסך התוצאה */
+.mst-result { display: flex; align-items: center; gap: 10px; margin: -6px auto 14px; padding: 9px 12px; max-width: 360px; width: 100%; box-sizing: border-box; border-radius: 14px; text-align: right;
+    background: linear-gradient(160deg, rgba(120, 70, 20, 0.45), rgba(50, 25, 10, 0.55)); border: 1px solid rgba(255, 190, 90, 0.4); }
+.mst-res-mid { flex: 1; min-width: 0; }
+.mst-res-head { font-size: 0.78rem; color: #f0dcc8; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mst-res-plus { font-family: 'Secular One', sans-serif; font-size: 1.15rem; color: #ffd23d; text-shadow: 0 0 10px rgba(255, 200, 60, 0.7); }
+.mst-res-plus.done { animation: xpPop 0.4s ease; }
+
+/* חגיגת דרגה חדשה */
+.mst-card { background: radial-gradient(circle at 50% 30%, #6a3a12, #24100a 72%); border-color: rgba(255, 200, 120, 0.6); box-shadow: 0 0 40px rgba(255, 160, 60, 0.45); }
+.mst-card.r4 { background: radial-gradient(circle at 50% 30%, #1e5a8a, #0a1a30 72%); border-color: rgba(150, 230, 255, 0.7); box-shadow: 0 0 44px rgba(110, 210, 255, 0.55); }
+.mst-card.r5 { background: radial-gradient(circle at 50% 30%, #6a1e7a, #1a0a30 72%); border-color: rgba(255, 140, 230, 0.75); box-shadow: 0 0 50px rgba(255, 90, 210, 0.6); }
+.mst-up-badge { position: relative; display: flex; justify-content: center; margin: 12px 0 4px; animation: mstBadgeIn 0.7s cubic-bezier(.3, 1.6, .5, 1) both 0.15s; }
+.mst-up-badge .mst-b { filter: drop-shadow(0 0 14px rgba(255, 220, 120, 0.8)); }
+@keyframes mstBadgeIn { from { transform: scale(0) rotate(-200deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.mst-up-rank { position: relative; font-family: 'Secular One', sans-serif; font-size: 2rem; line-height: 1.1; text-shadow: 0 0 18px currentColor; }
+.mst-up-rank.r1 { color: #f0a868; } .mst-up-rank.r2 { color: #eef1f7; } .mst-up-rank.r3 { color: #ffd23d; } .mst-up-rank.r4 { color: #8fe6ff; } .mst-up-rank.r5 { color: #ff8ae0; }
+
+/* בפרופיל */
+.mst-profile { margin: 14px 0; padding: 12px; border-radius: 16px; background: linear-gradient(150deg, rgba(120, 70, 20, 0.35), rgba(40, 20, 8, 0.5));
+    border: 1px solid rgba(255, 190, 90, 0.3); }
+.mst-profile .xp-prof-h { margin-top: 0; color: #f0dcc8; }
+.mst-row { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, 0.07); }
+.xp-prof-h + .mst-row { border-top: none; }
+.mst-row-mid { flex: 1; min-width: 0; }
+.mst-row-top { display: flex; justify-content: space-between; gap: 8px; font-size: 0.85rem; color: #fff; margin-bottom: 5px; }
+.mst-cos { margin-top: 7px; }
+.mst-next { font-size: 0.7rem; color: #a8968a; margin-top: 5px; }
+.mst-cos .xp-pick { font-size: 0.72rem; padding: 4px 9px; }
+.mst-final { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 9px; border-radius: 12px; background: rgba(0, 0, 0, 0.25); }
+.mst-final-txt { font-size: 0.78rem; color: #f0dcc8; line-height: 1.35; }
+.mst-final.done { background: linear-gradient(90deg, rgba(255, 90, 210, 0.25), rgba(138, 59, 255, 0.25)); }
+.xp-pick.mst-title.on { background: linear-gradient(90deg, #ff8ae0, #ffd23d); }
+
+/* מסגרת מאסטר: טבעת צבעונית שמסתובבת */
+.fr-master img { border: 3px solid transparent !important; background: linear-gradient(#2a160c, #2a160c) padding-box,
+    conic-gradient(from var(--mst-a, 0deg), #ff5ad1, #ffd23d, #5affc8, #6aa8ff, #ff5ad1) border-box !important;
+    animation: frMaster 2.5s linear infinite; box-shadow: 0 0 14px rgba(255, 120, 220, 0.8); }
+@property --mst-a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes frMaster { to { --mst-a: 360deg; } }
+
+/* בפרופיל של שחקן */
+.player-mst { display: flex; justify-content: center; gap: 6px; margin: 6px 0 2px; flex-wrap: wrap; }
+.player-mst-i { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.player-mst-i small { font-size: 0.7rem; line-height: 1; }
+.player-mst-i.none { opacity: 0.4; }
+
+/* תפוס את הקבב: קבב זהב / יהלום / בוער */
+.kebab.mc3 { filter: sepia(1) saturate(3.5) hue-rotate(-8deg) brightness(1.15) drop-shadow(0 0 8px rgba(255, 205, 60, 0.95)); }
+.kebab.mc4 { filter: saturate(0.25) brightness(1.35) drop-shadow(0 0 6px #bdf0ff) drop-shadow(0 0 12px rgba(110, 210, 255, 0.9)); animation: mcDiamond 1.4s ease-in-out infinite; }
+.kebab.mc5 { animation: mcFire 0.5s ease-in-out infinite alternate; }
+@keyframes mcDiamond { 50% { filter: saturate(0.25) brightness(1.6) drop-shadow(0 0 10px #fff) drop-shadow(0 0 18px rgba(110, 210, 255, 1)); } }
+@keyframes mcFire { from { filter: saturate(1.4) drop-shadow(0 -4px 6px #ff4a1a) drop-shadow(0 0 10px #ffb020); }
+                    to { filter: saturate(1.6) brightness(1.1) drop-shadow(0 -9px 10px #ff7a1a) drop-shadow(0 0 16px #ff3a1a); } }
+.catch-spark { position: absolute; width: 7px; height: 7px; border-radius: 50%; pointer-events: none; box-shadow: 0 0 6px currentColor; }
+
+/* סידור המדפים: שיש / קריסטל / ניאון */
+.goods-board.mg3 .goods-shelf { background: linear-gradient(115deg, transparent 40%, rgba(120, 110, 100, 0.35) 42%, transparent 45%, transparent 70%, rgba(120, 110, 100, 0.25) 71%, transparent 73%),
+    linear-gradient(160deg, #f4f0ea, #d8d2c8 45%, #efe9e0 65%, #cbc3b6); border: 1px solid #bdb4a6; border-bottom: 4px solid #8f8576; }
+.goods-board.mg3 .goods-slot { background: rgba(60, 50, 40, 0.16); border-color: rgba(90, 80, 70, 0.3); }
+.goods-board.mg4 .goods-shelf { background: linear-gradient(120deg, rgba(200, 245, 255, 0.28), rgba(110, 170, 255, 0.1) 45%, rgba(220, 250, 255, 0.3) 55%, rgba(110, 170, 255, 0.1));
+    background-size: 250% 100%; animation: mgCrystal 4s linear infinite; border: 1px solid rgba(190, 240, 255, 0.7); border-bottom: 3px solid #bff4ff;
+    box-shadow: inset 0 0 12px rgba(160, 230, 255, 0.35), 0 0 10px rgba(110, 210, 255, 0.3); }
+.goods-board.mg4 .goods-slot { background: rgba(10, 40, 70, 0.35); border-color: rgba(190, 240, 255, 0.35); }
+@keyframes mgCrystal { from { background-position: 0 0; } to { background-position: 250% 0; } }
+.goods-board.mg5 .goods-shelf { background: rgba(14, 4, 30, 0.75); border: 2px solid #ff5ad1; animation: mgNeon 3s linear infinite; }
+.goods-board.mg5 .goods-shelf:nth-child(3n+2) { animation-delay: -1s; }
+.goods-board.mg5 .goods-shelf:nth-child(3n) { animation-delay: -2s; }
+.goods-board.mg5 .goods-slot { background: rgba(0, 0, 0, 0.5); border-color: rgba(255, 255, 255, 0.15); }
+@keyframes mgNeon { 0%, 100% { border-color: #ff5ad1; box-shadow: 0 0 10px #ff5ad1, inset 0 0 8px rgba(255, 90, 209, 0.5); }
+                    33% { border-color: #5affc8; box-shadow: 0 0 10px #5affc8, inset 0 0 8px rgba(90, 255, 200, 0.5); }
+                    66% { border-color: #6aa8ff; box-shadow: 0 0 10px #6aa8ff, inset 0 0 8px rgba(106, 168, 255, 0.5); } }
+
+/* החידון: כרטיס השאלה */
+#screen-trivia.mt3 #trivia-question-text, #screen-trivia.mt4 #trivia-question-text, #screen-trivia.mt5 #trivia-question-text {
+    padding: 14px; border-radius: 16px; border: 2px solid; }
+#screen-trivia.mt3 #trivia-question-text { background: linear-gradient(160deg, rgba(255, 210, 60, 0.22), rgba(120, 80, 0, 0.25)); border-color: #ffd23d;
+    box-shadow: 0 0 16px rgba(255, 210, 60, 0.45); }
+#screen-trivia.mt3 .trivia-option { border-color: rgba(255, 210, 60, 0.45); }
+#screen-trivia.mt4 #trivia-question-text { background: linear-gradient(120deg, rgba(200, 245, 255, 0.22), rgba(60, 120, 220, 0.18) 45%, rgba(220, 250, 255, 0.25) 55%, rgba(60, 120, 220, 0.18));
+    background-size: 250% 100%; animation: mgCrystal 4s linear infinite; border-color: #bff4ff; box-shadow: 0 0 18px rgba(110, 210, 255, 0.5); }
+#screen-trivia.mt4 .trivia-option { border-color: rgba(190, 240, 255, 0.45); }
+#screen-trivia.mt5 #trivia-question-text { color: #fff; border-color: #ff8ae0; box-shadow: 0 0 20px rgba(255, 90, 210, 0.55);
+    background: radial-gradient(1.5px 1.5px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 60%, #fff, transparent),
+                radial-gradient(1.5px 1.5px at 45% 80%, #ffe, transparent), radial-gradient(1px 1px at 85% 20%, #fff, transparent),
+                linear-gradient(135deg, #2a0a5a, #5a1a7a, #0a2a6a, #2a0a5a); background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 300% 300%;
+    animation: mtCosmic 8s ease-in-out infinite; }
+#screen-trivia.mt5 .trivia-option { border-color: rgba(255, 140, 230, 0.45); }
+@keyframes mtCosmic { 0%, 100% { background-position: 0 0, 0 0, 0 0, 0 0, 0% 50%; } 50% { background-position: 0 0, 0 0, 0 0, 0 0, 100% 50%; } }
