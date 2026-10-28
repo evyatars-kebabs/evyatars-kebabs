@@ -355,6 +355,41 @@ const firebaseConfig = {
             li.appendChild(right);
             return { li, strong };
         };
+        // במת מנצחים: מקום 2 משמאל, 1 באמצע (הכי גבוה), 3 מימין - עם הסקין, השם מתחת והניקוד
+        const makePodium = top => {
+            const li = document.createElement('li');
+            li.className = 'lb-podium';
+            [1, 0, 2].forEach(i => {
+                const row = top[i];
+                const spot = document.createElement('div');
+                if (!row) { spot.className = 'lb-pod empty'; li.appendChild(spot); return; }
+                const place = i + 1;
+                spot.className = 'lb-pod p' + place + (row.id === playerId ? ' me' : '');
+                spot.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
+                                                       known: { col: collectionName, score: row.score, rank: row.rank, coins: row.coins } });
+                if (place === 1) { const crown = document.createElement('div'); crown.className = 'lb-pod-crown'; crown.textContent = '👑'; spot.appendChild(crown); }
+                const av = document.createElement('div');
+                av.className = 'lb-pod-av';
+                const src = lbAvatar(row.id === playerId ? currentSkinId() : row.skin);
+                if (src) { const img = document.createElement('img'); img.src = src; img.alt = ''; av.appendChild(img); }
+                const medal = document.createElement('span');
+                medal.className = 'lb-pod-medal'; medal.textContent = ['🥇', '🥈', '🥉'][Math.min(2, (row.rank || place) - 1)];
+                av.appendChild(medal);
+                spot.appendChild(av);
+                const nm = document.createElement('div');
+                nm.className = 'lb-pod-name';
+                nm.textContent = safeName(row.name) + (row.id === playerId ? ' (אתה)' : '');   // textContent - בלי הזרקת קוד
+                spot.appendChild(nm);
+                const sc = document.createElement('div');
+                sc.className = 'lb-pod-score'; sc.textContent = row.score + " נק'";
+                spot.appendChild(sc);
+                const block = document.createElement('div');
+                block.className = 'lb-pod-block'; block.textContent = row.rank || place;
+                spot.appendChild(block);
+                li.appendChild(spot);
+            });
+            return li;
+        };
         const note = (text, btnText, onBtn) => {
             const li = document.createElement('li');
             li.className = 'lb-search-note';
@@ -421,7 +456,10 @@ const firebaseConfig = {
             }
 
             const shown = q.norm ? rows.filter(r => lbNormName(safeName(r.name)).includes(q.norm)) : rows;
-            shown.forEach(row => frag.appendChild(makeRow(row).li));
+            // שלושת הראשונים על במת מנצחים (לא בזמן חיפוש)
+            const podium = q.norm ? [] : shown.slice(0, 3);
+            if (podium.length) frag.appendChild(makePodium(podium));
+            shown.slice(podium.length).forEach(row => frag.appendChild(makeRow(row).li));
             container.appendChild(frag);
             if (!q.norm) { if (rows.length === 0) showMsg('אין עדיין שיאים. היו הראשונים!', '#b9a38e', false); return; }
             // בחיפוש: אם יש עוד שחקנים מעבר למה שנטען, אפשר לחפש גם ביניהם
