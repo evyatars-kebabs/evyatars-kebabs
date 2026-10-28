@@ -106,6 +106,7 @@ function dailyClaim(id, btn) {
     haptic([90, 40, 90]);
     flyCoins(btn, c.reward);
     renderDaily();
+    if (typeof xpBonus === 'function') xpBonus(40, btn);
 }
 
 function dailyClaimBonus(btn) {
@@ -123,6 +124,7 @@ function dailyClaimBonus(btn) {
     flyCoins(btn, DAILY_BONUS);
     confettiBurst(60);
     renderDaily();
+    if (typeof xpBonus === 'function') xpBonus(60, btn);
     setTimeout(() => showStreakPop(prev, st.streak), 1400);   // אחרי שהמטבעות נוחתים
 }
 
@@ -136,6 +138,7 @@ function dailyClaimWeekly(btn) {
     flyCoins(btn, WEEKLY_PRIZE);
     confettiBurst(90);
     renderDaily();
+    if (typeof xpBonus === 'function') xpBonus(150, btn);
     return true;
 }
 
@@ -314,6 +317,7 @@ function renderDaily() {
     }
     box.appendChild(bonus);
     if (typeof renderTmnt === 'function') renderTmnt();          // אירוע קהילתי (וגם מזיז את האתגרים לתחתית בזמן האירוע)
+    if (typeof renderXpCard === 'function') renderXpCard();      // כרטיס הרמה - תמיד ראשון במסך הבית
 }
 
 // טיימר המבצע בחנות
@@ -346,6 +350,7 @@ function playAgain() {
 function showResultReward(gameKey, score) {
     lastGameKey = gameKey;
     if (typeof tmntGamePlayed === 'function') tmntGamePlayed(gameKey, score);     // אירוע קהילתי
+    if (typeof xpOnGame === 'function') xpOnGame(gameKey, score);                 // XP ורמות
     const box = document.getElementById('coupon-box');
     const txt = document.getElementById('coupon-text');
     const coinsEl = document.getElementById('coupon-coins');
@@ -867,6 +872,9 @@ function openPlayerModal(p) {
     const body = document.createElement('div');
     body.className = 'skin-modal-body';
     const nm = document.createElement('div'); nm.className = 'skin-modal-name'; nm.textContent = p.name + (p.id === playerId ? ' (אתה)' : '');
+    const px = p.id === playerId && typeof xpPublic === 'function' ? xpPublic() : p;
+    const lvlLine = document.createElement('div'); lvlLine.className = 'player-lvl';
+    if (px.lvl) lvlLine.textContent = 'רמה ' + px.lvl + (px.title ? ' · ' + px.title : '');
     const skl = document.createElement('div'); skl.className = 'skin-modal-sub';
     const tag = document.createElement('span'); tag.className = 'shop-rarity'; tag.textContent = rar ? rar.name : 'ברירת מחדל';
     // שם של סקין ממהדורה מיוחדת נשאר סוד - אלא אם גם לך יש אותו (או שזה הפרופיל שלך)
@@ -877,7 +885,7 @@ function openPlayerModal(p) {
     const list = document.createElement('ul'); list.className = 'player-bests';
     const li = document.createElement('li'); li.className = 'player-bests-wait'; li.textContent = 'טוען שיאים...';
     list.appendChild(li);
-    body.appendChild(nm); body.appendChild(skl); body.appendChild(coinsEl); body.appendChild(list);
+    body.appendChild(nm); if (px.lvl) body.appendChild(lvlLine); body.appendChild(skl); body.appendChild(coinsEl); body.appendChild(list);
     card.appendChild(x); card.appendChild(cv); card.appendChild(body);
     el.appendChild(card);
     el.addEventListener('click', e => { if (e.target === el) closeSkinModal(); });

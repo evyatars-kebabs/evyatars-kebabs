@@ -8,16 +8,19 @@ service cloud.firestore {
     function isBoard(col) {
       return col in ['leaderboard', 'leaderboard_goods', 'leaderboard_shvartz', 'leaderboard_ninja', 'leaderboard_kvk', 'leaderboard_delivery', 'leaderboard_turtles'];
     }
-    // רשומה בטבלה: שם, ניקוד, זמן, הסקין שנבחר, יתרת המטבעות (לפרופיל) והצוות באירוע
+    // רשומה בטבלה: שם, ניקוד, זמן, הסקין שנבחר, יתרת המטבעות (לפרופיל), הצוות באירוע, והרמה / התואר / המסגרת
     function validEntry(d) {
       return d.keys().hasAll(['name', 'score'])
-        && d.keys().hasOnly(['name', 'score', 'timestamp', 'skin', 'coins', 'team'])
+        && d.keys().hasOnly(['name', 'score', 'timestamp', 'skin', 'coins', 'team', 'lvl', 'title', 'frame'])
         && d.name is string && d.name.size() <= 20
         && d.score is number && d.score >= 0 && d.score <= 1000000
         && (!('timestamp' in d) || d.timestamp is timestamp)
         && (!('skin' in d) || (d.skin is string && d.skin.size() <= 40))
         && (!('coins' in d) || (d.coins is number && d.coins >= 0 && d.coins <= 100000000))
-        && (!('team' in d) || d.team in ['a', 'b']);
+        && (!('team' in d) || d.team in ['a', 'b'])
+        && (!('lvl' in d) || (d.lvl is int && d.lvl >= 1 && d.lvl <= 100000))
+        && (!('title' in d) || (d.title is string && d.title.size() <= 30))
+        && (!('frame' in d) || (d.frame is string && d.frame.size() <= 12));
     }
 
     match /{col}/{playerId} {

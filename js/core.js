@@ -96,6 +96,7 @@ const firebaseConfig = {
     function saveLocalBest(localKey, score) {
         if (score > (parseInt(store.get(localKey)) || 0)) {
             store.set(localKey, score);
+            window.__newBest = { key: localKey, t: Date.now() };        // בשביל בונוס ה-XP על שיא אישי
         }
         renderProfileStats();
     }
@@ -120,10 +121,11 @@ const firebaseConfig = {
         const full = lbExtras();
         const tries = [full];
         if ('team' in full) { const d = Object.assign({}, full); delete d.team; tries.push(d); }
+        if ('lvl' in full) { const d = Object.assign({}, tries[tries.length - 1]); delete d.lvl; delete d.title; delete d.frame; tries.push(d); }
         tries.push({ skin: currentSkinId() }, {});
         const attempt = i => userRef.set(Object.assign({}, entry, tries[i]), { merge: true }).catch(err => {
             if (err && err.code === 'permission-denied' && i < tries.length - 1) {
-                if ('team' in tries[i]) lbTeamOk = false; else if ('coins' in tries[i]) lbCoinsOk = false;
+                if ('team' in tries[i]) lbTeamOk = false; else if ('lvl' in tries[i]) lbProgOk = false; else if ('coins' in tries[i]) lbCoinsOk = false;
                 return attempt(i + 1);
             }
             throw err;
@@ -156,7 +158,8 @@ const firebaseConfig = {
         else if (upd.score !== undefined) {
             const last = lb.rows[lb.rows.length - 1];
             if (lb.rows.length >= LB_LIMIT && last && upd.score <= last.score) return;   // לא נכנס ל-100 המובילים
-            lb.rows.push(Object.assign({ id: playerId, name: playerName, skin: currentSkinId(), coins: getCoins(), team: lbTeam(), ts: Date.now() }, upd));
+            lb.rows.push(Object.assign({ id: playerId, name: playerName, skin: currentSkinId(), coins: getCoins(), team: lbTeam(), ts: Date.now() },
+                                       typeof xpPublic === 'function' ? xpPublic() : {}, upd));
         } else return;
         lbSortRows(lb.rows);
         if (lb.rows.length > LB_LIMIT) lb.rows.length = LB_LIMIT;
@@ -172,13 +175,14 @@ const firebaseConfig = {
         return typeof getEquippedSkinId === 'function' ? getEquippedSkinId() : 'classic';
     }
     // הסקין, המטבעות והצוות באירוע נשמרים ליד השיא. אם הכללים בשרת עוד לא מאפשרים חלק מהם - שומרים בלעדיהם
-    let lbCoinsOk = true, lbTeamOk = true;
+    let lbCoinsOk = true, lbTeamOk = true, lbProgOk = true;
     const lbTeam = () => (typeof tmntState === 'function' ? tmntState().team : null);
     const lbExtras = () => {
         const d = { skin: currentSkinId() };
         if (lbCoinsOk) d.coins = getCoins();
         const team = lbTeamOk && lbTeam();
         if (team) d.team = team;
+        if (lbProgOk && typeof xpPublic === 'function') { const x = xpPublic(); d.lvl = x.lvl; d.title = x.title; d.frame = x.frame; }   // רמה, תואר ומסגרת
         return d;
     };
     function lbWriteExtras(write) {
@@ -186,6 +190,7 @@ const firebaseConfig = {
             // כתיבה שנדחתה מנסה שוב בלי הצוות, ואז בלי המטבעות (גם כשכמה כתיבות רצות במקביל)
             if (err && err.code === 'permission-denied') {
                 if ('team' in data) { lbTeamOk = false; const d = Object.assign({}, data); delete d.team; return tryWrite(d); }
+                if ('lvl' in data) { lbProgOk = false; const d = Object.assign({}, data); delete d.lvl; delete d.title; delete d.frame; return tryWrite(d); }
                 if ('coins' in data) { lbCoinsOk = false; return tryWrite({ skin: data.skin }); }
             }
             throw err;
@@ -203,7 +208,8 @@ const firebaseConfig = {
         clearTimeout(lbSkinTimer);
         lbSkinTimer = setTimeout(() => {
             if (!db) return;
-            const mark = playerId + '|' + currentSkinId() + '|' + getCoins() + '|' + (lbTeam() || '');
+            const xp = typeof xpPublic === 'function' ? xpPublic() : {};
+            const mark = playerId + '|' + currentSkinId() + '|' + getCoins() + '|' + (lbTeam() || '') + '|' + [xp.lvl, xp.title, xp.frame].join('/');
             if (store.get('kebab_lbSkin') === mark) return;
             const jobs = Object.keys(LB_LOCAL_KEY).map(col => {
                 const ref = db.collection(col).doc(playerId);
@@ -324,17 +330,23 @@ const firebaseConfig = {
             const li = document.createElement('li');
             li.className = 'leaderboard-item' + (row.rank && row.rank <= 3 ? ' r' + row.rank : '') + (row.id === playerId ? ' me' : '');
             li.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
+                                                 lvl: row.lvl, title: row.title, frame: row.frame,
                                                  known: row.rank ? { col: collectionName, score: row.score, rank: row.rank, coins: row.coins } : null });
 
             const left = document.createElement('span');
             const strong = document.createElement('strong');
             strong.textContent = !row.rank ? '#…' : row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : '#' + row.rank;
             left.appendChild(strong);
-            const av = lbAvatar(row.id === playerId ? currentSkinId() : row.skin);
+            const me = row.id === playerId, xp = me && typeof xpPublic === 'function' ? xpPublic() : row;
+            const av = lbAvatar(me ? currentSkinId() : row.skin);
             if (av) {
+                const wrap = document.createElement('span');
+                wrap.className = 'lb-av' + (xp.frame ? ' fr-' + xp.frame : '');          // מסגרת מהרמות
                 const img = document.createElement('img');
                 img.className = 'lb-skin'; img.src = av; img.alt = ''; img.loading = 'lazy';
-                left.appendChild(img);
+                wrap.appendChild(img);
+                if (xp.lvl) { const b = document.createElement('span'); b.className = 'lb-lvl'; b.textContent = xp.lvl; wrap.appendChild(b); }
+                left.appendChild(wrap);
             }
             // textContent (ולא innerHTML) - מונע הזרקת קוד דרך שם השחקן
             left.appendChild(document.createTextNode(' ' + safeName(row.name) + (row.id === playerId ? ' (אתה)' : '')));
@@ -366,15 +378,18 @@ const firebaseConfig = {
                 const place = i + 1;
                 spot.className = 'lb-pod p' + place + (row.id === playerId ? ' me' : '');
                 spot.onclick = () => openPlayerModal({ id: row.id, name: safeName(row.name), skin: row.id === playerId ? currentSkinId() : row.skin,
+                                                       lvl: row.lvl, title: row.title, frame: row.frame,
                                                        known: { col: collectionName, score: row.score, rank: row.rank, coins: row.coins } });
                 if (place === 1) { const crown = document.createElement('div'); crown.className = 'lb-pod-crown'; crown.textContent = '👑'; spot.appendChild(crown); }
                 const av = document.createElement('div');
-                av.className = 'lb-pod-av';
+                const px = row.id === playerId && typeof xpPublic === 'function' ? xpPublic() : row;
+                av.className = 'lb-pod-av' + (px.frame ? ' fr-' + px.frame : '');
                 const src = lbAvatar(row.id === playerId ? currentSkinId() : row.skin);
                 if (src) { const img = document.createElement('img'); img.src = src; img.alt = ''; av.appendChild(img); }
                 const medal = document.createElement('span');
                 medal.className = 'lb-pod-medal'; medal.textContent = ['🥇', '🥈', '🥉'][Math.min(2, (row.rank || place) - 1)];
                 av.appendChild(medal);
+                if (px.lvl) { const b = document.createElement('span'); b.className = 'lb-lvl'; b.textContent = px.lvl; av.appendChild(b); }
                 spot.appendChild(av);
                 const nm = document.createElement('div');
                 nm.className = 'lb-pod-name';
@@ -415,7 +430,9 @@ const firebaseConfig = {
                         if (typeof d.score !== 'number' || shownIds.has(doc.id) || isRudeName(d.name)) return;
                         found.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score,
                                      skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic', coins: typeof d.coins === 'number' ? d.coins : null,
-                                     team: d.team === 'a' || d.team === 'b' ? d.team : null });
+                                     team: d.team === 'a' || d.team === 'b' ? d.team : null,
+                                     lvl: Number.isInteger(d.lvl) && d.lvl > 0 ? d.lvl : null, title: typeof xpTitleOk === 'function' && xpTitleOk(d.title) ? d.title : null,
+                                frame: typeof xpFrameOk === 'function' && xpFrameOk(d.frame) ? d.frame : '' });
                     });
                     found.sort((a, b) => b.score - a.score);
                     if (!found.length) { noteLi.textContent = 'לא נמצאו עוד שחקנים ששמם מתחיל ב-"' + q + '"'; return; }
@@ -510,7 +527,9 @@ const firebaseConfig = {
                     const ts = d.timestamp && typeof d.timestamp.toMillis === 'function' ? d.timestamp.toMillis() : Infinity;
                     rows.push({ id: doc.id, name: String(d.name || 'אורח').slice(0, 20), score: d.score, ts,
                                 skin: typeof d.skin === 'string' ? d.skin.slice(0, 40) : 'classic',
-                                coins: typeof d.coins === 'number' ? d.coins : null, team: d.team === 'a' || d.team === 'b' ? d.team : null });
+                                coins: typeof d.coins === 'number' ? d.coins : null, team: d.team === 'a' || d.team === 'b' ? d.team : null,
+                                lvl: Number.isInteger(d.lvl) && d.lvl > 0 ? d.lvl : null, title: typeof xpTitleOk === 'function' && xpTitleOk(d.title) ? d.title : null,
+                                frame: typeof xpFrameOk === 'function' && xpFrameOk(d.frame) ? d.frame : '' });
                 });
                 // חשבונות שנוצרו לפני התיקון נשארו גם עם רשומת האורח הישנה.
                 // מסתירים רשומת אורח (player_...) כשיש חשבון באותו שם עם ניקוד זהה או גבוה יותר.
@@ -579,7 +598,7 @@ const firebaseConfig = {
     const LB_ID_KEY = 'kebab_lbId';
     const PROGRESS_KEYS = ['kebab_lbId', 'kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
         'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
-        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt', 'kebab_turtlesHighScore', 'kebab_tt_boost', 'kebab_collections'];
+        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt', 'kebab_turtlesHighScore', 'kebab_tt_boost', 'kebab_collections', 'kebab_xp'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
     const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
     const LB_BEST = [['leaderboard_delivery', 'kebab_dlvHighScore'], ['leaderboard', 'kebab_highScore'], ['leaderboard_turtles', 'kebab_turtlesHighScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
@@ -903,6 +922,7 @@ const firebaseConfig = {
 
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
 		if (screenId === 'shop') renderShop();
+		if (screenId === 'profile' && typeof renderXpProfile === 'function') renderXpProfile();
 		if (screenId === 'home') renderDaily();
 
 		if (screenId === 'leaderboard') {

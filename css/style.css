@@ -1262,3 +1262,115 @@
 .shop-cat.has-dot::after, .icon-btn.has-dot::after { content: ''; position: absolute; top: 2px; left: 4px; width: 10px; height: 10px; border-radius: 50%;
     background: #ff3b3b; border: 2px solid #1a0f0a; animation: collPulseDot 1.2s infinite; }
 @keyframes collPulseDot { 50% { transform: scale(1.25); } }
+
+/* ---------- רמות ו-XP ---------- */
+.xp-bar { position: relative; height: 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.xp-bar.big { height: 16px; margin-top: 10px; box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5); }
+.xp-bar i { display: block; height: 100%; border-radius: inherit; transition: width 0.5s ease;
+    background: linear-gradient(90deg, #7a5cff, #3b9cff 45%, #6ef0ff); box-shadow: 0 0 10px rgba(110, 200, 255, 0.6); }
+.xp-bar i::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%);
+    background-size: 200% 100%; animation: xpShine 2.2s linear infinite; }
+@keyframes xpShine { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+.xp-bar.flash { animation: xpFlash 0.5s ease; }
+@keyframes xpFlash { 0% { box-shadow: 0 0 0 rgba(255, 230, 120, 0); } 40% { box-shadow: 0 0 22px rgba(255, 230, 120, 0.95); transform: scaleY(1.25); } 100% { box-shadow: none; } }
+.xp-bar-txt { font-size: 0.75rem; color: #b9c4ff; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+/* פאנל ה-XP במסך התוצאה */
+.xp-result { margin: 0 auto 14px; padding: 12px 14px; max-width: 360px; border-radius: 16px; text-align: center;
+    background: linear-gradient(160deg, rgba(60, 50, 140, 0.45), rgba(20, 30, 70, 0.55)); border: 1px solid rgba(120, 160, 255, 0.45);
+    box-shadow: 0 0 20px rgba(90, 120, 255, 0.25); }
+.xp-res-head { display: flex; justify-content: space-between; align-items: center; }
+.xp-res-total { font-family: 'Secular One', sans-serif; font-size: 1.6rem; color: #9fd4ff; direction: ltr; font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 12px rgba(110, 190, 255, 0.8); }
+.xp-res-total.done { animation: xpPop 0.4s ease; }
+.xp-res-lvl { font-weight: 800; color: #ffe27a; background: rgba(0, 0, 0, 0.35); border-radius: 999px; padding: 3px 12px; }
+.xp-res-lvl.pop, .xp-lu-num.pop { animation: xpPop 0.45s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes xpPop { 0% { transform: scale(1); } 45% { transform: scale(1.45); } 100% { transform: scale(1); } }
+.xp-res-parts { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 8px; min-height: 24px; }
+.xp-chip { font-size: 0.75rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(120, 160, 255, 0.18); color: #cfe0ff;
+    animation: xpChipIn 0.35s cubic-bezier(.3, 1.6, .5, 1); }
+.xp-chip.hot { background: rgba(255, 200, 60, 0.22); color: #ffe27a; }
+@keyframes xpChipIn { from { transform: scale(0.4) translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* כרטיס הרמה במסך הבית */
+.xp-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin-bottom: 12px; border-radius: 16px; cursor: pointer;
+    background: linear-gradient(150deg, rgba(70, 60, 150, 0.4), rgba(25, 25, 60, 0.5)); border: 1px solid rgba(120, 160, 255, 0.35); }
+.xp-card:active { transform: scale(0.98); }
+.xp-card-mid { flex: 1; min-width: 0; }
+.xp-card-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px; }
+.xp-card-top b { font-family: 'Secular One', sans-serif; font-size: 1.05rem; color: #ffe27a; }
+.xp-card-title { font-size: 0.8rem; color: #cfd8ff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xp-card-sub { font-size: 0.68rem; color: #9aa6d8; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.xp-card-gift { border: none; background: none; font-size: 1.6rem; cursor: pointer; animation: xpGift 1s ease-in-out infinite; }
+@keyframes xpGift { 0%, 100% { transform: rotate(-8deg) scale(1); } 50% { transform: rotate(8deg) scale(1.15); } }
+
+/* תמונה במסגרת + תג רמה */
+.xp-av { position: relative; flex: none; border-radius: 50%; }
+.xp-av img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #2a160c; border: 2px solid rgba(255, 255, 255, 0.25); box-sizing: border-box; }
+.xp-av-lvl, .lb-lvl { position: absolute; bottom: -3px; left: -3px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px; box-sizing: border-box;
+    font-size: 0.62rem; font-weight: 800; line-height: 18px; text-align: center; color: #1a1030;
+    background: linear-gradient(180deg, #ffe27a, #ffb020); border: 1.5px solid #1a0f0a; }
+.lb-av { position: relative; display: inline-block; vertical-align: middle; margin-left: 7px; border-radius: 50%; }
+.lb-av .lb-skin { margin-left: 0; }
+.lb-av .lb-lvl { bottom: -5px; left: -6px; min-width: 16px; height: 16px; line-height: 15px; font-size: 0.56rem; }
+.lb-pod-av .lb-lvl { bottom: auto; top: -2px; left: -2px; min-width: 22px; height: 22px; line-height: 20px; font-size: 0.72rem; }
+
+/* מסגרות (img בתוך .fr-*) */
+.fr-wood img { border: 3px solid #8a5a2a !important; box-shadow: 0 0 0 2px #4a2e14; }
+.fr-bronze img { border: 3px solid #cd7f32 !important; box-shadow: 0 0 8px rgba(205, 127, 50, 0.6); }
+.fr-silver img { border: 3px solid #e2e6ee !important; box-shadow: 0 0 10px rgba(220, 225, 240, 0.7); }
+.fr-gold img { border: 3px solid #ffd23d !important; box-shadow: 0 0 12px rgba(255, 210, 60, 0.85); }
+.fr-emerald img { border: 3px solid #2ee07a !important; animation: frEmerald 2.4s ease-in-out infinite; }
+@keyframes frEmerald { 0%, 100% { box-shadow: 0 0 8px rgba(46, 224, 122, 0.6); } 50% { box-shadow: 0 0 18px rgba(120, 255, 180, 1); } }
+.fr-diamond img { border: 3px solid #bff4ff !important; animation: frDiamond 1.8s ease-in-out infinite; }
+@keyframes frDiamond { 0%, 100% { box-shadow: 0 0 10px rgba(170, 240, 255, 0.7); } 30% { box-shadow: 0 0 22px #fff, 0 0 6px #9ff; } 60% { box-shadow: 0 0 12px rgba(150, 200, 255, 0.8); } }
+.fr-fire img { border: 3px solid #ff7a1a !important; animation: frFire 0.6s ease-in-out infinite alternate; }
+@keyframes frFire { from { box-shadow: 0 -3px 10px #ff4a1a, 0 0 6px #ffd23d; } to { box-shadow: 0 -8px 20px #ff9a1a, 0 0 12px #ff3a1a; } }
+.fr-cosmic img { border: 3px solid #b66bff !important; animation: frCosmic 3s linear infinite; }
+@keyframes frCosmic { 0% { box-shadow: 0 0 14px #b66bff; border-color: #b66bff; } 33% { box-shadow: 0 0 16px #3b9cff; border-color: #3b9cff; } 66% { box-shadow: 0 0 16px #ff5ec4; border-color: #ff5ec4; } 100% { box-shadow: 0 0 14px #b66bff; border-color: #b66bff; } }
+
+/* חגיגת עלייה ברמה */
+.xp-levelup { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(5, 4, 20, 0.0);
+    transition: background 0.3s; pointer-events: auto; }
+.xp-levelup.open { background: rgba(5, 4, 20, 0.78); }
+.xp-lu-card { position: relative; width: min(330px, 88vw); padding: 26px 20px 20px; border-radius: 24px; text-align: center; overflow: hidden;
+    background: radial-gradient(circle at 50% 30%, #3a2a8a, #140e38 70%); border: 2px solid rgba(160, 180, 255, 0.6);
+    box-shadow: 0 0 40px rgba(120, 140, 255, 0.5); transform: scale(0.6); opacity: 0; transition: transform 0.45s cubic-bezier(.3, 1.6, .5, 1), opacity 0.3s; }
+.xp-levelup.open .xp-lu-card { transform: scale(1); opacity: 1; }
+.xp-lu-rays { position: absolute; inset: -50%; background: repeating-conic-gradient(rgba(255, 230, 140, 0.13) 0 10deg, transparent 10deg 20deg);
+    animation: xpRays 12s linear infinite; pointer-events: none; }
+@keyframes xpRays { to { transform: rotate(360deg); } }
+.xp-lu-label { position: relative; font-weight: 800; font-size: 1.1rem; color: #cfd8ff; letter-spacing: 1px; }
+.xp-lu-num { position: relative; font-family: 'Secular One', sans-serif; font-size: 5rem; line-height: 1.05; color: #ffe27a;
+    text-shadow: 0 0 24px rgba(255, 210, 60, 0.9), 0 4px 0 #a86a00; }
+.xp-lu-title { position: relative; font-weight: 700; color: #fff; margin-bottom: 10px; }
+.xp-lu-text { position: relative; font-size: 0.85rem; color: #cfd8ff; margin: 0 0 14px; line-height: 1.4; }
+.xp-lu-rewards { position: relative; display: flex; flex-direction: column; gap: 6px; margin: 6px 0 14px; min-height: 30px; }
+.xp-lu-item { display: flex; align-items: center; gap: 10px; justify-content: center; padding: 6px 10px; border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08); font-weight: 700; color: #fff; animation: xpChipIn 0.4s cubic-bezier(.3, 1.6, .5, 1); }
+.xp-lu-ic { font-size: 1.2rem; }
+.xp-lu-btn { position: relative; width: 100%; padding: 12px; border: none; border-radius: 14px; font: inherit; font-weight: 800; font-size: 1.05rem;
+    color: #2a1600; background: linear-gradient(180deg, #ffe27a, #ffb020); box-shadow: 0 5px 0 #a86a00; cursor: pointer; opacity: 0.5; }
+.xp-lu-btn.ready { opacity: 1; animation: collPulse 1.4s infinite; }
+.xp-float { position: fixed; z-index: 10001; pointer-events: none; font-family: 'Secular One', sans-serif; font-size: 1.2rem; color: #9fd4ff;
+    text-shadow: 0 0 10px rgba(110, 190, 255, 0.9); white-space: nowrap; direction: ltr; }
+
+/* פרופיל: רמה, תארים ומסגרות */
+.xp-profile { margin: 14px 0; padding: 12px; border-radius: 16px; background: linear-gradient(150deg, rgba(70, 60, 150, 0.35), rgba(25, 25, 60, 0.45));
+    border: 1px solid rgba(120, 160, 255, 0.35); }
+.xp-prof-top { display: flex; gap: 12px; align-items: center; }
+.xp-prof-info { flex: 1; min-width: 0; }
+.xp-prof-lvl { font-family: 'Secular One', sans-serif; font-size: 1.3rem; color: #ffe27a; }
+.xp-prof-title { font-size: 0.85rem; color: #cfd8ff; margin-bottom: 6px; }
+.xp-prof-h { font-size: 0.8rem; font-weight: 700; color: #cfd8ff; margin: 14px 0 6px; }
+.xp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.xp-pick { border: 1px solid rgba(160, 180, 255, 0.35); background: rgba(0, 0, 0, 0.25); color: #e8ecff; border-radius: 999px; padding: 5px 11px;
+    font: inherit; font-size: 0.78rem; cursor: pointer; }
+.xp-pick.on { background: linear-gradient(180deg, #ffe27a, #ffb020); color: #2a1600; border-color: transparent; font-weight: 800; }
+.xp-pick.locked, .xp-frame-pick.locked { opacity: 0.45; cursor: default; }
+.xp-frames { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.xp-frame-pick { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; border-radius: 12px; cursor: pointer;
+    border: 1px solid transparent; background: rgba(0, 0, 0, 0.2); color: #cfd8ff; font: inherit; }
+.xp-frame-pick small { font-size: 0.62rem; }
+.xp-frame-pick.on { border-color: #ffe27a; background: rgba(255, 226, 122, 0.12); }
+.player-lvl { font-size: 0.85rem; font-weight: 700; color: #ffe27a; margin-top: 2px; }
