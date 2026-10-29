@@ -416,11 +416,9 @@ const SWIPE_TABS = ['profile', 'leaderboard', 'home', 'shop'];
         if ((Math.abs(dx) > 80 || fast) && next >= 0 && next < SWIPE_TABS.length) {
             scr.style.transition = ''; scr.style.transform = ''; scr.style.opacity = '';
             sfx.tap();
+            // switchTab קובע את כיוון ההחלקה לפני שהמסך החדש מופיע, כך שהוא מתחיל ישר באנימציית ההחלקה (ולא מופיע פעמיים)
+            swipeDir = dx < 0 ? 'swipe-r' : 'swipe-l';
             switchTab(SWIPE_TABS[next]);
-            const ns = document.querySelector('.screen.active');
-            ns.classList.remove('swipe-in-r', 'swipe-in-l'); void ns.offsetWidth;
-            ns.classList.add(dx < 0 ? 'swipe-in-r' : 'swipe-in-l');               // נכנס מהצד שאליו האצבע זזה ממנו
-            ns.addEventListener('animationend', () => ns.classList.remove('swipe-in-r', 'swipe-in-l'), { once: true });
         } else {                                                                    // חוזרים למקום
             scr.style.transition = 'transform .25s cubic-bezier(.3, 1.4, .5, 1), opacity .25s';
             scr.style.transform = ''; scr.style.opacity = '';

@@ -933,12 +933,16 @@ const firebaseConfig = {
 	}
 
 	/* --- ניווט בין מסכים ראשיים --- */
+	let swipeDir = null;            // נקבע בהחלקה בין מסכים (js/ui.js)
 	function switchTab(screenId) {
 			stopAllGames();
 		if (typeof closeSkinModal === 'function') closeSkinModal();
 		if (screenId !== 'result') creditPendingCoins();
 		if (window.kebabUpdateReady && ['home', 'shop', 'profile', 'leaderboard'].includes(screenId)) setTimeout(() => window.kebabTryUpdate(), 50);
 		document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+		// אנימציית הכניסה: החלקה מהצד (אחרי החלקת אצבע) או הופעה רגילה. נשארת עד המעבר הבא, כדי שהאנימציה לא תתחלף ותרוץ שוב
+		document.body.classList.remove('swipe-r', 'swipe-l');
+		if (swipeDir) { document.body.classList.add(swipeDir); swipeDir = null; }
 		document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
 
 		const targetScreen = document.getElementById('screen-' + screenId);
