@@ -23,8 +23,15 @@
     (function () {
         if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         var root = document.documentElement;
+        // הגובה הנראה בפועל: הקטן מבין innerHeight לבין visualViewport. בחלק מהדפדפנים (למשל סמסונג אינטרנט)
+        // innerHeight אחרי רענון כולל גם את השטח שמתחת לסרגלי הדפדפן
+        function visibleH() {
+            var h = window.innerHeight, vv = window.visualViewport;
+            if (vv && vv.height > 0 && Math.abs(vv.scale - 1) < 0.05) h = Math.min(h, vv.height);
+            return Math.round(h);
+        }
         function fit() {
-            root.style.setProperty('--app-h', window.innerHeight + 'px');
+            root.style.setProperty('--app-h', visibleH() + 'px');
             var a = document.activeElement;
             if ((window.scrollY || root.scrollTop) && !(a && /^(INPUT|TEXTAREA)$/.test(a.tagName))) window.scrollTo(0, 0);
         }
@@ -33,7 +40,8 @@
         window.addEventListener('scroll', fit, { passive: true });
         window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
         window.addEventListener('pageshow', fit);
-        window.addEventListener('load', function () { fit(); setTimeout(fit, 400); setTimeout(fit, 1500); });
+        window.addEventListener('load', function () { fit(); [200, 500, 1000, 2000, 3500].forEach(function (t) { setTimeout(fit, t); }); });
+        if (window.visualViewport) { visualViewport.addEventListener('resize', fit); visualViewport.addEventListener('scroll', fit); }
         document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(fit, 200); });
         document.addEventListener('focusout', function () { setTimeout(fit, 100); });
     })();
