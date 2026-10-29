@@ -16,6 +16,28 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
     <link rel="stylesheet" href="css/style.css">
+    <script>
+    /* גובה המסך האמיתי: אחרי רענון (למשל בעדכון גרסה) הדפדפן מחזיר את הדף למקום שבו היה גלול,
+       ולפעמים מודד את הגובה לפני שסרגלי הטלפון מתייצבים - ואז חלק מהמסך נחתך למעלה או נכנס מתחת לסרגל של הטלפון.
+       לכן: הדף תמיד בראש, והגובה נמדד מחדש בכל שינוי */
+    (function () {
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+        var root = document.documentElement;
+        function fit() {
+            root.style.setProperty('--app-h', window.innerHeight + 'px');
+            var a = document.activeElement;
+            if ((window.scrollY || root.scrollTop) && !(a && /^(INPUT|TEXTAREA)$/.test(a.tagName))) window.scrollTo(0, 0);
+        }
+        fit();
+        window.addEventListener('resize', fit);
+        window.addEventListener('scroll', fit, { passive: true });
+        window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
+        window.addEventListener('pageshow', fit);
+        window.addEventListener('load', function () { fit(); setTimeout(fit, 400); setTimeout(fit, 1500); });
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(fit, 200); });
+        document.addEventListener('focusout', function () { setTimeout(fit, 100); });
+    })();
+    </script>
 </head>
 <body>
 
