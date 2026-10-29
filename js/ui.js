@@ -270,6 +270,9 @@ const DEV_CODE_HASHES = {
     '4349294fed6a3a5825057d55ccb800ee336727c380564f9a95796ac7a700060b': { coins: 10000 },
     'fafdaaf4023195a7a1b13aec563884075beacaedab5cd9ef3703504ebcb5b094': { wipe: true }   // מוחק את כל המטבעות והסקינים
 };
+// קודי XP: "XP" + מספר + מילה סודית (למשל XP500 ואחריו המילה). שמורה רק טביעת האצבע של המילה
+const XP_CODE_WORD_HASH = 'd0cb6e787cf3d0ac3037e9bbdc4ed3dbd9ff794ad9d64491bac8b16eabbad649';
+const XP_CODE_MAX = 1000000;
 function sha256Hex(text) {
     if (!window.crypto || !crypto.subtle) return Promise.resolve('');
     return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
@@ -304,6 +307,13 @@ function applyReward(reward) {
             parts.push(ids.length + ' סקינים חדשים: ' + ids.map(id => skinById(id).name).join(', '));
         }
     }
+    const xp = Math.floor(Number(reward.xp) || 0);
+    if (xp > 0 && xp <= XP_CODE_MAX && typeof xpAdd === 'function') {
+        const res = xpAdd(xp);
+        renderXpCard(); renderXpProfile();
+        parts.push('+' + xp.toLocaleString('en-US') + ' XP');
+        if (res.levels.length) setTimeout(() => { closeCodeModal(); xpCelebrate(); }, 1100);     // חגיגת עלייה ברמה
+    }
     if (reward.ttBoost && typeof ttBoostFromCode === 'function') {
         if (!ttBoostFromCode()) return { ok: false, msg: 'כבר השתמשתם בקוד הזה' };
         parts.push('⚡ מכפיל שריונים x2');
@@ -317,8 +327,14 @@ function redeemCode(raw) {
     if (!code) return { ok: false, msg: 'הכניסו קוד' };
     if (REDEEM_CODES[code]) return applyReward(REDEEM_CODES[code]);
     if (!/^[A-Z0-9_-]{1,64}$/.test(code)) return { ok: false, msg: 'הקוד לא נמצא' };
-    return sha256Hex(code).then(h => {
+    const xpCode = /^XP(\d{1,7})([A-Z]+)$/.exec(code);
+    return Promise.all([sha256Hex(code), xpCode ? sha256Hex(xpCode[2]) : '']).then(([h, word]) => {
         if (DEV_CODE_HASHES[h]) return applyReward(DEV_CODE_HASHES[h]);
+        if (xpCode && word === XP_CODE_WORD_HASH) {
+            const n = parseInt(xpCode[1], 10);
+            if (!(n > 0 && n <= XP_CODE_MAX)) return { ok: false, msg: 'אפשר בין 1 ל-' + XP_CODE_MAX.toLocaleString('en-US') + ' XP' };
+            return applyReward({ xp: n });
+        }
         // קודים נוספים שנשמרו ב-Firestore (אוסף codes)
         if (!db) return { ok: false, msg: 'הקוד לא נמצא' };
         return db.collection('codes').doc(code).get({ source: 'server' }).then(doc => {
