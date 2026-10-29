@@ -1499,3 +1499,9 @@
 .icon-btn.active { transform: translateY(-3px); }
 .screen { padding-bottom: 4px; }
 #toast { bottom: 88px; }
+/* סרגל הניווט: צבע חם ובולט, עם מסגרת זהב */
+.top-bar { background: linear-gradient(180deg, #7a3510, #4a1c08); border: 2px solid #ffb020;
+    box-shadow: 0 0 18px rgba(255, 150, 30, 0.45), 0 -4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 220, 150, 0.35); }
+.top-bar .icon-btn:not(.active) { color: #ffe2b0; }
+.top-bar .icon-btn:not(.active):hover { background: rgba(255, 210, 120, 0.15); }
+.top-bar .icon-btn.active { box-shadow: 0 3px 0 #a8430c, 0 0 0 2px #fff3b0, 0 0 20px rgba(255, 180, 40, 0.8); }
