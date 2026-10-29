@@ -260,8 +260,13 @@ const REDEEM_CODES = {
     'SHELLX2':           { ttBoost: 1 },
     // סקינים של אירוע צבי הנינג'ה: כל קוד נותן את 3 הסקינים של צוות אחד
     'SPLINTERTEAM3':     { skins: ['tmnt_splinter', 'tmnt_leo', 'tmnt_don'] },
-    'SHREDDERTEAM3':     { skins: ['tmnt_shredder', 'tmnt_raph', 'tmnt_mikey'] }
+    'SHREDDERTEAM3':     { skins: ['tmnt_shredder', 'tmnt_raph', 'tmnt_mikey'] },
+    // קוד חד-פעמי (פעם אחת לשחקן, נשמר גם בחשבון)
+    'KEBABXP5000':       { xp: 5000, once: true }
 };
+// קודים חד-פעמיים שהשחקן כבר הפעיל
+const CODES_USED_KEY = 'kebab_codes_used';
+function codesUsed() { try { const a = JSON.parse(store.get(CODES_USED_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 // קודי פיתוח: שמורים רק כטביעת אצבע (SHA-256) של הקוד - הקוד עצמו לא מופיע בקבצים,
 // והבדיקה נעשית במכשיר, בלי קריאה מהשרת (עובד גם כשנגמרה המכסה היומית של Firebase)
 const DEV_CODE_HASHES = {
@@ -325,7 +330,13 @@ function applyReward(reward) {
 function redeemCode(raw) {
     const code = String(raw || '').trim().toUpperCase();
     if (!code) return { ok: false, msg: 'הכניסו קוד' };
-    if (REDEEM_CODES[code]) return applyReward(REDEEM_CODES[code]);
+    if (REDEEM_CODES[code]) {
+        const reward = REDEEM_CODES[code];
+        if (reward.once && codesUsed().includes(code)) return { ok: false, msg: 'כבר השתמשתם בקוד הזה' };
+        const r = applyReward(reward);
+        if (r.ok && reward.once) store.set(CODES_USED_KEY, JSON.stringify(codesUsed().concat(code)));
+        return r;
+    }
     if (!/^[A-Z0-9_-]{1,64}$/.test(code)) return { ok: false, msg: 'הקוד לא נמצא' };
     const xpCode = /^XP(\d{1,7})([A-Z]+)$/.exec(code);
     return Promise.all([sha256Hex(code), xpCode ? sha256Hex(xpCode[2]) : '']).then(([h, word]) => {
