@@ -101,6 +101,21 @@ function xpBonus(amount, fromEl, label) {
 
 /* ---------- תצוגה ---------- */
 function xpFrameClass(f) { return f && xpFrameOk(f) ? ' fr-' + f : ''; }
+// המסגרת הקוסמית: כוכבים גדולים שמסתובבים סביב התמונה - כוכב על רמה 100 ועוד אחד על כל 25 רמות (כמו ה-★ בתואר), עד 12
+function xpCosmicStars(lvl) { return lvl >= 100 ? Math.min(12, 1 + Math.floor((lvl - 100) / 25)) : 1; }
+function xpOrbit(el, frame, lvl, size) {
+    if (frame !== 'cosmic') return el;
+    const n = xpCosmicStars(lvl), orbit = xpEl('span', 'fr-orbit');
+    orbit.style.fontSize = Math.max(9, Math.round(size * 0.3)) + 'px';
+    for (let i = 0; i < n; i++) {
+        const arm = xpEl('i');
+        arm.style.setProperty('--a', (360 / n * i) + 'deg');
+        arm.style.setProperty('--d', (i * 0.37 % 1.6) + 's');                 // כל כוכב מנצנץ בזמן אחר
+        orbit.appendChild(arm);
+    }
+    el.appendChild(orbit);
+    return el;
+}
 function xpEl(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 // שורת טקסט עם מספרי XP: המספרים נשמרים משמאל לימין בתוך הטקסט העברי
 function xpLine(cls, parts) {
@@ -214,6 +229,7 @@ function xpAvatar(skinId, frame, lvl, size) {
     w.style.width = w.style.height = size + 'px';
     const src = typeof lbAvatar === 'function' ? lbAvatar(skinId) : null;
     if (src) { const img = document.createElement('img'); img.src = src; img.alt = ''; w.appendChild(img); }
+    xpOrbit(w, frame, lvl || xpLevel(), size);
     if (lvl) w.appendChild(xpEl('span', 'xp-av-lvl', String(lvl)));
     return w;
 }

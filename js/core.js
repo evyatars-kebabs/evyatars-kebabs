@@ -369,6 +369,7 @@ const firebaseConfig = {
                 const img = document.createElement('img');
                 img.className = 'lb-skin'; img.src = av; img.alt = ''; img.loading = 'lazy';
                 wrap.appendChild(img);
+                if (typeof xpOrbit === 'function') xpOrbit(wrap, xp.frame, xp.lvl || 0, 30);
                 if (xp.lvl) { const b = document.createElement('span'); b.className = 'lb-lvl'; b.textContent = xp.lvl; wrap.appendChild(b); }
                 left.appendChild(wrap);
             }
@@ -415,6 +416,7 @@ const firebaseConfig = {
                 const medal = document.createElement('span');
                 medal.className = 'lb-pod-medal'; medal.textContent = ['🥇', '🥈', '🥉'][place - 1];
                 av.appendChild(medal);
+                if (typeof xpOrbit === 'function') xpOrbit(av, px.frame, px.lvl || 0, place === 1 ? 74 : 58);
                 if (px.lvl) { const b = document.createElement('span'); b.className = 'lb-lvl'; b.textContent = px.lvl; av.appendChild(b); }
                 spot.appendChild(av);
                 const nm = document.createElement('div');

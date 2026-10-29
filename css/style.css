@@ -1522,3 +1522,11 @@ body.swipe-l .screen.active { animation: swipeInL .28s cubic-bezier(.2, .9, .3, 
 @keyframes swipeInL { from { opacity: 0.5; transform: translateX(-45%); } to { opacity: 1; transform: none; } }
 .app-container { overflow-x: hidden; }
 .screen { touch-action: pan-y; }
+/* המסגרת הקוסמית: כוכבים גדולים שמסתובבים סביב התמונה (כמות לפי הרמה) */
+.fr-orbit { position: absolute; inset: -16%; pointer-events: none; animation: frOrbit 7s linear infinite; z-index: 1; }
+.fr-orbit i { position: absolute; inset: 0; transform: rotate(var(--a)); }
+.fr-orbit i::before { content: '★'; position: absolute; top: 0; left: 50%; line-height: 1; font-style: normal; color: #fff3b0;
+    transform: translate(-50%, -50%); text-shadow: 0 0 6px #ffd23d, 0 0 12px #b66bff, 0 0 2px #fff;
+    animation: frStar 1.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+@keyframes frOrbit { to { transform: rotate(360deg); } }
+@keyframes frStar { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.75; transform: translate(-50%, -50%) scale(0.75); } }
