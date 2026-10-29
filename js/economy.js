@@ -5,6 +5,16 @@ const COIN_KEY = 'kebab_coins';
 const SKINS_KEY = 'kebab_skins_owned';
 const SKIN_EQ_KEY = 'kebab_skin_equipped';
 
+// יתרה מקוצרת: עד 999 המספר המלא, ומעבר לזה 1k, 2.5k, 10k, 100k, 1m... (מעוגל כלפי מטה, כדי לא להציג יותר ממה שיש)
+function formatCoins(n) {
+    n = Math.max(0, Math.floor(n));
+    if (n < 1000) return String(n);
+    const units = [[1e12, 't'], [1e9, 'b'], [1e6, 'm'], [1e3, 'k']];
+    const [u, s] = units.find(([u]) => n >= u);
+    const v = n / u;
+    const shown = v < 100 ? Math.floor(v * 10) / 10 : Math.floor(v);
+    return shown + s;
+}
 function getCoins() { return parseInt(store.get(COIN_KEY)) || 0; }
 function setCoins(n) {
     store.set(COIN_KEY, Math.max(0, Math.floor(n)));
@@ -23,7 +33,7 @@ function renderCoinBadges() {
     const grew = lastCoinsShown !== null && n > lastCoinsShown;
     lastCoinsShown = n;
     document.querySelectorAll('.coin-balance').forEach(e => {
-        e.textContent = n;
+        e.textContent = formatCoins(n);
         const chip = e.closest('.coin-chip');
         if (grew && chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
     });
@@ -117,7 +127,7 @@ function flyCoins(fromEl, amount) {
             coin.remove();
             shown += value;
             landed++;
-            document.querySelectorAll('.coin-balance').forEach(e => { e.textContent = shown; });
+            document.querySelectorAll('.coin-balance').forEach(e => { e.textContent = formatCoins(shown); });
             if (chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
             sfx.coin();
             haptic(landed === n ? 140 : 55);             // המטבע האחרון - רטט ארוך לסיום

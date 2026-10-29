@@ -367,6 +367,26 @@ function showCodeResult(r) {
 document.getElementById('code-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitCode(); });
 document.getElementById('code-modal').addEventListener('click', e => { if (e.target.id === 'code-modal') closeCodeModal(); });
 
+/* ---------- כפתור יציאה במשחקים (סרגל הניווט מוסתר בזמן משחק) ----------
+   לחיצה ראשונה מבקשת אישור ("לצאת?") לכמה שניות, ולחיצה שנייה יוצאת למסך הבית - כך נגיעה בטעות לא עוצרת משחק */
+document.querySelectorAll('.screen .hud').forEach(hud => {
+    const btn = document.createElement('button');
+    btn.className = 'game-exit';
+    btn.textContent = '✕';
+    btn.setAttribute('aria-label', 'יציאה מהמשחק');
+    let armT = null;
+    const disarm = () => { clearTimeout(armT); btn.classList.remove('armed'); btn.textContent = '✕'; };
+    btn.onclick = e => {
+        e.stopPropagation();
+        if (btn.classList.contains('armed')) { disarm(); sfx.tap(); switchTab('home'); return; }
+        btn.classList.add('armed'); btn.textContent = 'לצאת?';
+        haptic(30);
+        armT = setTimeout(disarm, 2500);
+    };
+    btn.addEventListener('pointerdown', e => e.stopPropagation());
+    hud.prepend(btn);
+});
+
 renderCoinBadges();
 renderDaily();
 // אוספי סקינים שכבר הושלמו (גם לשחקנים ותיקים): נקודה על כפתור החנות והודעה

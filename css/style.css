@@ -1505,3 +1505,10 @@
 .top-bar .icon-btn:not(.active) { color: #ffe2b0; }
 .top-bar .icon-btn:not(.active):hover { background: rgba(255, 210, 120, 0.15); }
 .top-bar .icon-btn.active { box-shadow: 0 3px 0 #a8430c, 0 0 0 2px #fff3b0, 0 0 20px rgba(255, 180, 40, 0.8); }
+/* בזמן משחק: בלי סרגל ניווט, ובמקומו כפתור יציאה בפינה */
+body.in-game .top-bar { display: none; }
+.game-exit { flex: none; height: 34px; min-width: 34px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.38); color: #ffe2b0; font: inherit; font-weight: 800; font-size: 0.95rem; cursor: pointer;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4); transition: background 0.15s, transform 0.1s; }
+.game-exit:active { transform: scale(0.9); }
+.game-exit.armed { background: linear-gradient(180deg, #e5483f, #b3261e); border-color: #ff7a70; color: #fff; font-size: 0.85rem; animation: okPulse 0.4s; }

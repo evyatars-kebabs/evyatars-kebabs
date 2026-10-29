@@ -923,7 +923,7 @@ function openPlayerModal(p) {
     getPlayerBests(p.id, p.known).then(data => {
         if (!skinModal || skinModal.el !== el) return;
         const rows = data.list;
-        coinsEl.textContent = '🪙 ' + (typeof data.coins === 'number' ? data.coins.toLocaleString('en-US') + ' מטבעות' : 'יתרה לא ידועה');
+        coinsEl.textContent = '🪙 ' + (typeof data.coins === 'number' ? formatCoins(data.coins) + ' מטבעות' : 'יתרה לא ידועה');
         list.innerHTML = '';
         rows.forEach(r => {
             const row = document.createElement('li');
