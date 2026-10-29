@@ -1512,3 +1512,10 @@ body.in-game .top-bar { display: none; }
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4); transition: background 0.15s, transform 0.1s; }
 .game-exit:active { transform: scale(0.9); }
 .game-exit.armed { background: linear-gradient(180deg, #e5483f, #b3261e); border-color: #ff7a70; color: #fff; font-size: 0.85rem; animation: okPulse 0.4s; }
+/* החלקה בין המסכים: המסך החדש נכנס מהצד */
+.screen.active.swipe-in-r { animation: swipeInR .3s cubic-bezier(.2, .9, .3, 1); }
+.screen.active.swipe-in-l { animation: swipeInL .3s cubic-bezier(.2, .9, .3, 1); }
+@keyframes swipeInR { from { opacity: 0.3; transform: translateX(60%); } to { opacity: 1; transform: none; } }
+@keyframes swipeInL { from { opacity: 0.3; transform: translateX(-60%); } to { opacity: 1; transform: none; } }
+.app-container { overflow-x: hidden; }
+.screen { touch-action: pan-y; }

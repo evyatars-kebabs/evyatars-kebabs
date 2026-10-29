@@ -367,6 +367,70 @@ function showCodeResult(r) {
 document.getElementById('code-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitCode(); });
 document.getElementById('code-modal').addEventListener('click', e => { if (e.target.id === 'code-modal') closeCodeModal(); });
 
+/* ---------- החלקה בין המסכים הראשיים ----------
+   הסדר כמו בסרגל (מימין לשמאל): פרופיל, שיאים, בית, חנות. החלקה שמאלה מביאה את המסך שמימין, ימינה - את המסך שמשמאל.
+   המסך זז עם האצבע; החלקה קצרה מדי חוזרת למקום. לא בזמן משחק, לא כשחלון פתוח ולא על שורות שנגללות הצידה */
+const SWIPE_TABS = ['profile', 'leaderboard', 'home', 'shop'];
+(function screenSwipe() {
+    const app = document.querySelector('.app-container');
+    let g = null;
+    const modalOpen = () => !!document.querySelector('#skin-modal, #xp-levelup, #mst-up, #code-modal.open, .player-modal');
+    const scrollsSideways = el => {
+        for (; el && el !== app && !el.classList.contains('screen'); el = el.parentElement) {     // המסך עצמו נגלל רק למעלה ולמטה
+            const ox = getComputedStyle(el).overflowX;
+            if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 2) return true;
+            if (el.matches('input, textarea, canvas')) return true;
+        }
+        return false;
+    };
+    app.addEventListener('touchstart', e => {
+        g = null;
+        if (e.touches.length !== 1 || document.body.classList.contains('in-game') || modalOpen()) return;
+        const scr = document.querySelector('.screen.active');
+        const id = scr && scr.id.replace('screen-', '');
+        if (!SWIPE_TABS.includes(id) || scrollsSideways(e.target)) return;
+        const t = e.touches[0];
+        g = { x0: t.clientX, y0: t.clientY, dx: 0, lock: null, scr, idx: SWIPE_TABS.indexOf(id), t0: performance.now() };
+    }, { passive: true });
+    app.addEventListener('touchmove', e => {
+        if (!g) return;
+        const t = e.touches[0], dx = t.clientX - g.x0, dy = t.clientY - g.y0;
+        if (!g.lock) {
+            if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+            g.lock = Math.abs(dx) > Math.abs(dy) * 1.3 ? 'x' : 'y';
+            if (g.lock === 'y') { g = null; return; }
+            g.scr.style.transition = 'none';
+        }
+        g.dx = dx;
+        const next = g.idx + (dx < 0 ? -1 : 1);
+        const edge = next < 0 || next >= SWIPE_TABS.length;         // אין מסך בכיוון הזה - תזוזה קטנה בלבד
+        g.scr.style.transform = 'translateX(' + (edge ? dx * 0.2 : dx * 0.85) + 'px)';
+        g.scr.style.opacity = String(1 - Math.min(0.5, Math.abs(dx) / 600));
+    }, { passive: true });
+    const end = () => {
+        if (!g || g.lock !== 'x') { g = null; return; }
+        const { scr, dx, idx } = g;
+        const fast = Math.abs(dx) > 35 && performance.now() - g.t0 < 250;
+        const next = idx + (dx < 0 ? -1 : 1);
+        g = null;
+        if ((Math.abs(dx) > 80 || fast) && next >= 0 && next < SWIPE_TABS.length) {
+            scr.style.transition = ''; scr.style.transform = ''; scr.style.opacity = '';
+            sfx.tap();
+            switchTab(SWIPE_TABS[next]);
+            const ns = document.querySelector('.screen.active');
+            ns.classList.remove('swipe-in-r', 'swipe-in-l'); void ns.offsetWidth;
+            ns.classList.add(dx < 0 ? 'swipe-in-r' : 'swipe-in-l');               // נכנס מהצד שאליו האצבע זזה ממנו
+            ns.addEventListener('animationend', () => ns.classList.remove('swipe-in-r', 'swipe-in-l'), { once: true });
+        } else {                                                                    // חוזרים למקום
+            scr.style.transition = 'transform .25s cubic-bezier(.3, 1.4, .5, 1), opacity .25s';
+            scr.style.transform = ''; scr.style.opacity = '';
+            setTimeout(() => { scr.style.transition = ''; }, 260);
+        }
+    };
+    app.addEventListener('touchend', end);
+    app.addEventListener('touchcancel', end);
+})();
+
 /* ---------- כפתור יציאה במשחקים (סרגל הניווט מוסתר בזמן משחק) ----------
    לחיצה ראשונה מבקשת אישור ("לצאת?") לכמה שניות, ולחיצה שנייה יוצאת למסך הבית - כך נגיעה בטעות לא עוצרת משחק */
 document.querySelectorAll('.screen .hud').forEach(hud => {
