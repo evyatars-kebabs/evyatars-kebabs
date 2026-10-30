@@ -318,6 +318,7 @@ function renderDaily() {
     box.appendChild(bonus);
     if (typeof renderTmnt === 'function') renderTmnt();          // אירוע קהילתי (וגם מזיז את האתגרים לתחתית בזמן האירוע)
     if (typeof renderXpCard === 'function') renderXpCard();      // כרטיס הרמה - תמיד ראשון במסך הבית
+    if (typeof socRenderHome === 'function') socRenderHome();    // אתגר מחבר והצעה להתקין
 }
 
 // טיימר המבצע בחנות
@@ -352,6 +353,7 @@ function showResultReward(gameKey, score) {
     if (typeof tmntGamePlayed === 'function') tmntGamePlayed(gameKey, score);     // אירוע קהילתי
     if (typeof xpOnGame === 'function') xpOnGame(gameKey, score);                 // XP ורמות
     if (typeof mstOnGame === 'function') mstOnGame(gameKey, score);               // שליטה במשחק
+    if (typeof socialOnGame === 'function') socialOnGame(gameKey, score);         // שיתוף ואתגר לחבר
     const box = document.getElementById('coupon-box');
     const txt = document.getElementById('coupon-text');
     const coinsEl = document.getElementById('coupon-coins');
@@ -906,7 +908,7 @@ function openPlayerModal(p) {
         });
         mstBox.appendChild(grid);
     }
-    body.appendChild(nm); if (px.lvl) body.appendChild(lvlLine); body.appendChild(skl); body.appendChild(coinsEl); if (mm) body.appendChild(mstBox); body.appendChild(list);
+    body.appendChild(nm); if (px.lvl) body.appendChild(lvlLine); body.appendChild(skl); body.appendChild(coinsEl); if (p.id !== playerId && typeof friendButton === 'function') body.appendChild(friendButton(p)); if (mm) body.appendChild(mstBox); body.appendChild(list);
     card.appendChild(x); card.appendChild(cv); card.appendChild(body);
     el.appendChild(card);
     el.addEventListener('click', e => { if (e.target === el) closeSkinModal(); });

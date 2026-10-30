@@ -628,7 +628,7 @@ const firebaseConfig = {
     const LB_ID_KEY = 'kebab_lbId';
     const PROGRESS_KEYS = ['kebab_lbId', 'kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
         'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
-        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt', 'kebab_turtlesHighScore', 'kebab_tt_boost', 'kebab_collections', 'kebab_xp', 'kebab_mastery', 'kebab_codes_used'];
+        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt', 'kebab_turtlesHighScore', 'kebab_tt_boost', 'kebab_collections', 'kebab_xp', 'kebab_mastery', 'kebab_codes_used', 'kebab_friends'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
     const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
     const LB_BEST = [['leaderboard_delivery', 'kebab_dlvHighScore'], ['leaderboard', 'kebab_highScore'], ['leaderboard_turtles', 'kebab_turtlesHighScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
@@ -931,6 +931,7 @@ const firebaseConfig = {
 			document.getElementById('sub-btn-' + k).classList.toggle('active', k === type);
 			document.getElementById('sub-screen-' + k).style.display = (k === type) ? 'block' : 'none';
 		});
+		if (typeof friendsBoardOn === 'function' && friendsBoardOn()) { renderFriendsBoard(type); return; }     // טבלת החברים (js/social.js)
 		LB_TABS[type]();
 	}
 
