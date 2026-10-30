@@ -395,9 +395,9 @@ document.getElementById('code-input').addEventListener('keydown', e => { if (e.k
 document.getElementById('code-modal').addEventListener('click', e => { if (e.target.id === 'code-modal') closeCodeModal(); });
 
 /* ---------- החלקה בין המסכים הראשיים ----------
-   הסדר כמו בסרגל (מימין לשמאל): שיאים, פרופיל, בית, חנות. החלקה שמאלה מביאה את המסך שמימין, ימינה - את המסך שמשמאל.
+   הסדר כמו בסרגל (מימין לשמאל): חברים, שיאים, בית, חנות, פרופיל. החלקה שמאלה מביאה את המסך שמימין, ימינה - את המסך שמשמאל.
    המסך זז עם האצבע; החלקה קצרה מדי חוזרת למקום. לא בזמן משחק, לא כשחלון פתוח ולא על שורות שנגללות הצידה */
-const SWIPE_TABS = ['leaderboard', 'profile', 'home', 'shop'];
+const SWIPE_TABS = ['friends', 'leaderboard', 'home', 'shop', 'profile'];
 (function screenSwipe() {
     const app = document.querySelector('.app-container');
     let g = null;
@@ -406,7 +406,7 @@ const SWIPE_TABS = ['leaderboard', 'profile', 'home', 'shop'];
         for (; el && el !== app && !el.classList.contains('screen'); el = el.parentElement) {     // המסך עצמו נגלל רק למעלה ולמטה
             const ox = getComputedStyle(el).overflowX;
             if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 2) return true;
-            if (el.matches('input, textarea, canvas')) return true;
+            if (el.matches('input, textarea')) return true;                  // (קנבס של משחק לא רלוונטי - בזמן משחק אין החלקה)
         }
         return false;
     };
@@ -414,7 +414,8 @@ const SWIPE_TABS = ['leaderboard', 'profile', 'home', 'shop'];
         g = null;
         if (e.touches.length !== 1 || document.body.classList.contains('in-game') || modalOpen()) return;
         const scr = document.querySelector('.screen.active');
-        const id = scr && scr.id.replace('screen-', '');
+        let id = scr && scr.id.replace('screen-', '');
+        if (id === 'leaderboard' && typeof friendsBoardOn === 'function' && friendsBoardOn()) id = 'friends';
         if (!SWIPE_TABS.includes(id) || scrollsSideways(e.target)) return;
         const t = e.touches[0];
         g = { x0: t.clientX, y0: t.clientY, dx: 0, lock: null, scr, idx: SWIPE_TABS.indexOf(id), t0: performance.now() };
@@ -478,6 +479,7 @@ document.querySelectorAll('.screen .hud').forEach(hud => {
 
 renderCoinBadges();
 renderDaily();
+if (!window.__firstVisit) switchTab('home');      // שחקן חוזר מתחיל במסך הבית (בביקור הראשון - בפרופיל)
 // אוספי סקינים שכבר הושלמו (גם לשחקנים ותיקים): נקודה על כפתור החנות והודעה
 setTimeout(() => { if (typeof collNotify === 'function') collNotify(getOwnedSkins()); }, 2500);
 syncLeaderboardSkin(4000);

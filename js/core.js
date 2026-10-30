@@ -938,6 +938,10 @@ const firebaseConfig = {
 	/* --- ניווט בין מסכים ראשיים --- */
 	let swipeDir = null;            // נקבע בהחלקה בין מסכים (js/ui.js)
 	function switchTab(screenId) {
+		// "חברים" הוא מסך השיאים במצב חברים, עם כפתור משלו בסרגל
+		const friendsView = screenId === 'friends';
+		if (friendsView) screenId = 'leaderboard';
+		if (screenId === 'leaderboard' && typeof setFriendsModeQuiet === 'function') setFriendsModeQuiet(friendsView);
 			stopAllGames();
 		if (typeof closeSkinModal === 'function') closeSkinModal();
 		if (screenId !== 'result') creditPendingCoins();
@@ -949,7 +953,7 @@ const firebaseConfig = {
 		document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
 
 		const targetScreen = document.getElementById('screen-' + screenId);
-		const targetBtn = document.getElementById('btn-' + screenId);
+		const targetBtn = document.getElementById('btn-' + (friendsView ? 'friends' : screenId));
 
 		if (targetScreen) targetScreen.classList.add('active');
 		if (targetBtn) targetBtn.classList.add('active');
@@ -963,7 +967,7 @@ const firebaseConfig = {
 		if (screenId === 'leaderboard') {
 			const active = document.querySelector('.sub-tab-btn.active');
 			const type = active ? active.id.replace('sub-btn-', '') : 'shvartz';
-			(LB_TABS[type] || LB_TABS.shvartz)();
+			switchLeaderboardTab(type);
 		}
 	}
 

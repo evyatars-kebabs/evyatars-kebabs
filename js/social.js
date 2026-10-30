@@ -300,14 +300,23 @@ function socLbInit() {
     sub.appendChild(ul);
     tabs.after(sub);
 }
-function setFriendsMode(on) {
+// מצב חברים בלי לטעון מחדש (switchTab קורא לזה לפני שהמסך נפתח)
+function setFriendsModeQuiet(on) {
     lbFriendsMode = on;
-    sfx.tap();
     const btns = document.querySelectorAll('#lb-mode .lb-mode-btn');
-    btns[0].classList.toggle('on', !on); btns[1].classList.toggle('on', on);
+    if (btns.length) { btns[0].classList.toggle('on', !on); btns[1].classList.toggle('on', on); }
     const search = document.getElementById('lb-search');
     if (search) search.style.display = on ? 'none' : '';
-    if (!on) document.getElementById('sub-screen-friends').style.display = 'none';
+    const sub = document.getElementById('sub-screen-friends');
+    if (!on && sub) sub.style.display = 'none';
+}
+function setFriendsMode(on) {
+    setFriendsModeQuiet(on);
+    sfx.tap();
+    // הכפתור הדולק בסרגל: חברים או שיאים
+    const bf = document.getElementById('btn-friends'), bl = document.getElementById('btn-leaderboard');
+    if (bf) bf.classList.toggle('active', on);
+    if (bl) bl.classList.toggle('active', !on);
     const active = document.querySelector('#screen-leaderboard .sub-tab-btn.active');
     switchLeaderboardTab(active ? active.id.replace('sub-btn-', '') : 'shvartz');
 }
