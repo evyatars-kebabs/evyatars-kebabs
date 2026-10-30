@@ -100,7 +100,9 @@ function socCard(s) {
     const rank = socRank(s.k);
     const tag = s.best ? '🏆 שיא אישי חדש!' + (rank ? '  ·  מקום #' + rank : '') : rank ? '🏅 מקום #' + rank + ' בטבלה' : '';
     if (tag) text(tag, 834, 30, '#7ee787', 'Rubik, sans-serif');
-    text('תצליחו לנצח אותי? 👇', 900, 34, '#ffffff', 'Rubik, sans-serif');
+    text('תצליחו לנצח אותי? 👇', 884, 34, '#ffffff', 'Rubik, sans-serif');
+    c.direction = 'ltr';                                                             // כתובת המשחק (גם אם האפליקציה לא מעבירה את הטקסט)
+    text(SOCIAL_URL.replace(/^https?:\/\//, '').replace(/\/$/, ''), 926, 24, '#ffb020', 'Rubik, sans-serif');
     return cv;
 }
 
@@ -113,7 +115,8 @@ function socShare(btn, text) {
     if (btn) btn.classList.add('busy');
     const done = () => { socSharing = false; if (btn) btn.classList.remove('busy'); };
     const g = s && socGame(s.k);
-    text = text || ('🔥 עשיתי ' + s.score + ' נקודות ב' + g.name + ' בהקבביה של אביתר! תצליחו לנצח אותי? 👇\n' + socChallengeLink(s.k, s.score));
+    text = text || ('🔥 עשיתי ' + s.score + ' נקודות ב' + g.name + ' בהקבביה של אביתר! תצליחו לנצח אותי?\n' +
+                    '⚔️ קבלו את האתגר: ' + socChallengeLink(s.k, s.score) + '\n🎮 לשחק: ' + SOCIAL_URL);
     const wa = () => { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); };
     const fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
     const file = !s || !text.includes('?ch=') ? Promise.resolve(null) : fonts.then(() => new Promise(res => {
@@ -276,7 +279,7 @@ function friendButton(p) {
 }
 function socFriendLink() { return SOCIAL_URL + '?addfriend=' + encodeURIComponent(playerId) + '&n=' + encodeURIComponent(playerName); }
 function shareFriendLink(btn) {
-    socShare(btn, '👫 בואו נהיה חברי קבב בהקבביה של אביתר! לחצו על הקישור ונראה מי מנצח 👇\n' + socFriendLink());
+    socShare(btn, '👫 בואו נהיה חברי קבב בהקבביה של אביתר! לחצו על הקישור ונראה מי מנצח 👇\n' + socFriendLink() + '\n🎮 לשחק: ' + SOCIAL_URL);
 }
 
 // טבלת החברים: אותן לשוניות משחקים, רק החברים ואתם
