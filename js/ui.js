@@ -395,9 +395,9 @@ document.getElementById('code-input').addEventListener('keydown', e => { if (e.k
 document.getElementById('code-modal').addEventListener('click', e => { if (e.target.id === 'code-modal') closeCodeModal(); });
 
 /* ---------- החלקה בין המסכים הראשיים ----------
-   הסדר כמו בסרגל (מימין לשמאל): חברים, שיאים, בית, חנות, פרופיל. החלקה שמאלה מביאה את המסך שמימין, ימינה - את המסך שמשמאל.
+   הסדר כמו בסרגל (מימין לשמאל): שיאים, חברים, בית, חנות, פרופיל. החלקה שמאלה מביאה את המסך שמימין, ימינה - את המסך שמשמאל.
    המסך זז עם האצבע; החלקה קצרה מדי חוזרת למקום. לא בזמן משחק, לא כשחלון פתוח ולא על שורות שנגללות הצידה */
-const SWIPE_TABS = ['friends', 'leaderboard', 'home', 'shop', 'profile'];
+const SWIPE_TABS = ['leaderboard', 'friends', 'home', 'shop', 'profile'];
 (function screenSwipe() {
     const app = document.querySelector('.app-container');
     let g = null;
