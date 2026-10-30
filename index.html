@@ -69,7 +69,6 @@
 			<button class="icon-btn" id="btn-shop" onclick="switchTab('shop')" title="חנות הסקינים">
 				<svg viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
 			</button>
-			<div class="coin-chip" onclick="switchTab('shop')" title="קבב קוינס">🪙 <span class="coin-balance">0</span></div>
 	</div>
 	
     <div id="screen-home" class="screen">
@@ -228,7 +227,10 @@
     </div>
 
     <div id="screen-profile" class="screen active">
-        <h2 style="font-weight: 400; text-align: center; margin-bottom: 12px; font-size: 1.1rem;">פרופיל שחקן</h2>
+        <div class="prof-head">
+            <h2 style="font-weight: 400; margin: 0; font-size: 1.1rem;">פרופיל שחקן</h2>
+            <div class="coin-chip" onclick="switchTab('shop')" title="קבב קוינס">🪙 <span class="coin-balance">0</span></div>
+        </div>
 
         <div id="account-box" class="account-box"></div>
         

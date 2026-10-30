@@ -222,6 +222,13 @@ function renderXpCard() {
         gift.onclick = e => { e.stopPropagation(); xpCelebrate(); };
         card.appendChild(gift);
     }
+    // יתרת המטבעות (לחיצה - לחנות)
+    const coins = xpEl('div', 'coin-chip xp-card-coins');
+    coins.title = 'קבב קוינס';
+    coins.appendChild(document.createTextNode('🪙 '));
+    coins.appendChild(xpEl('span', 'coin-balance', typeof formatCoins === 'function' ? formatCoins(getCoins()) : String(getCoins())));
+    coins.onclick = e => { e.stopPropagation(); switchTab('shop'); };
+    card.appendChild(coins);
 }
 // תמונת הסקין במסגרת, עם תג הרמה בפינה
 function xpAvatar(skinId, frame, lvl, size) {

@@ -100,9 +100,11 @@ function claimCoins() {
 function flyCoins(fromEl, amount) {
     const before = getCoins();
     store.set(COIN_KEY, before + amount);             // נשמר מיד; התצוגה מתעדכנת עם כל מטבע שמגיע
-    const chip = document.querySelector('.top-bar .coin-chip');
+    // היתרה שעל המסך (בבית / בפרופיל / בחנות). במסך בלי יתרה - המטבעות עפים לכפתור הבית
+    const chip = [...document.querySelectorAll('.screen.active .coin-chip')].find(e => e.offsetParent !== null) || null;
+    const target = chip || document.getElementById('btn-home');
     const from = fromEl.getBoundingClientRect();
-    const to = chip ? chip.getBoundingClientRect() : { left: 20, top: 20, width: 40, height: 30 };
+    const to = target ? target.getBoundingClientRect() : { left: 20, top: 20, width: 40, height: 30 };
     const x0 = from.left + from.width / 2, y0 = from.top + from.height / 2;
     const x1 = to.left + to.width / 2, y1 = to.top + to.height / 2;
 
