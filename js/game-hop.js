@@ -24,7 +24,6 @@ const HP_THEMES = [
 ];
 
 let hp = null, hpRaf = 0, hpCtx = null, hpPx = 1;
-const hpSprites = {};
 const hpRand = (a, b) => a + Math.random() * (b - a);
 const hpClamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const hpLerp = (a, b, t) => a + (b - a) * t;
@@ -377,41 +376,85 @@ function hpHud() {
 }
 
 /* ---------- ציור ---------- */
-// הסקין של השחקן כספרייט (כמו בשליח הקבבים)
-function hpSprite(skinId) {
-    const k = 0.16 * hpPx, key = skinId + '|' + Math.round(k * 1000);
-    if (hpSprites[key]) return hpSprites[key];
-    const cv = document.createElement('canvas');
-    cv.width = Math.max(1, Math.ceil(460 * k)); cv.height = Math.max(1, Math.ceil(720 * k));
-    const c = cv.getContext('2d');
-    c.translate(230 * k, 350 * k); c.scale(k, k);
-    const sk = skinById(skinId);
-    const st = { x: 0, y: 0, hw: 44, ry: 12, chew: 0, t: 1.3, tx: 0, ty: 900, surprised: false, mx: 0, my: 0 };
-    try {
-        if (sk.kind === 'cone') { const saved = sv; sv = { mouth: { x: 0, y: 0, hw: 44, chew: 0 }, ball: null, t: 1.3, aim: null }; svDrawBody(c); svDrawMouthBack(c); svDrawLowerLip(c); sv = saved; }
-        else { skDrawHumanBack(c, sk, st); skMouthBack(c, sk, st); skDrawHumanFront(c, sk, st); skMouthFront(c, sk, st); }
-    } catch (e) { console.error('hpSprite', skinId, e); }
-    hpSprites[key] = cv;
-    return cv;
+/* ---------- הדמות: הסקין עם גוף מלא, בפרופורציות של הקוף מהמשחק המקורי ----------
+   הראש הוא הראש האמיתי של הסקין (שיער, כובעים, משקפיים...) עם פה קטן, ומתחתיו גוף, ידיים ורגליים
+   בצבעים של הסקין. הצבעים נדגמים מציור מלא של הסקין, כך שזה עובד גם לסקינים המיוחדים שמצוירים בדרך משלהם.
+   שוורץ הקלאסי (חרוט) - החרוט הוא הגוף, עם ידיים ורגליים. */
+const HP_MS = 0.95;                  // גודל הדמות ביחס לקוף המקורי (ראש ברדיוס 15.5, גוף 14.5x16)
+const HP_OUT = '#2a160c';
+const hpModels = {};
+function hpRenderSkin(c, sk, small) {
+    const st = { x: 0, y: 0, hw: small ? 30 : 44, ry: small ? 8 : 12, chew: 0, t: 1.3, tx: 0, ty: 900, surprised: false, mx: 0, my: 0 };
+    if (sk.kind === 'cone') { const saved = sv; sv = { mouth: { x: 0, y: 0, hw: small ? 34 : 44, chew: 0 }, ball: null, t: 1.3, aim: null }; svDrawBody(c); svDrawMouthBack(c); svDrawLowerLip(c); sv = saved; }
+    else { skDrawHumanBack(c, sk, st); skMouthBack(c, sk, st); skDrawHumanFront(c, sk, st); skMouthFront(c, sk, st); }
+}
+function hpModel(skinId) {
+    const key = skinId + '|' + hpPx;
+    if (hpModels[key]) return hpModels[key];
+    const sk = skinById(skinId), cone = sk.kind === 'cone';
+    // צבעים: ציור מלא של הסקין ודגימה של הצוואר (גוון עור) והחולצה
+    const full = document.createElement('canvas'); full.width = 320; full.height = 580;
+    const fc = full.getContext('2d'); fc.translate(160, 220);
+    try { hpRenderSkin(fc, sk, false); } catch (e) { /* ignore */ }
+    const px = (x, y, fb) => {
+        try {
+            const d = fc.getImageData(160 + x, 220 + y, 1, 1).data;
+            return d[3] > 120 ? '#' + [d[0], d[1], d[2]].map(v => v.toString(16).padStart(2, '0')).join('') : fb;
+        } catch (e) { return fb; }
+    };
+    const tone = cone ? '#e8b07a' : (sk.tone || px(0, 72, '#e0a878'));
+    const body = cone ? '#c46a2a' : ((sk.outfit && sk.outfit.base) || px(-62, 170, '#3b6fd4'));
+    // הראש עד הסנטר (לחרוט - כל החרוט בלי המוט)
+    const k = cone ? 58 / 252 : 15.5 / 91;
+    const box = cone ? { x0: -110, x1: 110, y0: -125, y1: 136 } : { x0: -180, x1: 180, y0: -240, y1: 62 };
+    const r = k * HP_MS * hpPx;
+    const head = document.createElement('canvas');
+    head.width = Math.max(1, Math.ceil((box.x1 - box.x0) * r)); head.height = Math.max(1, Math.ceil((box.y1 - box.y0) * r));
+    const hc = head.getContext('2d');
+    hc.scale(r, r); hc.translate(-box.x0, -box.y0);
+    hc.beginPath(); hc.rect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0); hc.clip();
+    try { hpRenderSkin(hc, sk, true); } catch (e) { console.error('hpModel', skinId, e); }
+    // איפה נקודת הפה של הציור יושבת על הדמות: ראש אדם במרכז (0,-47), חרוט מ-(-66) עד (-8)
+    const oy = cone ? -8 - 136 * k : -47 + 34 * k;
+    return (hpModels[key] = { head, box, k, oy, cone, tone, body, pants: skShade(body, -0.45), belly: skShade(body, 0.2) });
 }
 function hpDrawPlayer(c) {
     const P = hp.P;
     if (hp.dead && P.y - hp.camY > HP_H + 60) return;
+    const M = hpModel(hp.skin);
     c.save();
     c.translate(P.x, P.y);
     const stretch = hpClamp(Math.abs(P.vy) / 2000, 0, 0.2), sq = P.sq > 0 ? Math.sin(P.sq * Math.PI * 0.5) : 0;
     let sx = 1 - stretch * 0.5 + sq * 0.22, sy = 1 + stretch - sq * 0.26;
     if (hp.dead) { c.translate(0, -24); c.rotate(P.rot); c.translate(0, 24); sx = sy = 1; }
-    else c.rotate(hpClamp(P.vx / HP_MOVE, -1, 1) * 0.12);
-    c.scale(sx, sy);
-    const sk = skinById(hp.skin), cone = sk.kind === 'cone';
-    const rising = P.vy < 0, tuck = rising && !cone ? 3 : 0;
-    if (!cone) {                                                  // רגליים (לשוורץ הקלאסי יש מוט שיפוד - כמו מקל פוגו)
-        c.fillStyle = '#2a160c';
-        c.beginPath(); c.ellipse(-9, -3 - tuck, 7, 4.5, -0.2, 0, 7); c.ellipse(9, -3 - tuck, 7, 4.5, 0.2, 0, 7); c.fill();
+    else c.rotate(hpClamp(P.vx / HP_MOVE, -1, 1) * 0.1);
+    c.scale(sx * HP_MS, sy * HP_MS);
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    const fo = () => { c.fill(); c.strokeStyle = HP_OUT; c.lineWidth = 2.4; c.stroke(); };
+    const rising = hpClamp(-P.vy / 400, -1, 1);                  // 1 = עולה, -1 = נופל
+    // רגליים (מקופלות בעלייה)
+    const tuck = rising > 0 ? 0.7 : 1;
+    c.fillStyle = M.pants;
+    c.beginPath(); c.ellipse(-8, -6 * tuck - 1, 7, 6 * tuck + 1, 0, 0, 7); c.ellipse(9, -6 * tuck - 1, 7, 6 * tuck + 1, 0, 0, 7); fo();
+    c.fillStyle = '#1c1008';
+    c.beginPath(); c.ellipse(-9, -2.5, 6, 3.2, 0, 0, 7); c.ellipse(10, -2.5, 6, 3.2, 0, 0, 7); c.fill();
+    // גוף (לחרוט - החרוט עצמו הוא הגוף)
+    if (!M.cone) {
+        c.fillStyle = M.body; c.beginPath(); c.ellipse(0, -23, 14.5, 16, 0, 0, 7); fo();
+        c.fillStyle = M.belly; c.beginPath(); c.ellipse(1, -20, 8, 10, 0, 0, 7); c.fill();
     }
-    const sp = hpSprite(hp.skin), w = sp.width / hpPx, h = sp.height / hpPx;
-    c.drawImage(sp, -w / 2, -h + (cone ? 8 : 2) - tuck, w, h);
+    // ידיים - למעלה בקפיצה, לצדדים בנפילה
+    const ang = hpLerp(0.2, -0.95, (rising + 1) / 2), sh = M.cone ? 11 : 12;
+    for (const side of [-1, 1]) {
+        c.save(); c.translate(side * sh, -31); c.rotate(side * (Math.PI / 2 - ang) + Math.PI);
+        c.strokeStyle = HP_OUT; c.lineWidth = 10.5; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 15); c.stroke();
+        c.strokeStyle = M.cone ? '#c46a2a' : M.body; c.lineWidth = 6; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 15); c.stroke();
+        c.fillStyle = M.tone; c.beginPath(); c.arc(0, 16, 4.4, 0, 7); fo();
+        c.restore();
+    }
+    // הראש של הסקין
+    const hw = M.head.width / (hpPx * HP_MS), hh = M.head.height / (hpPx * HP_MS);
+    c.drawImage(M.head, M.box.x0 * M.k, M.oy + M.box.y0 * M.k, hw, hh);
     c.restore();
 }
 
