@@ -1,6 +1,7 @@
 /* ---------- שליטה במשחקים ----------
    לכל משחק נקודות שליטה משלו, שמצטברות מכל משחק שמסתיים: 100 נקודות על "משחק מעולה" (הניקוד הטוב של אותו משחק),
-   ולכל היותר 200 למשחק. הדרגות: ארד 300, כסף 1,000, זהב 3,000, יהלום 7,500, מאסטר 15,000.
+   ולכל היותר 200 למשחק. הדרגות: ארד 150, כסף 500, זהב 1,500, יהלום 3,500, מאסטר 7,000
+   (פעם היו כפולות - מי שכבר עבר את הסף החדש מקבל את הדרגות והפרסים בכניסה הבאה).
    כל דרגה נותנת מטבעות, ומזהב ומעלה - מראה מיוחד בתוך המשחק (אפשר לכבות או לבחור דרגה נמוכה יותר בפרופיל).
    מאסטר בכל המשחקים פותח את התואר "אדון הקבביה" ואת מסגרת המאסטר. שחקנים ותיקים מתחילים מאפס. */
 
@@ -17,11 +18,11 @@ const MST_GAMES = [
 ];
 const MST_RANKS = [
     { pts: 0,     name: 'מתחיל', coins: 0 },
-    { pts: 300,   name: 'ארד',   coins: 100 },
-    { pts: 1000,  name: 'כסף',   coins: 200 },
-    { pts: 3000,  name: 'זהב',   coins: 400 },
-    { pts: 7500,  name: 'יהלום', coins: 700 },
-    { pts: 15000, name: 'מאסטר', coins: 1200 }
+    { pts: 150,   name: 'ארד',   coins: 100 },
+    { pts: 500,   name: 'כסף',   coins: 200 },
+    { pts: 1500,  name: 'זהב',   coins: 400 },
+    { pts: 3500,  name: 'יהלום', coins: 700 },
+    { pts: 7000,  name: 'מאסטר', coins: 1200 }
 ];
 const MST_COS_FROM = 3;              // מזהב ומעלה יש מראה במשחק
 const MST_TITLE = 'אדון הקבביה', MST_FRAME = 'master';
@@ -40,9 +41,9 @@ function mstState() {
         if (c === 0 || (Number.isInteger(c) && c >= MST_COS_FROM && c <= 5)) cos[k] = c;
     });
     const pending = Array.isArray(st.pending) ? st.pending.filter(x => typeof x === 'string' && /^[a-z]+:[1-5]$/.test(x) && mstGame(x.split(':')[0])) : [];
-    return { pts, cos, pending };
+    return { pts, cos, pending, v: st.v || 1 };
 }
-function mstSave(st) { store.set(MST_KEY, JSON.stringify({ pts: st.pts, cos: st.cos, pending: st.pending })); }
+function mstSave(st) { store.set(MST_KEY, JSON.stringify({ pts: st.pts, cos: st.cos, pending: st.pending, v: st.v || 1 })); }
 
 function mstRankOf(pts) { let r = 0; MST_RANKS.forEach((x, i) => { if (pts >= x.pts) r = i; }); return r; }
 function mstRank(k) { return mstRankOf(mstState().pts[k] || 0); }
@@ -307,5 +308,20 @@ const MST_SPARK = ['#ffffff', '#bdf0ff', '#7fdcff'];
 const MST_FIRE = ['#ffd23d', '#ff8a1a', '#ff4d1a'];
 const MST_GOLD = ['#fff3b0', '#ffd23d', '#ffb020'];
 
+// הספים ירדו בחצי: מי שכבר עבר סף חדש מקבל עכשיו את הדרגות (עם החגיגה והמטבעות) - פעם אחת
+(function mstCatchUp() {
+    const st = mstState();
+    if (st.v >= 2) return;
+    const OLD = [0, 300, 1000, 3000, 7500, 15000];
+    const oldRank = p => { let r = 0; OLD.forEach((x, i) => { if (p >= x) r = i; }); return r; };
+    MST_GAMES.forEach(g => {
+        for (let r = oldRank(st.pts[g.k]) + 1; r <= mstRankOf(st.pts[g.k]); r++) {
+            const key = g.k + ':' + r;
+            if (!st.pending.includes(key)) st.pending.push(key);
+        }
+    });
+    st.v = 2;
+    mstSave(st);
+})();
 renderMstProfile();
 mstCelebrateSoon(2500);              // דרגות שלא נאספו (למשל האפליקציה נסגרה באמצע)

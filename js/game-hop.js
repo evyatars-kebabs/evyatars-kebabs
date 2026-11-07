@@ -22,7 +22,10 @@ const HP_TUT_KEY = 'kebab_hop_tut';
 const HP_THEMES = [
     { id: 'kitchen', name: '🔥 הקבביה' },
     { id: 'cash',    name: '💰 הכספת' },
-    { id: 'night',   name: '🌙 לילה בעיר' }
+    { id: 'night',   name: '🌙 לילה בעיר' },
+    { id: 'desert',  name: '🐪 מדבר הפלאפל' },
+    { id: 'tahini',  name: '🥣 שמי הטחינה' },
+    { id: 'space',   name: '🚀 קבב בחלל' }
 ];
 
 let hp = null, hpRaf = 0, hpCtx = null, hpPx = 1;
@@ -365,7 +368,8 @@ function hpBreak(p) {
                    { x: p.x + hw, y: p.y, w: hw, side: 'R', theme: p.theme, vx: hpRand(45, 100), vy: -hpRand(130, 240), rot: 0, vr: hpRand(1.5, 4), seed: p.seed + 7 });
     hpBurst(10, p.x + p.w / 2, p.y + 5, { a0: Math.PI * 1.1, a1: Math.PI * 1.9, s0: 90, s1: 280, l0: .4, l1: .8, z0: 2, z1: 5, col: HP_CRUMBS[p.theme], type: 'rect', g: 800 });
 }
-const HP_CRUMBS = [['#e9c98a', '#c99a55', '#f5deb0'], ['#9be3a8', '#4caf6a', '#e8ffe8'], ['#c9a074', '#8a6236', '#e3c9a0']];
+const HP_CRUMBS = [['#e9c98a', '#c99a55', '#f5deb0'], ['#9be3a8', '#4caf6a', '#e8ffe8'], ['#c9a074', '#8a6236', '#e3c9a0'],
+                   ['#f0d9a0', '#d9b46a', '#fff1c8'], ['#8fc85a', '#5a9a2a', '#d8f0a0'], ['#cfe8ff', '#8ab8e8', '#ffffff']];
 
 // נחיתה עם מראה מדרגת השליטה: קרח - רסיסי קרח, קשת - פרץ כוכבים צבעוני
 function hpCosLand(x, y) {
@@ -559,7 +563,7 @@ function hpBgTheme(c, th, a) {
             c.fillStyle = '#7fd08a'; c.fillRect(-16, -8, 32, 16); c.fillStyle = '#3d8f4d'; c.beginPath(); c.ellipse(0, 0, 6, 5, 0, 0, 7); c.fill();
             c.restore();
         }
-    } else {                                                              // לילה בעיר: כוכבים, ירח, קו רקיע ושלט ניאון "קבב"
+    } else if (th === 2) {                                                // לילה בעיר: כוכבים, ירח, קו רקיע ושלט ניאון "קבב"
         const g = c.createLinearGradient(0, 0, 0, HP_H); g.addColorStop(0, '#0a0f2e'); g.addColorStop(1, '#2a1450');
         c.fillStyle = g; c.fillRect(0, 0, HP_W, HP_H);
         for (let i = 0; i < 40; i++) {
@@ -579,6 +583,58 @@ function hpBgTheme(c, th, a) {
         c.font = 'bold 34px "Secular One", Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.direction = 'rtl';
         c.shadowColor = on ? '#ff3fd1' : 'transparent'; c.shadowBlur = on ? 18 : 0;
         c.fillStyle = on ? '#ff8ae0' : '#5a2a50'; c.fillText('קבב', 0, 2);
+        c.restore();
+    } else if (th === 3) {                                                // מדבר הפלאפל: שקיעה, דיונות, שמש-פלאפל ודקלים
+        const g = c.createLinearGradient(0, 0, 0, HP_H); g.addColorStop(0, '#ff9a4a'); g.addColorStop(0.55, '#ffc878'); g.addColorStop(1, '#e8a050');
+        c.fillStyle = g; c.fillRect(0, 0, HP_W, HP_H);
+        const sy = 150 + ((-cam * 0.05) % 600 + 600) % 600 - 200;
+        c.save(); c.translate(HP_W * 0.3, sy);                            // השמש היא כדור פלאפל ענק
+        const sg = c.createRadialGradient(-12, -12, 6, 0, 0, 52); sg.addColorStop(0, '#d9963a'); sg.addColorStop(1, '#7a4214');
+        c.globalAlpha = a * 0.75; c.fillStyle = sg; c.beginPath(); c.arc(0, 0, 50, 0, 7); c.fill();
+        c.fillStyle = '#4f9a2a'; for (let i = 0; i < 9; i++) { const an = i * 2.3 + 0.4, r = 12 + (i * 7) % 30; c.beginPath(); c.arc(Math.cos(an) * r, Math.sin(an) * r, 3, 0, 7); c.fill(); }
+        c.restore(); c.globalAlpha = a;
+        const dune = (yb, col, par, amp) => {
+            const off = ((-cam * par) % 600 + 600) % 600;
+            c.fillStyle = col; c.beginPath(); c.moveTo(0, HP_H);
+            for (let x = 0; x <= HP_W; x += 12) c.lineTo(x, yb + off * 0.05 + Math.sin(x / 70 + par * 10) * amp);
+            c.lineTo(HP_W, HP_H); c.closePath(); c.fill();
+        };
+        dune(HP_H * 0.62, 'rgba(214,140,70,0.75)', 0.06, 22); dune(HP_H * 0.75, 'rgba(190,110,50,0.85)', 0.1, 16);
+        c.fillStyle = 'rgba(90,45,15,0.55)';                              // דקלים
+        for (const [px, ph] of [[60, 120], [290, 150]]) {
+            const by = HP_H * 0.7;
+            c.fillRect(px - 3, by - ph, 6, ph);
+            for (let i = 0; i < 6; i++) { c.save(); c.translate(px, by - ph); c.rotate(-Math.PI / 2 + (i - 2.5) * 0.5); c.beginPath(); c.ellipse(0, -22, 6, 24, 0, 0, 7); c.fill(); c.restore(); }
+        }
+    } else if (th === 4) {                                                // שמי הטחינה: מערבולות שמנת ובועות
+        const g = c.createLinearGradient(0, 0, 0, HP_H); g.addColorStop(0, '#f3e6c8'); g.addColorStop(1, '#d9c49a');
+        c.fillStyle = g; c.fillRect(0, 0, HP_W, HP_H);
+        const off = ((-cam * 0.2) % 120 + 120) % 120;
+        c.strokeStyle = 'rgba(160,120,60,0.16)'; c.lineWidth = 10;
+        for (let y = off - 120; y < HP_H + 60; y += 60) { c.beginPath(); for (let x = -20; x <= HP_W + 20; x += 20) c.lineTo(x, y + Math.sin(x / 40 + t * 0.8 + y) * 10); c.stroke(); }
+        for (let i = 0; i < 14; i++) {                                    // בועות
+            const x = (i * 67 + Math.sin(t + i) * 12) % HP_W, y = ((HP_H - (t * 22 + i * 61) % (HP_H + 40)) - cam * 0.02 % HP_H + HP_H) % HP_H;
+            c.strokeStyle = 'rgba(255,255,255,0.7)'; c.lineWidth = 1.5; c.beginPath(); c.arc(x, y, 4 + (i % 4) * 2, 0, 7); c.stroke();
+        }
+        c.fillStyle = 'rgba(200,60,20,0.18)';                             // פפריקה
+        for (let i = 0; i < 30; i++) { const x = (i * 41) % HP_W, y = ((i * 89 - cam * 0.15) % HP_H + HP_H) % HP_H; c.fillRect(x, y, 2.5, 2.5); }
+    } else {                                                              // קבב בחלל: כוכבים, כוכבי לכת ולוויין בצורת שיפוד
+        const g = c.createLinearGradient(0, 0, 0, HP_H); g.addColorStop(0, '#050414'); g.addColorStop(1, '#14082e');
+        c.fillStyle = g; c.fillRect(0, 0, HP_W, HP_H);
+        for (let i = 0; i < 70; i++) {
+            const x = (i * 37) % HP_W, y = ((i * 113 - cam * (0.03 + (i % 3) * 0.03)) % HP_H + HP_H) % HP_H;
+            c.globalAlpha = a * (0.35 + 0.45 * Math.abs(Math.sin(t * 1.5 + i)));
+            c.fillStyle = '#fff'; c.fillRect(x, y, 1.4 + (i % 3) * 0.5, 1.4 + (i % 3) * 0.5);
+        }
+        c.globalAlpha = a;
+        const py = 200 + ((-cam * 0.05) % 700 + 700) % 700 - 250;
+        const pg = c.createRadialGradient(HP_W * 0.75 - 15, py - 15, 6, HP_W * 0.75, py, 46); pg.addColorStop(0, '#ff9a6a'); pg.addColorStop(1, '#8a2a5a');
+        c.fillStyle = pg; c.beginPath(); c.arc(HP_W * 0.75, py, 44, 0, 7); c.fill();
+        c.strokeStyle = 'rgba(255,220,180,0.55)'; c.lineWidth = 4; c.beginPath(); c.ellipse(HP_W * 0.75, py, 70, 14, -0.3, 0, 7); c.stroke();
+        c.save(); c.translate(80 + Math.sin(t * 0.4) * 20, 120 + ((-cam * 0.09) % 500 + 500) % 500 - 100); c.rotate(t * 0.3);     // לוויין-שיפוד
+        c.strokeStyle = '#c9d1d9'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(-40, 0); c.lineTo(40, 0); c.stroke();
+        for (const [cx, col] of [[-24, '#8a4a1e'], [-8, '#e8402a'], [8, '#8a4a1e'], [24, '#3fa33a']]) { c.fillStyle = col; c.fillRect(cx - 6, -6, 12, 12); }
+        c.fillStyle = '#4a7ad0'; c.fillRect(-58, -8, 14, 16); c.fillRect(44, -8, 14, 16);
         c.restore();
     }
     c.restore();
@@ -661,6 +717,62 @@ function hpPlatBody(c, th, type, x, y, w, h, seed, cracking) {
             c.fillStyle = 'rgba(255,255,255,0.35)'; c.beginPath(); c.ellipse(x + w * 0.25, y + h / 2 - 1, 5, 4, 0, 0, 7); c.fill();
             c.fillStyle = '#ffd23d'; c.fillRect(x + w / 2 - 6, y - 1, 12, h);
             c.fillStyle = '#8a5a00'; c.font = 'bold 9px Rubik, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('₪', x + w / 2, y + h / 2 - 1);
+        }
+    } else if (th === 3) {
+        if (type === 'breakable') {                                       // מצה
+            c.fillStyle = '#f0d9a0'; hpRR(c, x, y + 2, w, h - 3, 2); c.fill();
+            c.strokeStyle = '#b8894a'; c.lineWidth = 1.5; hpRR(c, x, y + 2, w, h - 3, 2); c.stroke();
+            c.fillStyle = '#c99a55'; for (let gx = x + 5; gx < x + w - 3; gx += 6) for (const gy of [y + 6, y + 11]) c.fillRect(gx, gy, 1.5, 1.5);
+        } else if (type === 'moving') {                                   // שטיח מעופף
+            const wave = Math.sin(hp.t * 6 + seed) * 2;
+            c.fillStyle = '#b8233a'; c.beginPath(); c.moveTo(x, y + 4 + wave); c.quadraticCurveTo(x + w / 2, y + 2 - wave, x + w, y + 4 + wave);
+            c.lineTo(x + w, y + h - 3 + wave); c.quadraticCurveTo(x + w / 2, y + h - 5 - wave, x, y + h - 3 + wave); c.closePath(); c.fill();
+            c.strokeStyle = '#ffd23d'; c.lineWidth = 2; c.stroke();
+            hpArrows(c, x, y + 1, w, 'rgba(255,210,60,0.85)');
+        } else {                                                          // שורת כדורי פלאפל
+            const n = Math.max(3, Math.floor(w / 15)), r = w / n / 2;
+            for (let i = 0; i < n; i++) {
+                const cx = x + r + i * r * 2, cy = y + h / 2;
+                const fg = c.createRadialGradient(cx - 2, cy - 2, 1, cx, cy, r); fg.addColorStop(0, '#d9963a'); fg.addColorStop(1, '#7a4214');
+                c.fillStyle = fg; c.beginPath(); c.arc(cx, cy, r, 0, 7); c.fill();
+                c.strokeStyle = 'rgba(50,20,5,0.6)'; c.lineWidth = 1.2; c.stroke();
+                c.fillStyle = '#4f9a2a'; c.beginPath(); c.arc(cx + 1, cy - 2, 1.4, 0, 7); c.fill();
+            }
+        }
+    } else if (th === 4) {
+        if (type === 'breakable') {                                       // פרוסת מלפפון חמוץ
+            c.fillStyle = '#7ab83a'; hpRR(c, x, y + 1, w, h - 2, h / 2); c.fill();
+            c.fillStyle = '#c8e890'; hpRR(c, x + 3, y + 4, w - 6, h - 8, h / 2); c.fill();
+            c.fillStyle = '#5a9a2a'; for (let i = 0; i < w / 10; i++) { c.beginPath(); c.arc(x + 7 + i * 10, y + h / 2, 1.5, 0, 7); c.fill(); }
+            c.strokeStyle = '#3f6e1a'; c.lineWidth = 1.5; hpRR(c, x, y + 1, w, h - 2, h / 2); c.stroke();
+        } else if (type === 'moving') {                                   // סירת פיתה
+            c.fillStyle = '#e9c98a'; c.beginPath(); c.moveTo(x, y + 2); c.quadraticCurveTo(x + w / 2, y + h + 6, x + w, y + 2); c.closePath(); c.fill();
+            c.strokeStyle = '#9a6a30'; c.lineWidth = 2; c.stroke();
+            hpArrows(c, x, y - 1, w, 'rgba(120,70,20,0.7)');
+        } else {                                                          // צלחת חומוס עם שמן זית ופפריקה
+            c.fillStyle = '#fbfbf6'; c.beginPath(); c.ellipse(x + w / 2, y + h / 2 + 1, w / 2, h / 2 + 1, 0, 0, 7); c.fill();
+            c.strokeStyle = '#a9a59a'; c.lineWidth = 1.5; c.stroke();
+            c.fillStyle = '#e8d2a0'; c.beginPath(); c.ellipse(x + w / 2, y + h / 2, w / 2 - 6, h / 2 - 3, 0, 0, 7); c.fill();
+            c.fillStyle = 'rgba(200,170,40,0.8)'; c.beginPath(); c.ellipse(x + w / 2, y + h / 2, w / 5, 2.5, 0, 0, 7); c.fill();
+            c.fillStyle = '#c83a14'; for (const dx of [-0.25, 0.1, 0.3]) c.fillRect(x + w / 2 + dx * w - 1, y + h / 2 - 3, 2.5, 2.5);
+        }
+    } else if (th === 5) {
+        if (type === 'breakable') {                                       // שביט קרח
+            c.fillStyle = 'rgba(160,210,255,0.35)'; c.beginPath(); c.moveTo(x + w, y + h / 2); c.lineTo(x + w + 22, y + 2); c.lineTo(x + w + 22, y + h - 2); c.closePath(); c.fill();
+            c.fillStyle = '#dff1ff'; hpRR(c, x, y + 1, w, h - 2, 5); c.fill();
+            c.strokeStyle = '#8ab8e8'; c.lineWidth = 2; hpRR(c, x, y + 1, w, h - 2, 5); c.stroke();
+        } else if (type === 'moving') {                                   // צלחת מעופפת
+            c.fillStyle = 'rgba(140,255,200,0.6)'; c.beginPath(); c.ellipse(x + w / 2, y + 2, w / 5, 7, 0, Math.PI, 0); c.fill();
+            const ug = c.createLinearGradient(0, y, 0, y + h); ug.addColorStop(0, '#d8dee8'); ug.addColorStop(1, '#6a7484');
+            c.fillStyle = ug; c.beginPath(); c.ellipse(x + w / 2, y + h / 2, w / 2, h / 2 - 1, 0, 0, 7); c.fill();
+            c.strokeStyle = '#3a4250'; c.lineWidth = 1.5; c.stroke();
+            for (let i = 0; i < 5; i++) { c.fillStyle = Math.sin(hp.t * 8 + i) > 0 ? '#ffe066' : '#ff5ad1'; c.beginPath(); c.arc(x + w * (0.15 + i * 0.175), y + h / 2 + 1, 1.8, 0, 7); c.fill(); }
+        } else {                                                          // אסטרואיד
+            c.fillStyle = '#6a6070'; c.beginPath(); c.moveTo(x + 4, y + 2);
+            for (let i = 0; i <= 8; i++) c.lineTo(x + w * i / 8, y + 1 + ((seed * 3 + i * 7) % 4));
+            c.lineTo(x + w - 2, y + h - 3); c.quadraticCurveTo(x + w / 2, y + h + 2, x + 2, y + h - 3); c.closePath(); c.fill();
+            c.strokeStyle = '#2a2430'; c.lineWidth = 1.8; c.stroke();
+            c.fillStyle = '#4a4252'; for (const dx of [0.2, 0.55, 0.8]) { c.beginPath(); c.arc(x + w * dx, y + h / 2, 2.6, 0, 7); c.fill(); }
         }
     } else {
         if (type === 'breakable') {                                       // קופסת קרטון
