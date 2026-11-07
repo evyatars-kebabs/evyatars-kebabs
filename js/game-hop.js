@@ -166,7 +166,58 @@ function hpGenRows() {
 }
 
 /* ---------- שליטה ---------- */
+/* ---------- מצבי שליטה: לחיצה בצדדים / הטיית הטלפון / גרירה ---------- */
+const HP_CTRL_KEY = 'kebab_hop_ctrl';
+const HP_CTRLS = [
+    { id: 'touch', ic: '👆', name: 'לחיצה בצדדים', desc: 'החזיקו את צד ימין או שמאל של המסך' },
+    { id: 'tilt',  ic: '📱', name: 'הטיית הטלפון', desc: 'הטו את הטלפון ימינה ושמאלה' },
+    { id: 'drag',  ic: '✋', name: 'גרירה',        desc: 'הדמות נמצאת בדיוק מתחת לאצבע' }
+];
+let hpCtrl = HP_CTRLS.some(c => c.id === store.get(HP_CTRL_KEY)) ? store.get(HP_CTRL_KEY) : 'touch';
+let hpTilt = 0;                       // הטיה ימינה/שמאלה במעלות
+window.addEventListener('deviceorientation', e => {
+    if (e.gamma == null) return;
+    const ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0;     // גם כשהמסך מסובב
+    hpTilt = ang === 90 ? e.beta : ang === -90 || ang === 270 ? -e.beta : ang === 180 ? -e.gamma : e.gamma;
+});
+// באייפון צריך אישור להטיה - מבקשים כשבוחרים במצב
+function hpTiltPermission() {
+    const D = window.DeviceOrientationEvent;
+    if (D && typeof D.requestPermission === 'function') return D.requestPermission().then(r => r === 'granted').catch(() => false);
+    return Promise.resolve(!!D);
+}
+function hpSetCtrl(id) {
+    const done = ok => {
+        if (!ok) { showToast('אין גישה לחיישן ההטיה בטלפון הזה'); return; }
+        hpCtrl = id; store.set(HP_CTRL_KEY, id);
+        if (hp) { hp.ptrs.clear(); hp.dragX = null; hp.hint = 3; }
+        sfx.tap(); hpMenu(false);
+    };
+    if (id === 'tilt') hpTiltPermission().then(done); else done(true);
+}
+function hpMenu(open) {
+    let m = document.getElementById('hp-menu');
+    if (!open) { if (m) m.remove(); if (hp) { hp.menu = false; hp.last = performance.now(); } return; }
+    if (m) return;
+    if (hp) { hp.menu = true; hp.ptrs.clear(); }
+    m = document.createElement('div'); m.id = 'hp-menu'; m.className = 'hp-menu';
+    const card = document.createElement('div'); card.className = 'hp-menu-card';
+    const h = document.createElement('b'); h.textContent = '⚙️ שליטה'; card.appendChild(h);
+    HP_CTRLS.forEach(c => {
+        const b = document.createElement('button'); b.className = 'hp-ctrl' + (c.id === hpCtrl ? ' on' : '');
+        b.innerHTML = '<span></span><div><b></b><small></small></div>';
+        b.querySelector('span').textContent = c.ic; b.querySelector('b').textContent = c.name; b.querySelector('small').textContent = c.desc;
+        b.onclick = () => hpSetCtrl(c.id);
+        card.appendChild(b);
+    });
+    const x = document.createElement('button'); x.className = 'hp-menu-x'; x.textContent = 'סגירה'; x.onclick = () => { sfx.tap(); hpMenu(false); };
+    card.appendChild(x);
+    m.appendChild(card);
+    m.addEventListener('click', e => { if (e.target === m) hpMenu(false); });
+    document.getElementById('hop-wrap').appendChild(m);
+}
 function hpAxis() {
+    if (hpCtrl === 'tilt') { const g = hpTilt; return Math.abs(g) < 2.5 ? 0 : hpClamp((g - Math.sign(g) * 2.5) / 18, -1, 1); }
     let a = 0;
     if (hp.keys.ArrowLeft || hp.keys.KeyA) a -= 1;
     if (hp.keys.ArrowRight || hp.keys.KeyD) a += 1;
@@ -177,16 +228,21 @@ function hpAxis() {
     const cv = document.getElementById('hop-canvas');
     if (!cv) return;
     const dir = e => { const r = cv.getBoundingClientRect(); return (e.clientX - r.left) < r.width / 2 ? -1 : 1; };
+    const lx = e => { const r = cv.getBoundingClientRect(); return hpClamp((e.clientX - r.left) / r.width * HP_W, 0, HP_W); };
     cv.addEventListener('pointerdown', e => {
         if (!hp || !hp.running) return;
         e.preventDefault();
         sfx.unlock();
         if (hp.tut >= 0) { hpTutNext(); return; }
         if (hp.paused) { hp.paused = false; hp.last = performance.now(); return; }
-        hp.ptrs.set(e.pointerId, dir(e));
+        if (hpCtrl === 'drag') hp.dragX = lx(e);
+        hp.ptrs.set(e.pointerId, hpCtrl === 'touch' ? dir(e) : 0);
         try { cv.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
     });
-    cv.addEventListener('pointermove', e => { if (hp && hp.ptrs.has(e.pointerId)) hp.ptrs.set(e.pointerId, dir(e)); });
+    cv.addEventListener('pointermove', e => {
+        if (!hp || !hp.ptrs.has(e.pointerId)) return;
+        if (hpCtrl === 'drag') hp.dragX = lx(e); else if (hpCtrl === 'touch') hp.ptrs.set(e.pointerId, dir(e));
+    });
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(n => cv.addEventListener(n, e => { if (hp) hp.ptrs.delete(e.pointerId); }));
     const onHop = () => hp && hp.running && document.getElementById('screen-hop').classList.contains('active');
     window.addEventListener('keydown', e => {
@@ -217,7 +273,7 @@ function hpLoop(ts) {
     if (!hp || !hp.running) return;
     const dt = Math.min(0.033, (ts - hp.last) / 1000);
     hp.last = ts;
-    if (hp.tut < 0 && !hp.paused) hpStep(dt);
+    if (hp.tut < 0 && !hp.paused && !hp.menu) hpStep(dt);
     else hp.t += dt * 0.3;
     hpDraw();
     hpRaf = requestAnimationFrame(hpLoop);
@@ -259,11 +315,17 @@ function hpStep(dt) {
     }
     hp.plats = hp.plats.filter(p => p.state !== 'broken');
     // הדמות
-    const ax = hp.dead ? 0 : hpAxis();
-    P.vx += hpClamp(ax * HP_MOVE - P.vx, -2400 * dt, 2400 * dt);
+    if (hpCtrl === 'drag' && !hp.dead) {                          // גרירה: הדמות בדיוק מתחת לאצבע, בלי השהיה
+        if (hp.dragX != null) { P.vx = (hp.dragX - P.x) / Math.max(dt, 0.001); P.x = hp.dragX; P.vx = hpClamp(P.vx, -HP_MOVE, HP_MOVE); }
+        else P.vx = 0;
+    } else {
+        const ax = hp.dead ? 0 : hpAxis();
+        P.vx += hpClamp(ax * HP_MOVE - P.vx, -2400 * dt, 2400 * dt);
+    }
     P.vy += HP_GRAV * dt;
     const prevY = P.y;
-    P.y += P.vy * dt; P.x += P.vx * dt;
+    P.y += P.vy * dt;
+    if (hpCtrl !== 'drag' || hp.dead) P.x += P.vx * dt;           // בגרירה המיקום כבר נקבע לפי האצבע
     if (!hp.dead) {
         if (P.x < -HP_HIT_W) P.x = HP_W + HP_HIT_W;
         if (P.x > HP_W + HP_HIT_W) P.x = -HP_HIT_W;
@@ -875,7 +937,7 @@ function hpDraw() {
     // תזכורת בתחילת כל ריצה
     if (hp.tut < 0 && hp.hint > 0 && !hp.dead) {
         c.globalAlpha = Math.min(1, hp.hint);
-        hpText(c, '👉 החזיקו צד כדי לזוז 👈', HP_W / 2, HP_H - 40, 16, '#fff');      // בכתיבה מימין לשמאל החצים מתהפכים - כך הם מצביעים החוצה
+        hpText(c, hpCtrl === 'tilt' ? '📱 הטו את הטלפון כדי לזוז' : hpCtrl === 'drag' ? '✋ גררו את האצבע כדי לזוז' : '👉 החזיקו צד כדי לזוז 👈', HP_W / 2, HP_H - 40, 16, '#fff');      // בכתיבה מימין לשמאל החצים מתהפכים - כך הם מצביעים החוצה
         c.globalAlpha = 1;
     }
     if (hp.tut >= 0) hpDrawTut(c);
