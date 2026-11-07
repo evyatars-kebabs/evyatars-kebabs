@@ -274,6 +274,7 @@
 			<button id="sub-btn-ninja" class="sub-tab-btn" onclick="switchLeaderboardTab('ninja')">🥷 נינג'ה</button>
 			<button id="sub-btn-kvk" class="sub-tab-btn" onclick="switchLeaderboardTab('kvk')">🍢 קולסקים</button>
 			<button id="sub-btn-main" class="sub-tab-btn" onclick="switchLeaderboardTab('main')">🍢 תפוס</button>
+			<button id="sub-btn-hop" class="sub-tab-btn" onclick="switchLeaderboardTab('hop')">🦘 ג'אמפ</button>
 			<input id="lb-search" class="lb-search" type="search" maxlength="20" autocomplete="off" placeholder="🔍 חיפוש שחקן לפי שם" oninput="lbSearchChanged()">
 		</div>
 
@@ -302,6 +303,10 @@
 			<ul id="leaderboard-container" class="leaderboard-list"></ul>
 		</div>
 
+		<div id="sub-screen-hop" class="leaderboard-sub-screen" style="display: none;">
+			<ul id="hop-leaderboard-container" class="leaderboard-list"></ul>
+		</div>
+
 		<div id="sub-screen-goods" class="leaderboard-sub-screen" style="display: none;">
 			<ul id="goods-leaderboard-container" class="leaderboard-list"></ul>
 		</div>
@@ -310,7 +315,7 @@
     <div id="screen-hop" class="screen">
         <div class="hud">
             <div class="hud-pill"><small>גובה</small><span id="hp-m">0</span></div>
-            <div class="hud-pill"><small>מטבעות</small><span>🪙 <span id="hp-coins">0</span></span></div>
+            <div class="hud-pill"><small>מטבעות</small><span id="hp-coins">0</span><small>= 🪙 <span id="hp-kc">0</span></small></div>
         </div>
         <div id="hop-wrap"><canvas id="hop-canvas"></canvas></div>
     </div>

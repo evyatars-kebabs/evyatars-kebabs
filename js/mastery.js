@@ -2,7 +2,7 @@
    לכל משחק נקודות שליטה משלו, שמצטברות מכל משחק שמסתיים: 100 נקודות על "משחק מעולה" (הניקוד הטוב של אותו משחק),
    ולכל היותר 200 למשחק. הדרגות: ארד 300, כסף 1,000, זהב 3,000, יהלום 7,500, מאסטר 15,000.
    כל דרגה נותנת מטבעות, ומזהב ומעלה - מראה מיוחד בתוך המשחק (אפשר לכבות או לבחור דרגה נמוכה יותר בפרופיל).
-   מאסטר בכל 7 המשחקים פותח את התואר "אדון הקבביה" ואת מסגרת המאסטר. שחקנים ותיקים מתחילים מאפס. */
+   מאסטר בכל המשחקים פותח את התואר "אדון הקבביה" ואת מסגרת המאסטר. שחקנים ותיקים מתחילים מאפס. */
 
 const MST_KEY = 'kebab_mastery';     // { pts: {משחק: נקודות}, cos: {משחק: דרגת המראה שנבחרה}, pending: ['משחק:דרגה'] } - נשמר גם בחשבון
 const MST_GAMES = [
@@ -12,7 +12,8 @@ const MST_GAMES = [
     { k: 'goods',    name: 'סידור המדפים',       icon: '🥫', col: 'leaderboard_goods',    cos: ['מדפי שיש', 'מדפי קריסטל', 'מדפי ניאון'] },
     { k: 'kvk',      name: 'קבבים מול קולסקים',  icon: '🧟', col: 'leaderboard_kvk',      cos: ['גריל זהב', 'גריל יהלום', 'גריל בוער'] },
     { k: 'catch',    name: 'תפוס את הקבב',       icon: '🍢', col: 'leaderboard',          cos: ['קבב זהב', 'קבב יהלום', 'קבב בוער'] },
-    { k: 'trivia',   name: 'חידון האוכל',         icon: '🧠', col: null,                   cos: ['כרטיס זהב', 'כרטיס יהלום', 'כרטיס קוסמי'] }
+    { k: 'trivia',   name: 'חידון האוכל',         icon: '🧠', col: null,                   cos: ['כרטיס זהב', 'כרטיס יהלום', 'כרטיס קוסמי'] },
+    { k: 'hop',      name: "קבב ג'אמפ",           icon: '🦘', col: 'leaderboard_hop',      cos: ['שובל זהב', 'קפיצות קרח', 'שובל קשת'] }
 ];
 const MST_RANKS = [
     { pts: 0,     name: 'מתחיל', coins: 0 },
@@ -45,9 +46,11 @@ function mstSave(st) { store.set(MST_KEY, JSON.stringify({ pts: st.pts, cos: st.
 
 function mstRankOf(pts) { let r = 0; MST_RANKS.forEach((x, i) => { if (pts >= x.pts) r = i; }); return r; }
 function mstRank(k) { return mstRankOf(mstState().pts[k] || 0); }
-// הדרגות של כל 7 המשחקים כמחרוזת של ספרות (לטבלאות השיאים), למשל "3102500"
+// הדרגות של כל המשחקים כמחרוזת של ספרות (לטבלאות השיאים), למשל "31025000"
 function mstPublic() { const st = mstState(); return MST_GAMES.map(g => mstRankOf(st.pts[g.k])).join(''); }
-const mstOk = s => typeof s === 'string' && /^[0-5]{7}$/.test(s);
+// רשומות ישנות בטבלאות שמורות עם 7 ספרות (לפני קבב ג'אמפ) - משלימים באפסים
+const mstOk = s => typeof s === 'string' && /^[0-5]{7,8}$/.test(s);
+const mstNorm = s => mstOk(s) ? s.padEnd(MST_GAMES.length, '0') : null;
 function mstAllMaster() { const st = mstState(); return MST_GAMES.every(g => mstRankOf(st.pts[g.k]) === 5); }
 // המראה שפעיל עכשיו במשחק: 0 (רגיל) או 3-5. ברירת המחדל - הדרגה הכי גבוהה שנפתחה
 function mstCos(k) {
@@ -260,9 +263,9 @@ function renderMstProfile() {
         box.appendChild(row);
     });
     const masters = MST_GAMES.filter(g => mstRankOf(st.pts[g.k]) === 5).length;
-    const fin = xpEl('div', 'mst-final' + (masters === 7 ? ' done' : ''));
+    const fin = xpEl('div', 'mst-final' + (masters === MST_GAMES.length ? ' done' : ''));
     fin.appendChild(xpAvatar(currentSkinId(), MST_FRAME, 0, 44));
-    fin.appendChild(xpLine('mst-final-txt', [masters === 7 ? '👑 אדון הקבביה! ' : '👑 מאסטר בכל המשחקים: התואר "' + MST_TITLE + '" ומסגרת מאסטר · ', masters + ' / 7']));
+    fin.appendChild(xpLine('mst-final-txt', [masters === MST_GAMES.length ? '👑 אדון הקבביה! ' : '👑 מאסטר בכל המשחקים: התואר "' + MST_TITLE + '" ומסגרת מאסטר · ', masters + ' / ' + MST_GAMES.length]));
     box.appendChild(fin);
 }
 function mstPickCos(k, t) {

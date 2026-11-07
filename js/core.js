@@ -173,7 +173,7 @@ const firebaseConfig = {
     // הסקין, המטבעות, הצוות באירוע, הרמה והשליטה נשמרים ליד השיא. אם הכללים בשרת עוד לא מאפשרים חלק מהם - שומרים בלעדיהם.
     // הסדר: קודם מוותרים על החדשים ביותר
     const LB_OPTIONAL = [['team'], ['mst'], ['lvl', 'title', 'frame'], ['coins']];
-    const lbMst = m => typeof mstOk === 'function' && mstOk(m) ? m : null;
+    const lbMst = m => typeof mstNorm === 'function' ? mstNorm(m) : null;
     const lbTeam = () => (typeof tmntState === 'function' ? tmntState().team : null);
     const lbExtras = () => {
         const d = { skin: currentSkinId(), coins: getCoins() };
@@ -254,9 +254,12 @@ const firebaseConfig = {
     /* --- פרופיל שחקן: השיאים שלו בכל המשחקים --- */
     const PROFILE_BOARDS = [
         ['leaderboard_delivery', '🛵 שליח הקבבים'], ['leaderboard_ninja', '🥷 קבב נינג\'ה'], ['leaderboard_shvartz', '🥙 האכל את השוורץ'],
-        ['leaderboard_goods', '🥫 סידור המדפים'], ['leaderboard_kvk', '🍢 קבבים מול קולסקים'], ['leaderboard', '🍢 תפוס את הקבב']
+        ['leaderboard_goods', '🥫 סידור המדפים'], ['leaderboard_kvk', '🍢 קבבים מול קולסקים'], ['leaderboard', '🍢 תפוס את הקבב'],
+        ['leaderboard_hop', '🦘 קבב ג\'אמפ']
     ];
     const profileCache = {};
+    // יחידת הניקוד בטבלה: בקבב ג'אמפ סופרים מטרים
+    const lbUnit = col => col === 'leaderboard_hop' ? " מ'" : " נק'";
     // המקום בטבלה לשחקן מחוץ לטבלה שנטענה: כמה שחקנים עם ניקוד גבוה יותר (+1).
     // ספירה דרך ה-REST של Firestore (ב-SDK שבשימוש אין ספירה) - עולה קריאה אחת בלבד
     function countAbove(col, score) {
@@ -300,6 +303,7 @@ const firebaseConfig = {
             }).catch(() => ({ label, score: null, rank: null }));
         });
         return Promise.all(jobs).then(list => {
+            list.forEach((x, i) => { x.col = PROFILE_BOARDS[i][0]; });
             const data = { list, coins };
             if (list.every(x => x.score !== null && (!(x.score > 0) || x.rank))) profileCache[id] = { t: Date.now(), data };
             return data;
@@ -313,7 +317,7 @@ const firebaseConfig = {
     const LB_LOCAL_KEY = {
         leaderboard_delivery: 'kebab_dlvHighScore', leaderboard: 'kebab_highScore', leaderboard_turtles: 'kebab_turtlesHighScore',
         leaderboard_goods: 'kebab_goodsHighScore', leaderboard_shvartz: 'kebab_shvartzHighScore',
-        leaderboard_ninja: 'kebab_ninjaHighScore', leaderboard_kvk: 'kebab_kvkHighScore'
+        leaderboard_ninja: 'kebab_ninjaHighScore', leaderboard_kvk: 'kebab_kvkHighScore', leaderboard_hop: 'kebab_hopHighScore'
     };
 
     function loadLeaderboardInto(containerId, collectionName) {
@@ -388,7 +392,7 @@ const firebaseConfig = {
 
             const right = document.createElement('span');
             right.style.cssText = 'color: var(--accent-gold); font-weight: bold;';
-            right.textContent = row.score + " נק'";
+            right.textContent = row.score + lbUnit(collectionName);
 
             li.appendChild(left);
             li.appendChild(right);
@@ -426,7 +430,7 @@ const firebaseConfig = {
                 if (mb) nm.appendChild(mb);
                 spot.appendChild(nm);
                 const sc = document.createElement('div');
-                sc.className = 'lb-pod-score'; sc.textContent = row.score + " נק'";
+                sc.className = 'lb-pod-score'; sc.textContent = row.score + lbUnit(collectionName);
                 spot.appendChild(sc);
                 const block = document.createElement('div');
                 block.className = 'lb-pod-block'; block.textContent = place;
@@ -923,6 +927,7 @@ const firebaseConfig = {
 		ninja:   () => loadNinjaLeaderboard(),
 		kvk:     () => loadKvkLeaderboard(),
 		main:    () => loadLeaderboard(),
+		hop:     () => loadLeaderboardInto('hop-leaderboard-container', 'leaderboard_hop'),
 		turtles: () => loadTurtlesLeaderboard()
 	};
 

@@ -889,8 +889,8 @@ function openPlayerModal(p) {
     const list = document.createElement('ul'); list.className = 'player-bests';
     const li = document.createElement('li'); li.className = 'player-bests-wait'; li.textContent = 'טוען שיאים...';
     list.appendChild(li);
-    // דרגות השליטה בכל 7 המשחקים (מוצג לכל שחקן שהדרגות שלו נשמרו בטבלה, גם כשעוד אין לו דרגות)
-    const mm = p.id === playerId && typeof mstPublic === 'function' ? mstPublic() : (typeof mstOk === 'function' && mstOk(p.mst) ? p.mst : null);
+    // דרגות השליטה בכל המשחקים (מוצג לכל שחקן שהדרגות שלו נשמרו בטבלה, גם כשעוד אין לו דרגות)
+    const mm = p.id === playerId && typeof mstPublic === 'function' ? mstPublic() : (typeof mstNorm === 'function' ? mstNorm(p.mst) : null);
     const mstBox = document.createElement('div'); mstBox.className = 'player-mst';
     if (mm) {
         const head = document.createElement('div'); head.className = 'player-mst-h';
@@ -932,7 +932,7 @@ function openPlayerModal(p) {
             const row = document.createElement('li');
             const a = document.createElement('span'); a.textContent = r.label;
             const v = document.createElement('b');
-            v.textContent = r.score === null ? '—' : (r.score > 0 ? r.score + " נק'" : 'עוד לא שיחק');
+            v.textContent = r.score === null ? '—' : (r.score > 0 ? r.score + lbUnit(r.col) : 'עוד לא שיחק');
             if (r.score > 0 && r.rank) { const m = document.createElement('small'); m.textContent = ' #' + r.rank; v.appendChild(m); }
             if (!(r.score > 0)) row.className = 'none';
             row.appendChild(a); row.appendChild(v);

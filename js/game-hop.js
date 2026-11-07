@@ -14,7 +14,9 @@ const HP_HIT_W = 10, HP_HIT_H = 40;
 const HP_PX_M = 7.5;         // פיקסלים למטר
 const HP_START_Y = 0;
 const HP_THEME_M = 400;      // כל כמה מטרים מתחלף העולם
-const HP_COIN_P = 0.032;     // סיכוי למטבע בכל שורה - בממוצע כ-3 מטבעות לכל 1000 מטר (נמדד על 20 ריצות של 10,000 מ')
+// מטבעות כמו במשחק המקורי (שליש מהפלטפורמות, לפעמים שלישייה, ושרשרת מעל קפיצים), ובסוף הם מומרים לקבב קוינס:
+// HP_KC_RATE מטבעות = קבב קוינס אחד, כך שבממוצע יוצאים כ-3 KC לכל 1000 מטר
+const HP_KC_RATE = 20;          // נמדד: כ-92 מטבעות נוצרים ונאספים כ-63 לכל 1000 מטר => כ-3 KC
 const HP_TUT_KEY = 'kebab_hop_tut';
 
 const HP_THEMES = [
@@ -38,6 +40,7 @@ function hpNewState() {
         topY: HP_START_Y, lastX: HP_W / 2 - 40, theme: 0, banner: null, hint: 3.5,
         tut: store.get(HP_TUT_KEY) ? -1 : 0,          // שלב בהדרכה (-1 = אין הדרכה)
         skin: typeof getEquippedSkinId === 'function' ? getEquippedSkinId() : 'classic',
+        cos: typeof mstCos === 'function' ? mstCos('hop') : 0,          // שובל מדרגת השליטה: 3 זהב, 4 קרח, 5 קשת
         ptrs: new Map(), keys: {}, shake: 0, flash: 0, bg: [0, 0, 0]
     };
 }
@@ -106,6 +109,20 @@ function hpAddSpring(p) {
     const sx = p.x + p.spring.off;
     if (p.type === 'normal') hp.zones.push({ x0: sx - 38, x1: sx + 38, y0: p.y - 400, y1: p.y });     // בלי גריל בנתיב ההמראה
 }
+function hpCoin(x, y) { hp.coinList.push({ x, y, ph: Math.random() * 6, got: false, t: 0 }); }
+function hpAddCoins(p) {
+    const cx = p.x + p.w / 2;
+    if (p.spring && p.type === 'normal' && Math.random() < 0.75) {            // שרשרת מטבעות בנתיב של הקפיץ
+        const sx = p.x + p.spring.off;
+        for (let i = 0; i < 5; i++) hpCoin(sx, p.y - 98 - i * 46);
+        return;
+    }
+    if (Math.random() < 0.34) {
+        if (Math.random() < 0.25) for (let i = -1; i <= 1; i++) hpCoin(cx + i * 28, p.y - 46 - (i === 0 ? 10 : 0));
+        else hpCoin(cx, p.y - 45);
+    }
+}
+const hpKC = coins => Math.floor(coins / HP_KC_RATE);
 function hpGenRows() {
     while (hp.topY > hp.camY - 260) {
         const m = hpHeightM(hp.topY), d = hpDiff(m), theme = hpThemeAt(m);
@@ -119,7 +136,7 @@ function hpGenRows() {
         hp.lastX = main.type === 'moving' ? main.x : main.x;
         if (m > 25 && Math.random() < 0.08) hpAddSpring(main);
         hp.plats.push(main);
-        if (Math.random() < HP_COIN_P) hp.coinList.push({ x: main.x + main.w / 2, y: main.y - 46, ph: Math.random() * 6, got: false, t: 0 });
+        hpAddCoins(main);
         // פלטפורמות נוספות מסוגים אחרים
         const extras = Math.random() < 0.4 + 0.3 * d ? (Math.random() < 0.25 ? 2 : 1) : 0;
         for (let k = 0; k < extras; k++) {
@@ -138,6 +155,7 @@ function hpGenRows() {
                 if (type === 'spike' && hpInZone(a, b, ey)) continue;
                 if (type === 'normal' && m > 25 && Math.random() < 0.06) hpAddSpring(p);
                 hp.plats.push(p);
+                if (type !== 'spike') hpAddCoins(p);
                 break;
             }
         }
@@ -259,7 +277,7 @@ function hpStep(dt) {
             c.got = true; hp.coins++;
             sfx.coin(); haptic(30);
             hpBurst(10, c.x, c.y, { s0: 50, s1: 200, l0: .3, l1: .7, z0: 2, z1: 5, col: ['#fff7a8', '#ffd54a', '#fff'], type: 'star', g: 80 });
-            hpFloat(c.x, c.y - 14, '+1 🪙', '#ffe066');
+            hpFloat(c.x, c.y - 14, '+1', '#ffe066');
             hpHud();
         }
     }
@@ -273,6 +291,11 @@ function hpStep(dt) {
         const th = hpThemeAt(hp.maxM);
         if (th !== hp.theme) { hp.theme = th; hp.banner = { t: 0, text: HP_THEMES[th].name, sub: hp.maxM + ' מטר!' }; sfx.good(); }
         if (P.y - hp.camY > HP_H + 45) hpDie('fall');
+    }
+    // שובל מדרגת השליטה
+    if (!hp.dead && hp.cos && P.vy < 0 && Math.random() < 0.7) {
+        const col = hp.cos === 3 ? MST_GOLD : hp.cos === 4 ? MST_SPARK : ['hsl(' + Math.round((hp.t * 300) % 360) + ',100%,62%)'];
+        hpBurst(1, P.x + hpRand(-8, 8), P.y - hpRand(6, 40), { s0: 10, s1: 50, l0: .35, l1: .7, z0: 2.5, z1: 5, col, type: 'star', g: 60 });
     }
     // שובל מקפיץ
     if (!hp.dead && P.vy < -700) hpBurst(2, P.x + hpRand(-6, 6), P.y - 8, { a0: Math.PI * .4, a1: Math.PI * .6, s0: 110, s1: 220, l0: .2, l1: .35, z0: 2, z1: 3, col: ['#fff', '#ffe066', '#ffb74d'], type: 'line', g: 0 });
@@ -313,6 +336,7 @@ function hpCollide(prevY) {
             sfx.pop();
             hpBurst(5, P.x, p.y, { a0: Math.PI * 1.05, a1: Math.PI * 1.95, s0: 30, s1: 90, l0: .2, l1: .4, z0: 2, z1: 4, col: ['#f0dcc8', '#c9a574'], g: 60 });
             if (p.type === 'breakable') { p.state = 'crack'; p.crackT = 0.16; sfx.tick(); }
+            hpCosLand(P.x, p.y);
             return;
         }
     }
@@ -343,6 +367,11 @@ function hpBreak(p) {
 }
 const HP_CRUMBS = [['#e9c98a', '#c99a55', '#f5deb0'], ['#9be3a8', '#4caf6a', '#e8ffe8'], ['#c9a074', '#8a6236', '#e3c9a0']];
 
+// נחיתה עם מראה מדרגת השליטה: קרח - רסיסי קרח, קשת - פרץ כוכבים צבעוני
+function hpCosLand(x, y) {
+    if (hp.cos === 4) hpBurst(8, x, y, { a0: Math.PI * 1.05, a1: Math.PI * 1.95, s0: 60, s1: 170, l0: .3, l1: .6, z0: 2, z1: 4, col: MST_SPARK, type: 'rect', g: 500 });
+    if (hp.cos === 5) hpBurst(10, x, y - 10, { s0: 60, s1: 200, l0: .35, l1: .7, z0: 2, z1: 5, col: ['#ff5ad1', '#ffd23d', '#5affc8', '#6aa8ff'], type: 'star', g: 120 });
+}
 function hpDie(kind) {
     if (hp.dead) return;
     const P = hp.P;
@@ -358,12 +387,12 @@ function hpDie(kind) {
 
 function hpEnd() {
     hpStop();
-    const m = hp.maxM, coins = hp.coins;
-    saveLocalBest('kebab_hopHighScore', m);
-    if (coins > 0) addCoins(coins);                       // המטבעות מהמשחק נכנסים ליתרה
+    const m = hp.maxM, coins = hp.coins, kc = hpKC(coins);
+    saveBestScore('leaderboard_hop', m, 'kebab_hopHighScore');      // השיא נשמר גם בטבלת השיאים
+    if (kc > 0) addCoins(kc);                                        // המטבעות מהמשחק מומרים לקבב קוינס
     document.getElementById('result-desc').textContent =
         (hp.deadKind === 'burn' ? 'אאוץ׳, הגריל לוהט! ' : '') + 'טיפסתם ' + m + ' מטר' +
-        (coins ? ' ואספתם ' + coins + ' 🪙 קבב קוינס!' : '!');
+        (coins ? ' ואספתם ' + coins + ' מטבעות = ' + kc + ' 🪙 קבב קוינס!' : '!');
     dailyEvent('hop', { score: m });
     showResultReward('hop', m);
     switchTab('result');
@@ -373,6 +402,8 @@ function hpHud() {
     const m = document.getElementById('hp-m'), c = document.getElementById('hp-coins');
     if (m) m.textContent = hp.maxM;
     if (c) c.textContent = hp.coins;
+    const k = document.getElementById('hp-kc');
+    if (k) k.textContent = hpKC(hp.coins);
 }
 
 /* ---------- ציור ---------- */

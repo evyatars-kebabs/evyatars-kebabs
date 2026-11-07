@@ -7,7 +7,8 @@ const SOCIAL_URL = location.protocol.indexOf('http') === 0
     ? location.origin + location.pathname.replace(/index\.html$/, '')
     : 'https://evyatars-kebabs.github.io/evyatars-kebabs/';
 const SOC_START = { delivery: () => startDeliveryGame(), ninja: () => startNinjaGame(), shvartz: () => startShvartzGame(),
-                    goods: () => startGoodsSortGame(), kvk: () => startKvkGame(), catch: () => startCatchGame(), trivia: () => startTriviaGame() };
+                    goods: () => startGoodsSortGame(), kvk: () => startKvkGame(), catch: () => startCatchGame(), trivia: () => startTriviaGame(),
+                    hop: () => startHopGame() };
 const socGame = k => (typeof MST_GAMES !== 'undefined' && MST_GAMES.find(g => g.k === k)) || null;
 const socId = id => typeof id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(id);
 const socName = n => {
@@ -284,7 +285,7 @@ function shareFriendLink(btn) {
 
 // טבלת החברים: אותן לשוניות משחקים, רק החברים ואתם
 const LB_TYPE_COL = { delivery: 'leaderboard_delivery', goods: 'leaderboard_goods', shvartz: 'leaderboard_shvartz', ninja: 'leaderboard_ninja',
-                      kvk: 'leaderboard_kvk', main: 'leaderboard', turtles: 'leaderboard_turtles' };
+                      kvk: 'leaderboard_kvk', main: 'leaderboard', turtles: 'leaderboard_turtles', hop: 'leaderboard_hop' };
 let lbFriendsMode = false, lbFriendsType = 'shvartz';
 const frDocCache = {};
 function friendsBoardOn() { return lbFriendsMode; }
@@ -364,7 +365,7 @@ function renderFriendsBoard(type) {
             if (name !== f.name) { f.name = name; renamed = true; }
             return { id: f.id, name, score: d && typeof d.score === 'number' ? d.score : 0, skin: d && typeof d.skin === 'string' ? d.skin : 'classic',
                      lvl: d && Number.isInteger(d.lvl) ? d.lvl : null, title: d && xpTitleOk(d.title) ? d.title : null,
-                     frame: d && xpFrameOk(d.frame) ? d.frame : '', mst: d && typeof mstOk === 'function' && mstOk(d.mst) ? d.mst : null };
+                     frame: d && xpFrameOk(d.frame) ? d.frame : '', mst: d && typeof mstNorm === 'function' ? mstNorm(d.mst) : null };
         });
         if (renamed) store.set(FR_KEY, JSON.stringify(list));
         const me = Object.assign({ id: playerId, name: playerName, score: myBest, skin: currentSkinId(), me: true },
@@ -392,7 +393,7 @@ function renderFriendsBoard(type) {
             left.appendChild(document.createTextNode(' ' + r.name + (r.me ? ' (אתה)' : '')));
             const mr = mstIdx >= 0 && r.mst ? +r.mst[mstIdx] : 0;
             if (mr) { const b = mstBadge(mr, 18); b.classList.add('lb-mst'); left.appendChild(b); }
-            const right = xpEl('span', 'fr-score', r.score > 0 ? r.score + " נק'" : 'עוד לא שיחק');
+            const right = xpEl('span', 'fr-score', r.score > 0 ? r.score + lbUnit(col) : 'עוד לא שיחק');
             li.appendChild(left); li.appendChild(right);
             li.onclick = () => openPlayerModal({ id: r.id, name: r.name, skin: r.me ? currentSkinId() : r.skin, lvl: r.lvl, title: r.title, frame: r.frame, mst: r.mst, known: null });
             ul.appendChild(li);
