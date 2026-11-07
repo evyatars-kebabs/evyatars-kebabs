@@ -383,10 +383,20 @@ function hpHud() {
 const HP_MS = 0.95;                  // גודל הדמות ביחס לקוף המקורי (ראש ברדיוס 15.5, גוף 14.5x16)
 const HP_OUT = '#2a160c';
 const hpModels = {};
-function hpRenderSkin(c, sk, small) {
+// צבעים קבועים לסקינים שהדגימה לא מתאימה להם
+const HP_SKIN_COLORS = {
+    dosus:         { body: '#16161c', belly: '#f2f2f2', pants: '#101014' },     // חליפה שחורה וחולצה לבנה
+    dosus_cheddar: { body: '#e8952a', belly: '#ffd27a', pants: '#a8601a' }      // גבינה
+};
+// סקין שהציור שלו הוא דמות שלמה (עם ידיים משלה) - כל הציור הוא הגוף, ומוסיפים רק רגליים
+const hpWhole = sk => sk.id === 'shluk' || sk.variantOf === 'shluk';
+function hpRenderSkin(c, sk, small, noOutfit) {
     const st = { x: 0, y: 0, hw: small ? 30 : 44, ry: small ? 8 : 12, chew: 0, t: 1.3, tx: 0, ty: 900, surprised: false, mx: 0, my: 0 };
-    if (sk.kind === 'cone') { const saved = sv; sv = { mouth: { x: 0, y: 0, hw: small ? 34 : 44, chew: 0 }, ball: null, t: 1.3, aim: null }; svDrawBody(c); svDrawMouthBack(c); svDrawLowerLip(c); sv = saved; }
-    else { skDrawHumanBack(c, sk, st); skMouthBack(c, sk, st); skDrawHumanFront(c, sk, st); skMouthFront(c, sk, st); }
+    if (sk.kind === 'cone') { const saved = sv; sv = { mouth: { x: 0, y: 0, hw: small ? 34 : 44, chew: 0 }, ball: null, t: 1.3, aim: null }; svDrawBody(c); svDrawMouthBack(c); svDrawLowerLip(c); sv = saved; return; }
+    const keep = skOutfit;                                        // בלי החולצה של המנוע (הגוף שלנו במקומה), כשהזקן יורד על החזה
+    if (noOutfit) skOutfit = () => {};
+    try { skDrawHumanBack(c, sk, st); skMouthBack(c, sk, st); skDrawHumanFront(c, sk, st); skMouthFront(c, sk, st); }
+    finally { skOutfit = keep; }
 }
 function hpModel(skinId) {
     const key = skinId + '|' + hpPx;
@@ -402,21 +412,38 @@ function hpModel(skinId) {
             return d[3] > 120 ? '#' + [d[0], d[1], d[2]].map(v => v.toString(16).padStart(2, '0')).join('') : fb;
         } catch (e) { return fb; }
     };
+    const fix = HP_SKIN_COLORS[sk.id] || {};
     const tone = cone ? '#e8b07a' : (sk.tone || px(0, 72, '#e0a878'));
-    const body = cone ? '#c46a2a' : ((sk.outfit && sk.outfit.base) || px(-62, 170, '#3b6fd4'));
-    // הראש עד הסנטר (לחרוט - כל החרוט בלי המוט)
-    const k = cone ? 58 / 252 : 15.5 / 91;
-    const box = cone ? { x0: -110, x1: 110, y0: -125, y1: 136 } : { x0: -180, x1: 180, y0: -240, y1: 62 };
+    const body = fix.body || (cone ? '#c46a2a' : ((sk.outfit && sk.outfit.base) || px(-62, 170, '#3b6fd4')));
+    const whole = cone || hpWhole(sk);
+    const longBeard = !whole && sk.beard && ['long', 'full', 'braids'].includes(sk.beard.style);
+    // איפה נקודת הפה של הציור יושבת על הדמות: ראש אדם במרכז (0,-47), חרוט מ-(-66) עד (-8)
+    let k, box, oy;
+    if (cone) { k = 58 / 252; box = { x0: -110, x1: 110, y0: -125, y1: 136 }; oy = -8 - 136 * k; }
+    else if (whole) {                                             // דמות שלמה: גבולות הציור נמדדים, והיא נמתחת לגובה הדמות
+        const d = fc.getImageData(0, 0, full.width, full.height).data;
+        let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+        for (let y = 0; y < full.height; y += 2) for (let x = 0; x < full.width; x += 2) {
+            if (d[(y * full.width + x) * 4 + 3] > 200) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+        }
+        box = { x0: x0 - 164, x1: x1 - 156, y0: y0 - 224, y1: y1 - 216 };
+        k = 70 / (box.y1 - box.y0); oy = -6 - box.y1 * k;
+    } else { k = 15.5 / 91; box = { x0: -180, x1: 180, y0: -240, y1: longBeard ? 300 : 62 }; oy = -47 + 34 * k; }
     const r = k * HP_MS * hpPx;
     const head = document.createElement('canvas');
     head.width = Math.max(1, Math.ceil((box.x1 - box.x0) * r)); head.height = Math.max(1, Math.ceil((box.y1 - box.y0) * r));
     const hc = head.getContext('2d');
     hc.scale(r, r); hc.translate(-box.x0, -box.y0);
-    hc.beginPath(); hc.rect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0); hc.clip();
-    try { hpRenderSkin(hc, sk, true); } catch (e) { console.error('hpModel', skinId, e); }
-    // איפה נקודת הפה של הציור יושבת על הדמות: ראש אדם במרכז (0,-47), חרוט מ-(-66) עד (-8)
-    const oy = cone ? -8 - 136 * k : -47 + 34 * k;
-    return (hpModels[key] = { head, box, k, oy, cone, tone, body, pants: skShade(body, -0.45), belly: skShade(body, 0.2) });
+    hc.beginPath();
+    if (whole) hc.rect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0);
+    else {                                                        // ראש: כל הרוחב עד גובה האוזניים, ומשם עד הסנטר רק ברוחב הראש (בלי מה שמאחור)
+        hc.rect(box.x0, box.y0, box.x1 - box.x0, 20 - box.y0);
+        hc.rect(-108, 20, 216, 42);
+    }
+    if (longBeard) { hc.moveTo(-62, 62); hc.lineTo(62, 62); hc.lineTo(4, box.y1 - 10); hc.lineTo(-4, box.y1 - 10); hc.closePath(); }   // זקן ארוך: ממשיך על החזה בצורת V (כמו הזקן, בלי הכתפיים ומה שמאחור)
+    hc.clip();
+    try { hpRenderSkin(hc, sk, true, longBeard); } catch (e) { console.error('hpModel', skinId, e); }
+    return (hpModels[key] = { head, box, k, oy, cone, whole, tone, body, pants: fix.pants || skShade(body, -0.45), belly: fix.belly || skShade(body, 0.2) });
 }
 function hpDrawPlayer(c) {
     const P = hp.P;
@@ -438,14 +465,14 @@ function hpDrawPlayer(c) {
     c.beginPath(); c.ellipse(-8, -6 * tuck - 1, 7, 6 * tuck + 1, 0, 0, 7); c.ellipse(9, -6 * tuck - 1, 7, 6 * tuck + 1, 0, 0, 7); fo();
     c.fillStyle = '#1c1008';
     c.beginPath(); c.ellipse(-9, -2.5, 6, 3.2, 0, 0, 7); c.ellipse(10, -2.5, 6, 3.2, 0, 0, 7); c.fill();
-    // גוף (לחרוט - החרוט עצמו הוא הגוף)
-    if (!M.cone) {
+    // גוף (לחרוט ולדמות שלמה - הציור עצמו הוא הגוף)
+    if (!M.whole) {
         c.fillStyle = M.body; c.beginPath(); c.ellipse(0, -23, 14.5, 16, 0, 0, 7); fo();
         c.fillStyle = M.belly; c.beginPath(); c.ellipse(1, -20, 8, 10, 0, 0, 7); c.fill();
     }
     // ידיים - למעלה בקפיצה, לצדדים בנפילה
     const ang = hpLerp(0.2, -0.95, (rising + 1) / 2), sh = M.cone ? 11 : 12;
-    for (const side of [-1, 1]) {
+    if (!M.whole || M.cone) for (const side of [-1, 1]) {              // לדמות שלמה יש ידיים משלה
         c.save(); c.translate(side * sh, -31); c.rotate(side * (Math.PI / 2 - ang) + Math.PI);
         c.strokeStyle = HP_OUT; c.lineWidth = 10.5; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 15); c.stroke();
         c.strokeStyle = M.cone ? '#c46a2a' : M.body; c.lineWidth = 6; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 15); c.stroke();
