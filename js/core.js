@@ -600,7 +600,7 @@ const firebaseConfig = {
         if (typeof njStop === 'function') njStop();
         if (typeof kvStop === 'function') kvStop();
         if (typeof dlvStop === 'function') dlvStop();
-        if (typeof mhStop === 'function') mhStop();
+        if (typeof hpStop === 'function') hpStop();
     }
 
     /* --- משתנים גלובליים ומזהה שחקן ייחודי --- */
@@ -629,7 +629,7 @@ const firebaseConfig = {
     const LB_ID_KEY = 'kebab_lbId';
     const PROGRESS_KEYS = ['kebab_lbId', 'kebab_coins', 'kebab_skins_owned', 'kebab_skin_equipped', 'kebab_playerName',
         'kebab_highScore', 'kebab_goodsHighScore', 'kebab_shvartzHighScore', 'kebab_ninjaHighScore',
-        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt', 'kebab_turtlesHighScore', 'kebab_tt_boost', 'kebab_collections', 'kebab_xp', 'kebab_mastery', 'kebab_codes_used', 'kebab_friends'];
+        'kebab_triviaHighScore', 'kebab_kvkHighScore', 'kebab_dlvHighScore', 'kebab_kvk_tutorial_done', 'kebab_daily', 'kebab_skin_variant', 'kebab_deal', 'kebab_tmnt', 'kebab_turtlesHighScore', 'kebab_tt_boost', 'kebab_collections', 'kebab_xp', 'kebab_mastery', 'kebab_codes_used', 'kebab_friends', 'kebab_hopHighScore', 'kebab_hop_tut'];
     const USERNAME_RE = /^[\p{L}\p{N}_]{3,15}$/u;
     const PASSWORD_RE = /^[\p{L}\p{N}]{6,30}$/u;
     const LB_BEST = [['leaderboard_delivery', 'kebab_dlvHighScore'], ['leaderboard', 'kebab_highScore'], ['leaderboard_turtles', 'kebab_turtlesHighScore'], ['leaderboard_goods', 'kebab_goodsHighScore'],
@@ -958,7 +958,7 @@ const firebaseConfig = {
 
 		if (targetScreen) targetScreen.classList.add('active');
 		if (targetBtn) targetBtn.classList.add('active');
-		document.body.classList.toggle('in-game', ['catch', 'trivia', 'goods', 'shvartz', 'ninja', 'kvk', 'delivery', 'turtles', 'monkey'].includes(screenId));
+		document.body.classList.toggle('in-game', ['catch', 'trivia', 'goods', 'shvartz', 'ninja', 'kvk', 'delivery', 'turtles', 'hop'].includes(screenId));
 
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
 		if (screenId === 'shop') renderShop();

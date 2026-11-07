@@ -10,7 +10,8 @@ const XP_TITLES = [[1, 'מתחיל במטבח'], [5, 'שוליית מטבח'], [
 const XP_FRAMES = [[5, 'wood', 'עץ'], [10, 'bronze', 'ארד'], [20, 'silver', 'כסף'], [30, 'gold', 'זהב'],
                    [40, 'emerald', 'אזמרגד'], [50, 'diamond', 'יהלום'], [75, 'fire', 'אש'], [100, 'cosmic', 'קוסמי']];
 const XP_GAME_BEST = { delivery: 'kebab_dlvHighScore', catch: 'kebab_highScore', goods: 'kebab_goodsHighScore', shvartz: 'kebab_shvartzHighScore',
-                       ninja: 'kebab_ninjaHighScore', kvk: 'kebab_kvkHighScore', trivia: 'kebab_triviaHighScore', turtles: 'kebab_turtlesHighScore' };
+                       ninja: 'kebab_ninjaHighScore', kvk: 'kebab_kvkHighScore', trivia: 'kebab_triviaHighScore', turtles: 'kebab_turtlesHighScore',
+                       hop: 'kebab_hopHighScore' };
 const XP_SEED_MAX = 1225;            // שחקנים ותיקים מתחילים לכל היותר ברמה 8 (לפי השיאים שלהם)
 
 const xpNeed = L => Math.min(100 + 25 * (L - 1), 1000);

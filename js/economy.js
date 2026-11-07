@@ -58,7 +58,8 @@ const GAME_REWARD = {
     goods:   { min: 16, great: 60 },
     shvartz: { min: 30, great: 140 },
     ninja:   { min: 10, great: 70 },
-    kvk:     { min: 80, great: 1500 }
+    kvk:     { min: 80, great: 1500 },
+    hop:     { min: 80, great: 1200 }      // שוורץ קופץ: מטרים
 };
 
 function rollCoupon(gameKey, score) {

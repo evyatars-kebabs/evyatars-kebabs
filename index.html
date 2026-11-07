@@ -90,9 +90,9 @@
             <div class="gc-go">◀</div>
         </div>
 
-        <div class="game-card" onclick="startMonkeyGame()">
-            <div class="gc-icon">🐒</div>
-            <div class="gc-body"><h3>קוף קופץ <span class="new-badge">חדש</span></h3><p>קפצו מבול לבול, היזהרו מקוצים, אספו מטבעות וטפסו שלב אחרי שלב!</p></div>
+        <div class="game-card" onclick="startHopGame()">
+            <div class="gc-icon">🦘</div>
+            <div class="gc-body"><h3>שוורץ קופץ <span class="new-badge">חדש</span></h3><p>טפסו בלי סוף משיפוד לשיפוד, דרך הכספת ועד לילה בעיר - והיזהרו מהגריל הלוהט!</p></div>
             <div class="gc-go">◀</div>
         </div>
 
@@ -307,11 +307,12 @@
 		</div>
 	</div>
 
-    <div id="screen-monkey" class="screen">
+    <div id="screen-hop" class="screen">
         <div class="hud">
-            <div class="hud-pill"><small>משחק</small><span>🐒 קוף קופץ</span></div>
+            <div class="hud-pill"><small>גובה</small><span id="hp-m">0</span></div>
+            <div class="hud-pill"><small>מטבעות</small><span>🪙 <span id="hp-coins">0</span></span></div>
         </div>
-        <div class="mh-wrap"><iframe id="mh-frame" title="קוף קופץ"></iframe></div>
+        <div id="hop-wrap"><canvas id="hop-canvas"></canvas></div>
     </div>
 
     <div id="screen-result" class="screen" style="text-align: center;">
@@ -361,7 +362,7 @@
 <script src="js/game-ninja.js"></script>
 <script src="js/game-kvk.js"></script>
 <script src="js/game-delivery.js"></script>
-<script src="js/game-monkey.js"></script>
+<script src="js/game-hop.js"></script>
 <script src="js/game-turtles.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/sw-register.js"></script>
