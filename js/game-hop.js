@@ -392,7 +392,7 @@ function hpEnd() {
     if (kc > 0) addCoins(kc);                                        // המטבעות מהמשחק מומרים לקבב קוינס
     document.getElementById('result-desc').textContent =
         (hp.deadKind === 'burn' ? 'אאוץ׳, הגריל לוהט! ' : '') + 'טיפסתם ' + m + ' מטר' +
-        (coins ? ' ואספתם ' + coins + ' מטבעות = ' + kc + ' 🪙 קבב קוינס!' : '!');
+        (kc ? ' והרווחתם ' + kc + ' 🪙 קבב קוינס!' : '!');
     dailyEvent('hop', { score: m });
     showResultReward('hop', m);
     switchTab('result');
@@ -402,8 +402,6 @@ function hpHud() {
     const m = document.getElementById('hp-m'), c = document.getElementById('hp-coins');
     if (m) m.textContent = hp.maxM;
     if (c) c.textContent = hp.coins;
-    const k = document.getElementById('hp-kc');
-    if (k) k.textContent = hpKC(hp.coins);
 }
 
 /* ---------- ציור ---------- */
