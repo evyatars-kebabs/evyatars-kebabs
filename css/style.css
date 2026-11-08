@@ -1595,3 +1595,38 @@ body.swipe-l .screen.active { animation: swipeInL .28s cubic-bezier(.2, .9, .3, 
 .hp-ctrl small { color: #c9b8a8; font-size: 0.72rem; }
 .hp-ctrl.on { border-color: #ffd23d; background: rgba(255, 210, 60, 0.15); }
 .hp-menu-x { padding: 9px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, 0.12); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+
+/* שוק התבלינים */
+.mk-screen { gap: 6px; }
+.mk-speedbtn { border: 0; border-radius: 999px; padding: 6px 12px; font: inherit; font-weight: 800; color: #2a1204; cursor: pointer;
+    background: linear-gradient(180deg, #ffd24a, #ff8a1a); box-shadow: 0 2px 0 #a8430c; }
+.mk-status { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
+.mk-banner { font-size: 0.8rem; color: #ffe27a; min-height: 1.2em; text-align: center; }
+.mk-phase { font-size: 0.85rem; color: #fff; text-align: center; font-weight: 700; }
+.mk-bar { height: 8px; border-radius: 999px; background: rgba(0, 0, 0, 0.4); overflow: hidden; }
+.mk-bar div { height: 100%; width: 0; border-radius: 999px; transition: width 0.1s linear; }
+.mk-bar div.prep { background: linear-gradient(90deg, #7fd0ff, #3a8fe0); }
+.mk-bar div.rush { background: linear-gradient(90deg, #ffd24a, #ff8a1a); }
+.mk-meta { display: flex; justify-content: space-between; font-size: 0.7rem; color: #c9b8a8; }
+.mk-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mk-col { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: 14px; padding: 6px; min-width: 0; }
+.mk-col h3 { font-size: 0.85rem; margin: 2px 0 6px; color: #ffe27a; text-align: center; }
+.mk-row { display: flex; align-items: center; gap: 4px; padding: 4px 2px; border-bottom: 1px dashed rgba(255, 255, 255, 0.08); }
+.mk-name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.mk-name b { font-size: 0.8rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mk-name small { font-size: 0.6rem; color: #b9a38e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mk-price { font-size: 0.78rem; font-weight: 700; color: #ffd23d; white-space: nowrap; text-align: center; min-width: 48px; }
+.mk-price small { display: block; font-size: 0.6rem; color: #b9a38e; font-weight: 400; }
+.mk-btns { display: flex; gap: 3px; }
+.mk-btn { border: 0; border-radius: 8px; padding: 5px 7px; font: inherit; font-size: 0.7rem; font-weight: 800; color: #2a1204; cursor: pointer;
+    background: linear-gradient(180deg, #ffe27a, #ffb020); box-shadow: 0 2px 0 #a8430c; }
+.mk-btn:disabled { opacity: 0.35; cursor: default; }
+.mk-btn:active:not(:disabled) { transform: translateY(2px); }
+.mk-cookbtn { background: linear-gradient(180deg, #8fe39a, #3fa35a); box-shadow: 0 2px 0 #1f6a34; }
+.mk-up { font-size: 0.7rem; }
+.up { color: #7ee787; } .down { color: #ff8a80; } .flat { color: #9aa6b8; }
+.mk-slots, .mk-pricelbl { font-size: 0.7rem; color: #cfe0ff; text-align: center; margin-bottom: 4px; }
+.mk-pricebox, .mk-upbox { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
+.mk-pricebox .mk-btns { justify-content: center; }
+.mk-upbtn { width: 100%; text-align: center; }
+.mk-log { margin-top: 6px; font-size: 0.72rem; color: #d9cbb8; min-height: 3.4em; text-align: center; line-height: 1.5; }

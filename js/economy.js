@@ -59,7 +59,8 @@ const GAME_REWARD = {
     shvartz: { min: 30, great: 140 },
     ninja:   { min: 10, great: 70 },
     kvk:     { min: 80, great: 1500 },
-    hop:     { min: 80, great: 1200 }      // קבב ג'אמפ: מטרים
+    hop:     { min: 80, great: 1200 },     // קבב ג'אמפ: מטרים
+    market:  { min: 600, great: 4000 }     // שוק התבלינים: רווח בש"ח
 };
 
 function rollCoupon(gameKey, score) {
