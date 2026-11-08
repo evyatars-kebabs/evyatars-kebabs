@@ -94,6 +94,14 @@ function cookable(run, rid) {
     return Math.max(0, n);
 }
 
+// מספר הלקוחות הצפוי: גדל עם הימים, עם אירועים ושלט, ויורד כשהמחיר גבוה מהרגיל (מחיר גבוה = פחות לקוחות)
+function expectedVisitors(run, mult) {
+    const demandEv = eventsToday(run.market, run.day).reduce((m, e) => m * e.demand, 1);
+    const signB = run.signLevel > 0 ? SIGN_BOOST[run.signLevel - 1] : 0;
+    const elasticity = Math.max(0.3, 1 - 0.6 * (mult - 1));
+    return (12 + 0.5 * run.day) * demandEv * (1 + signB) * elasticity;
+}
+
 // ---------- יום אחד: קנייה, בישול, לקוחות, מכירה ----------
 // plan = { buy: {ingredient: qty}, cook: {recipe: qty}, priceMult: מכפיל מחיר התפריט, upgrade: 'grill'|'sign'|null }
 function playDay(run, plan) {
@@ -125,9 +133,7 @@ function playDay(run, plan) {
     }
     // 4. מכירה: לקוחות מגיעים (תלוי ביום, באירועים ובשלט), ובוחרים מנה לפי העדפה ומחיר
     const mult = plan.priceMult || 1;
-    const demandEv = eventsToday(run.market, run.day).reduce((m, e) => m * e.demand, 1);
-    const signB = run.signLevel > 0 ? SIGN_BOOST[run.signLevel - 1] : 0;
-    const visitors = Math.round((12 + 0.5 * run.day) * demandEv * (1 + signB) * (0.85 + run.rand() * 0.3));
+    const visitors = Math.round(expectedVisitors(run, mult) * (0.85 + run.rand() * 0.3));
     const have = { ...cooked };
     const prefs = Object.keys(RECIPES);
     for (let i = 0; i < visitors; i++) {
@@ -182,27 +188,26 @@ function reasonable(run) {
     const upgrade = run.grillLevel < 1 && run.cash > 600 ? 'grill' : null;
     return { buy: fitBudget(buy, pr, (run.cash - (upgrade ? GRILL_COST[0] : 0)) * 0.93), cook: { [best]: run.grillSlots }, priceMult: 1, upgrade };
 }
-// חזקה: מדרגת את המנות לפי הרווח בהווה, מתכננת בישול לפי מה שכבר יש במלאי, קונה רק למה שמתכננת,
-// מגדילה מלאי כשהמחיר נמוך מהבסיס, משדרגת קודם את העמדות ואז את השלט, ומעלה מחיר רק כשהביקוש גבוה
+// חזקה: כל העמדות למנה הרווחית ביותר בהווה, קונה בדיוק לבישול (אחרי מה שכבר במלאי), משדרגת עמדות בזמן
+// כשהשדרוג עוד משתלם, ומתמחרת כך שהמנות יימכרו עד הסוף (מחיר גבוה ככל שאפשר בלי להשאיר מלאי)
 function strong(run) {
     const pr = dayPrices(run.market, run.day);
     const cost = r => Object.keys(RECIPES[r].uses).reduce((a, k) => a + RECIPES[r].uses[k] * pr[k], 0);
     const ranked = Object.keys(RECIPES).map(r => ({ r, m: RECIPES[r].price - cost(r) })).filter(x => x.m > 0).sort((a, b) => b.m - a.m);
     const cook = {}, buy = {};
-    let slots = run.grillSlots;
-    // כל העמדות למנה הרווחית ביותר בהווה (ואם היא לא מספיקה למלאי - השנייה ברווח)
-    const best = ranked[0];
-    if (best) {
-        const r = best.r; cook[r] = run.grillSlots; slots = 0;
-        for (const k in RECIPES[r].uses) buy[k] = (buy[k] || 0) + Math.max(0, RECIPES[r].uses[k] * run.grillSlots - (run.stock[k] || 0));
+    if (ranked.length) {
+        const r = ranked[0].r;
+        cook[r] = run.grillSlots;
+        for (const k in RECIPES[r].uses) buy[k] = Math.max(0, RECIPES[r].uses[k] * run.grillSlots - (run.stock[k] || 0));
     }
-    // קנייה מוקדמת כשמחיר נמוך: יום אחד קדימה
-    for (const k in buy) if (pr[k] < INGREDIENTS[k].base * 0.9) buy[k] = Math.ceil(buy[k] * 1.15);   // רק תוספת קטנה - מלאי יקר לשמור על השוק
-    // שדרוג עמדה משתלם רק אם נשאר זמן להחזיר את העלות (עד היום ה-20 בערך), ושלט - רק כשיש הרבה כסף
+    // שדרוג עמדה משתלם רק אם נשאר זמן להחזיר את העלות, ושלט - רק כשיש הרבה כסף
     const upgrade = run.grillLevel < GRILL_COST.length && run.day < 20 && run.cash >= GRILL_COST[run.grillLevel] + 60 ? 'grill'
         : run.signLevel < SIGN_COST.length && run.day < 12 && run.cash >= SIGN_COST[run.signLevel] + 500 ? 'sign' : null;
     const spent = upgrade === 'grill' ? GRILL_COST[run.grillLevel] : upgrade === 'sign' ? SIGN_COST[run.signLevel] : 0;
-    const priceMult = run.day > DAYS - 6 && ranked.length ? 1.08 : 1;     // מחיר מעט גבוה לקראת הסוף, כשיש ביקוש
+    // מחיר למכירה מלאה: מעלים את המחיר עד שהביקוש הצפוי יורד לכמות שמבשלים
+    const cookedTotal = Object.values(cook).reduce((a, b) => a + b, 0) || 1;
+    let priceMult = 1;
+    for (let m = 1.0; m <= 1.6; m += 0.02) { if (expectedVisitors(run, m) >= cookedTotal) priceMult = m; else break; }
     return { buy: fitBudget(buy, pr, (run.cash - spent) * 0.93), cook, priceMult, upgrade };
 }
 const STRATS = { careless, reasonable, strong };
@@ -215,7 +220,7 @@ function playRun(seed, strat) {
     return { seed, nw, profit, sold: run.sold, lost: run.lost, coins: coinsFor(profit, run.sold) };
 }
 
-module.exports = { DAYS, INGREDIENTS, RECIPES, GRILL_COST, SIGN_COST, newRun, playDay, netWorth, coinsFor, dayPrices, cookable, rng, STRATS };
+module.exports = { DAYS, INGREDIENTS, RECIPES, GRILL_COST, SIGN_COST, newRun, playDay, netWorth, coinsFor, dayPrices, cookable, rng, STRATS, expectedVisitors };
 module.exports.playRun = playRun;
 
 if (require.main === module) {
