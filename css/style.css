@@ -1653,3 +1653,11 @@ body.swipe-l .screen.active { animation: swipeInL .28s cubic-bezier(.2, .9, .3, 
 .mk-sum-bank { text-align: center; font-size: 0.85rem; }
 .mk-sum-btns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
 .mk-next { width: min(340px, 100%); padding: 12px; font-size: 1rem; }
+
+/* מדריך שוק התבלינים */
+.mk-tut { position: absolute; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(30,14,4,0.55); }
+.mk-tut-card { max-width: 340px; width: 100%; padding: 16px 18px; background: #fff8ea; color: #3a1e0a; border: 3px solid #d4a24c; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+.mk-tut-card h3 { margin: 0 0 8px; font-size: 1.15rem; }
+.mk-tut-card p { margin: 0 0 10px; line-height: 1.5; font-size: 0.95rem; }
+.mk-tut-count { font-size: 0.75rem; opacity: 0.7; margin-bottom: 8px; }
+.mk-tut-row { display: flex; gap: 8px; justify-content: flex-end; }

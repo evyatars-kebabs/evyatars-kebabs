@@ -7,22 +7,26 @@
 const MK_PREP = 12, MK_RUSH = 48;        // שניות ביום במהירות ×1 (60 שניות ליום)
 const MK_BEST_KEY = 'kebab_market_best';
 const MKC = { W: 360, H: 250 };          // מידות הסצנה הלוגיות (H מתעדכן לפי המסך)
-const MK_GROUND = 186;                   // קו הקרקע (הדוכן עומד עליו)
+const MK_GROUND = 186;                                    // קו הקרקע (הדוכן עומד עליו)
+const MK_TUT_KEY = 'kebab_market_tut';
+const MK_COUNTER = 150;                                  // x של הדלפק: הלקוח הראשון בתור עומד כאן
 let mk = null, mkRaf = 0, mkCv = null, mkC = null, mkTab = 'market';
 
 function startMarketGame() {
     switchTab('market');
+    const old = document.getElementById('mk-tut'); if (old) old.remove();
     mkCv = document.getElementById('mk-canvas');
     mkC = mkCv.getContext('2d');
     mkResize();
     const seed = Math.floor(Math.random() * 2147483646) + 1;
     mk = { run: MK.newRun(seed), phase: 'prep', t: 0, speed: 1, arrivals: [], ai: 0, thieves: [], fires: [], customers: [],
-           fx: [], prev: null, banner: '', tick: 0, logs: [], shake: 0, last: performance.now() };
+           fx: [], prev: null, banner: '', tick: 0, logs: [], shake: 0, last: performance.now(), tut: null };
     mkBeginDay();
+    if (!store.get(MK_TUT_KEY)) mkTutorial(0);
     cancelAnimationFrame(mkRaf);
     mkRaf = requestAnimationFrame(mkFrame);
 }
-function mkStop() { cancelAnimationFrame(mkRaf); mkRaf = 0; mk = null; const s = document.getElementById('mk-summary'); if (s) s.classList.remove('open'); }
+function mkStop() { cancelAnimationFrame(mkRaf); mkRaf = 0; mk = null; const tb = document.getElementById('mk-tut'); if (tb) tb.remove(); const s = document.getElementById('mk-summary'); if (s) s.classList.remove('open'); }
 // הקנבס ממלא את כל השטח שמעל הפאנל
 function mkResize() {
     if (!mkCv) return;
@@ -55,42 +59,103 @@ function mkStartRush() {
     if (r.rand() < MK.FIRE_CHANCE) mk.fires.push({ at: 0.25 + r.rand() * 0.4, end: 0.95, out: false });
     mkRender();
 }
+// מדריך לפעם הראשונה: משהה את היום עד שסוגרים אותו
+const MK_TUT_STEPS = [
+    { t: '👋 ברוכים הבאים לשוק התבלינים', b: 'מוכרים שווארמה, קבב ופלאפל לאנשים שבאים מהרחוב. 14 ימים, ומי שיש לו הכי הרבה כסף בסוף - מנצח.' },
+    { t: '🛒 שלב 1: קנו חומרים', b: 'בלשונית "מלאי" קנו בשר, פיתות, ירקות ועוד. לא צריך לבשל - החומרים נשמרים במלאי, וכל מכירה מורידה מהם אוטומטית.' },
+    { t: '🏷️ שלב 2: תמחרו', b: 'בלשונית "מחיר" העלו או הורידו את המחיר. מחיר נמוך - יותר לקוחות. מחיר גבוה - רווח גדול יותר לכל מכירה.' },
+    { t: '🙋 שלב 3: התור', b: 'לקוחות נכנסים מהרחוב ועומדים בתור מול הדוכן. כשהראשון מגיע לדלפק - נמכר לו. ככל שתמכרו יותר, יגיעו יותר לקוחות.' },
+    { t: '🥷 גנבים', b: 'גנבים רצים לדוכן ותופסים מזומן מהקופה. הקישו עליהם על המסך לפני שיגיעו, כדי לתפוס אותם.' },
+    { t: '🔥 שריפה', b: 'לפעמים פורצת שריפה והלקוחות בורחים. הקישו עליה על המסך - היא כבית, בחינם.' },
+    { t: '🏦 בנק וסיכום יום', b: 'כסף בבנק בטוח מגנבים ומרוויח ריבית של 2% ליום. משיכה עולה 10 ₪. בין הימים מסך סיכום מראה מכירות ורווח, ואפשר לגשת לבנק משם.' }
+];
+function mkTutorial(i) {
+    if (!mk) return;
+    const host = document.querySelector('#screen-market .mk-stage');
+    if (!host) return;
+    mk.tut = i;
+    let box = document.getElementById('mk-tut');
+    if (!box) { box = document.createElement('div'); box.id = 'mk-tut'; box.className = 'mk-tut'; host.appendChild(box); }
+    const s = MK_TUT_STEPS[i], last = i === MK_TUT_STEPS.length - 1;
+    const card = document.createElement('div'); card.className = 'mk-tut-card';
+    const h = document.createElement('h3'); h.textContent = s.t;
+    const p = document.createElement('p'); p.textContent = s.b;
+    const cnt = document.createElement('div'); cnt.className = 'mk-tut-count'; cnt.textContent = (i + 1) + ' / ' + MK_TUT_STEPS.length;
+    const row = document.createElement('div'); row.className = 'mk-tut-row';
+    const skip = document.createElement('button'); skip.className = 'mk-btn'; skip.textContent = 'דלג'; skip.onclick = mkTutEnd;
+    const next = document.createElement('button'); next.className = 'mk-btn mk-wide';
+    next.textContent = last ? 'יאללה, מתחילים!' : 'הבא';
+    next.onclick = () => (last ? mkTutEnd() : mkTutorial(i + 1));
+    row.append(skip, next);
+    card.append(h, p, cnt, row);
+    box.replaceChildren(card);
+}
+function mkTutEnd() {
+    store.set(MK_TUT_KEY, '1');
+    const box = document.getElementById('mk-tut'); if (box) box.remove();
+    if (mk) { mk.tut = null; mk.last = performance.now(); }
+}
 function mkFireOn(p) { return mk.fires.find(f => !f.out && p >= f.at && p < f.end); }
 function mkFrame(now) {
     if (!mk) return;
     const dt = Math.min(0.1, (now - mk.last) / 1000) * mk.speed;
     mk.last = now; mk.tick += dt;
     const r = mk.run;
-    if (mk.phase === 'prep') { mk.t += dt; if (mk.t >= MK_PREP) mkStartRush(); }
-    else if (mk.phase === 'rush') {
-        mk.t += dt;
-        const p = Math.min(1, (mk.t - MK_PREP) / MK_RUSH);
-        const fire = mkFireOn(p);
-        for (const th of mk.thieves) {
-            if (th.done) continue;
-            const prog = (p - (th.at - 0.16)) / 0.16;
-            th.x = (MKC.W + 40) + (196 - (MKC.W + 40)) * Math.min(1, Math.max(0, prog));
-            if (p >= th.at && !th.caught) {
-                th.done = true;
-                const amt = MK.thiefSteal(r);
-                mkFloat(196, 150, '-' + amt + ' ₪', '#ff6b6b'); mkShake(7);
-                mk.logs.unshift('🥷 גנב לקח ' + amt + ' ₪'); mk.logs.length = Math.min(mk.logs.length, 3);
+    if (mk.tut == null) {
+        if (mk.phase === 'prep') { mk.t += dt; if (mk.t >= MK_PREP) mkStartRush(); }
+        else if (mk.phase === 'rush') {
+            mk.t += dt;
+            const p = Math.min(1, (mk.t - MK_PREP) / MK_RUSH);
+            for (const th of mk.thieves) {
+                if (th.done) continue;
+                const prog = (p - (th.at - 0.16)) / 0.16;
+                th.x = (MKC.W + 40) + (196 - (MKC.W + 40)) * Math.min(1, Math.max(0, prog));
+                if (p >= th.at && !th.caught) {
+                    th.done = true;
+                    const amt = MK.thiefSteal(r);
+                    mkFloat(196, 150, '-' + amt + ' ₪', '#ff6b6b'); mkShake(7);
+                    mk.logs.unshift('🥷 גנב לקח ' + amt + ' ₪'); mk.logs.length = Math.min(mk.logs.length, 3);
+                }
             }
+            // לקוחות נכנסים לרחוב לפי הזמנים; מי שהגיע לדוכן - מזמין
+            while (mk.ai < mk.arrivals.length && mk.arrivals[mk.ai] <= p) { mk.ai++; mkArrive(); }
+            mkWalk(dt);
+            if (p >= 1 && mk.customers.length === 0) return mkEndDay();
         }
-        while (mk.ai < mk.arrivals.length && mk.arrivals[mk.ai] <= p) {
-            mk.ai++;
-            if (fire) { MK.scare(r); mkFloat(60, 130, '😱 לקוח ברח מהשריפה', '#ff8a80'); mk.logs.unshift('😱 לקוח ברח מהשריפה'); continue; }
-            const sale = MK.serveOne(r);
-            if (sale) { mkCustomer(sale.recipe, sale.price); mk.logs.unshift('🙋 ' + MK.RECIPES[sale.recipe].name + ' · ' + sale.price + ' ₪'); }
-            else { mkFloat(90, 130, '😞 אין מה להכין', '#b9a38e'); mk.logs.unshift('😞 לקוח הלך - אין חומרים'); }
-            mk.logs.length = Math.min(mk.logs.length, 3);
-            mkRender();
-        }
-        if (p >= 1) return mkEndDay();
     }
     mkUpdateLight();
     mkDraw();
     if (mk) mkRaf = requestAnimationFrame(mkFrame);
+}
+// לקוח נכנס מהרחוב. אם יש שריפה - הוא מסתובב ורץ, ונחשב כמי שברח
+function mkArrive() {
+    const r = mk.run, fire = mkFireOn(Math.min(1, (mk.t - MK_PREP) / MK_RUSH));
+    if (fire) { MK.scare(r); mkFloat(60, 130, '😱 לקוח ברח מהשריפה', '#ff8a80'); mk.logs.unshift('😱 לקוח ברח מהשריפה'); mk.logs.length = Math.min(mk.logs.length, 3); mkRender(); return; }
+    mk.customers.push({ x: -24, y: MK_GROUND + 10, col: ['#d64f6b', '#4f8fd6', '#e0a040', '#6bbf6a', '#9a6bd6', '#e07a4f'][Math.floor(Math.random() * 6)],
+                        phase: Math.random() * 6, state: 'walk', want: null, price: 0, wait: 0, t: 0 });
+}
+// הליכה איטית לתור: כל לקוח עומד מאחורי מי שלפניו. הראשון בתור מזמין כשהגיע לדוכן
+function mkWalk(dt) {
+    const queue = mk.customers.filter(c => c.state !== 'leave');
+    queue.forEach((c, i) => {
+        const target = MK_COUNTER - Math.min(26 * i, 120);   // התור נמשך משמאל לדוכן; הראשון עומד מול הדוכן
+        const step = 24 * dt;                                // הליכה איטית
+        c.x += Math.max(-step, Math.min(step, target - c.x));
+        if (c.state === 'walk' && i === 0 && Math.abs(c.x - target) < 0.5) {
+            const sale = MK.serveOne(mk.run);
+            if (sale) { c.want = sale.recipe; c.price = sale.price; mkFloat(c.x + 24, 118, '+' + sale.price + ' ₪', '#ffd23d'); mkSale(sale); }
+            else { c.want = null; mkFloat(c.x + 24, 118, '😞 אין מה להכין', '#b9a38e'); mk.logs.unshift('😞 לקוח הלך - אין חומרים'); mk.logs.length = Math.min(mk.logs.length, 3); mkRender(); }
+            c.state = 'wait'; c.wait = 0;
+        }
+        if (c.state === 'wait') { c.wait += dt; if (c.wait > 2.2) c.state = 'leave'; }
+    });
+    for (const c of mk.customers) if (c.state === 'leave') c.leaveT = (c.leaveT || 0) + dt;
+    mk.customers = mk.customers.filter(c => !(c.state === 'leave' && c.leaveT > 0.6));
+}
+function mkSale(sale) {
+    mk.logs.unshift('🙋 ' + (MK.RECIPES[sale.recipe].name || sale.recipe) + ' · ' + sale.price + ' ₪'); mk.logs.length = Math.min(mk.logs.length, 3);
+    for (let i = 0; i < 4; i++) mk.fx.push({ kind: 'coin', x: MK_COUNTER + 26, y: 120, vx: (Math.random() - 0.5) * 60, vy: -80 - Math.random() * 60, tx: 300, ty: 16, life: 0.9 + Math.random() * 0.4, max: 1.3 });
+    mkRender();
 }
 function mkEndDay() {
     const r = mk.run;
@@ -191,13 +256,6 @@ function mkTapScene(e) {
 /* ---------- אפקטים ---------- */
 function mkFloat(x, y, text, col) { if (mk) mk.fx.push({ kind: 'text', x, y, text, col, life: 1.3, max: 1.3 }); }
 function mkShake(n) { if (mk) mk.shake = Math.max(mk.shake || 0, n); }
-function mkCustomer(recipe, price) {
-    const col = ['#d64f6b', '#4f8fd6', '#e0a040', '#6bbf6a', '#9a6bd6', '#e07a4f'][Math.floor(Math.random() * 6)];
-    mk.customers.push({ x: -20, tx: 60 + (mk.customers.length % 3) * 6, y: MK_GROUND + 10, col, want: recipe, life: 2.6, leaving: false, phase: Math.random() * 6 });
-    mk.fx.push({ kind: 'text', x: 176, y: 110, text: '+' + price + ' ₪', col: '#ffd23d', life: 1.2, max: 1.2 });
-    for (let i = 0; i < 4; i++) mk.fx.push({ kind: 'coin', x: 176, y: 120, vx: (Math.random() - 0.5) * 60, vy: -80 - Math.random() * 60, tx: 300, ty: 16, life: 0.9 + Math.random() * 0.4, max: 1.3 });
-}
-
 /* ---------- תצוגה: ציור הרחוב ---------- */
 function mkDraw() {
     if (!mkC || !mk) return;
@@ -239,7 +297,6 @@ function mkDraw() {
     drawBank(c, 286, 96, t, G);
     drawStall(c, G);
     drawSeller(c, t, G);
-    mk.customers = mk.customers.filter(cu => cu.life > 0 && cu.x > -40);
     for (const cu of mk.customers) drawCustomer(c, cu, t);
     if (mk.fires.some(f => !f.out && mkFireOn(Math.min(1, (mk.t - MK_PREP) / MK_RUSH)) === f)) drawFire(c, t, G);
     for (const th of mk.thieves) if (!th.done || th.x > -30) drawThief(c, th, t, G);
@@ -314,18 +371,21 @@ function drawSeller(c, t, G) {
     c.restore();
 }
 function drawCustomer(c, cu, t) {
-    const bob = Math.sin(t * 6 + cu.phase) * 1.5;
-    if (!cu.leaving) cu.x += (cu.tx - cu.x) * 0.06; else cu.x -= 2.2;
-    if (!cu.leaving && cu.life < 1.8) cu.leaving = true;
-    cu.life -= 1 / 60;
-    c.save(); c.globalAlpha = Math.min(1, cu.life);
+    const bob = cu.state === 'walk' ? Math.abs(Math.sin(t * 9 + cu.phase)) * 3 : Math.sin(t * 4 + cu.phase) * 1;
+    c.save();
+    if (cu.state === 'leave') c.globalAlpha = Math.max(0, 1 - cu.leaveT / 0.6);   // מי שסיים נעלם בהדרגה
     c.fillStyle = cu.col; c.strokeStyle = '#3a1e0a'; c.lineWidth = 2;
-    c.beginPath(); c.roundRect ? c.roundRect(cu.x - 10, cu.y - 18 + bob, 20, 22, 7) : c.rect(cu.x - 10, cu.y - 18, 20, 22); c.fill(); c.stroke();
-    c.fillStyle = '#e0a878'; c.beginPath(); c.arc(cu.x, cu.y - 26 + bob, 9, 0, 7); c.fill(); c.stroke();
-    c.fillStyle = '#2a160c'; c.beginPath(); c.arc(cu.x - 3, cu.y - 27 + bob, 1.4, 0, 7); c.arc(cu.x + 3, cu.y - 27 + bob, 1.4, 0, 7); c.fill();
-    if (cu.want && !cu.leaving) {
-        c.fillStyle = '#fff'; c.beginPath(); c.roundRect ? c.roundRect(cu.x + 8, cu.y - 56, 30, 24, 8) : c.rect(cu.x + 8, cu.y - 56, 30, 24); c.fill();
-        c.font = '16px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(MK.RECIPES[cu.want].icon, cu.x + 23, cu.y - 44);
+    c.beginPath(); c.roundRect ? c.roundRect(cu.x - 10, cu.y - 18 - bob, 20, 22, 7) : c.rect(cu.x - 10, cu.y - 18 - bob, 20, 22); c.fill(); c.stroke();
+    c.fillStyle = '#e0a878'; c.beginPath(); c.arc(cu.x, cu.y - 26 - bob, 9, 0, 7); c.fill(); c.stroke();
+    c.fillStyle = '#2a160c'; c.beginPath(); c.arc(cu.x - 3, cu.y - 27 - bob, 1.4, 0, 7); c.arc(cu.x + 3, cu.y - 27 - bob, 1.4, 0, 7); c.fill();
+    if (cu.state === 'walk') {                                    // "הולך": רגליים מתנדנדות
+        c.fillStyle = '#4a2a10'; const sw = Math.sin(t * 9 + cu.phase) * 4;
+        c.fillRect(cu.x - 6 + sw, cu.y + 4, 4, 6); c.fillRect(cu.x + 2 - sw, cu.y + 4, 4, 6);
+    }
+    if (cu.state === 'walk' || cu.state === 'wait') {              // בועה: מה הוא רוצה (או "..." בהליכה)
+        c.fillStyle = '#fff'; c.beginPath(); c.roundRect ? c.roundRect(cu.x + 8, cu.y - 58, 32, 24, 8) : c.rect(cu.x + 8, cu.y - 58, 32, 24); c.fill();
+        c.font = '16px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText(cu.want ? MK.RECIPES[cu.want].icon : (cu.state === 'walk' ? '…' : '❓'), cu.x + 24, cu.y - 46);
     }
     c.restore();
 }
