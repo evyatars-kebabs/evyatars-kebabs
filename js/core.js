@@ -605,6 +605,7 @@ const firebaseConfig = {
         if (typeof kvStop === 'function') kvStop();
         if (typeof dlvStop === 'function') dlvStop();
         if (typeof hpStop === 'function') hpStop();
+        if (typeof mkStop === 'function') mkStop();
     }
 
     /* --- משתנים גלובליים ומזהה שחקן ייחודי --- */
@@ -963,7 +964,7 @@ const firebaseConfig = {
 
 		if (targetScreen) targetScreen.classList.add('active');
 		if (targetBtn) targetBtn.classList.add('active');
-		document.body.classList.toggle('in-game', ['catch', 'trivia', 'goods', 'shvartz', 'ninja', 'kvk', 'delivery', 'turtles', 'hop'].includes(screenId));
+		document.body.classList.toggle('in-game', ['catch', 'trivia', 'goods', 'shvartz', 'ninja', 'kvk', 'delivery', 'turtles', 'hop', 'market'].includes(screenId));
 
 		// בעת מעבר למסך השיאים, מציגים את הטאב שנבחר כעת (ברירת מחדל: המשחק הראשי)
 		if (screenId === 'shop') renderShop();

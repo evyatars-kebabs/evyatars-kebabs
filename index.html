@@ -90,6 +90,12 @@
             <div class="gc-go">◀</div>
         </div>
 
+        <div class="game-card" onclick="startMarketGame()">
+            <div class="gc-icon">🏪</div>
+            <div class="gc-body"><h3>שוק התבלינים <span class="new-badge">חדש</span></h3><p>קנו, בשלו ומכרו 14 ימים בשוק צבעוני - ושימרו את הכסף מהגנבים בבנק!</p></div>
+            <div class="gc-go">◀</div>
+        </div>
+
         <div class="game-card" onclick="startHopGame()">
             <div class="gc-icon">🦘</div>
             <div class="gc-body"><h3>קבב ג'אמפ <span class="new-badge">חדש</span></h3><p>טפסו בלי סוף משיפוד לשיפוד, דרך הכספת ועד לילה בעיר - והיזהרו מהגריל הלוהט!</p></div>
@@ -312,6 +318,29 @@
 		</div>
 	</div>
 
+    <div id="screen-market" class="screen mk-screen">
+        <div class="hud">
+            <div class="hud-pill"><small>יום</small><span id="mk-day">1 / 14</span></div>
+            <div class="hud-pill"><small>במזומן</small><span id="mk-cash">200 ₪</span></div>
+            <div class="hud-pill"><small>בבנק</small><span id="mk-bank">0 ₪</span></div>
+            <button class="mk-speedbtn" id="mk-speed" onclick="mkSpeed()" aria-label="האצה">×1</button>
+        </div>
+        <div class="mk-stage">
+            <canvas id="mk-canvas" onpointerdown="mkTapScene(event)"></canvas>
+            <div id="mk-phase" class="mk-phase"></div>
+            <div class="mk-bar"><div id="mk-fill"></div></div>
+        </div>
+        <div id="mk-banner" class="mk-banner"></div>
+        <div class="mk-tabs">
+            <button class="mk-tab on" data-tab="market" onclick="mkSetTab('market')">🛒 שוק</button>
+            <button class="mk-tab" data-tab="cook" onclick="mkSetTab('cook')">🍢 עמדה</button>
+            <button class="mk-tab" data-tab="bank" onclick="mkSetTab('bank')">🏦 בנק</button>
+        </div>
+        <div id="mk-panel" class="mk-panel"></div>
+        <div class="mk-meta"><span id="mk-best"></span></div>
+        <div id="mk-log" class="mk-log"></div>
+    </div>
+
     <div id="screen-hop" class="screen">
         <div class="hud">
             <div class="hud-pill"><small>גובה</small><span id="hp-m">0</span></div>
@@ -368,6 +397,8 @@
 <script src="js/game-ninja.js"></script>
 <script src="js/game-kvk.js"></script>
 <script src="js/game-delivery.js"></script>
+<script src="js/game-market-engine.js"></script>
+<script src="js/game-market.js"></script>
 <script src="js/game-hop.js"></script>
 <script src="js/game-turtles.js"></script>
 <script src="js/ui.js"></script>
