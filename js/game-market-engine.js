@@ -1,18 +1,17 @@
 /* ============================================================
    מנוע שוק התבלינים (Spice Market) - כל החוקים, בלי מסכים.
    משמש את המשחק (js/game-market.js) ואת הסימולטור (tools/spice-sim.js).
-   יום = מחיר וקנייה ובישול, לקוחות שמגיעים, גנבים שמנסים לגנוב מהקופה, ואירועים.
+   יום = קנייה של חומרי גלם למחסן, לקוחות שמזמינים מנות (המנה נעשית מהחומרים במחסן),
+   פופולריות שגדלה במכירות, גנבים שמנסים לגנוב מהקופה, שריפה שמפחידה לקוחות, ואירועים.
    ============================================================ */
 const MK = (() => {
 'use strict';
 
 const DAYS = 14;
 const START_CASH = 200;
-const WITHDRAW_FEE = 100;              // דמי משיכה קבועים מהבנק
+const WITHDRAW_FEE = 10;               // דמי משיכה קבועים מהבנק
 const BANK_INTEREST = 0.02;            // ריבית יומית על הכסף בבנק
 const THIEF_STEAL = 0.12;              // גנב לוקח 12% מהמזומן בקופה
-const GRILL_BASE = 12, GRILL_STEP = 4;
-const GRILL_COST = [120, 260, 480];
 const SIGN_COST = [90, 200];
 const SIGN_BOOST = [0.12, 0.25];
 
@@ -110,9 +109,10 @@ function buyImpact(m, k, qty) { m.price[k] *= 1 + Math.min(0.25, qty * 0.004); }
 function newRun(seed) {
     const rand = rng(seed);
     return {
-        seed, day: 0, cash: START_CASH, bank: 0, stock: {}, ready: {}, rand, market: makeMarket(rand),
-        sold: 0, lost: 0, stolen: 0, caught: 0, grillLevel: 0, grillSlots: GRILL_BASE, signLevel: 0,
-        cookedToday: 0, visitorsLeft: 0, thieves: 0, priceMult: 1, takings: 0, gifted: 0,
+        seed, day: 0, cash: START_CASH, bank: 0, stock: {}, rand, market: makeMarket(rand),
+        sold: 0, lost: 0, stolen: 0, caught: 0, signLevel: 0, pop: POP_START,
+        visitorsLeft: 0, thieves: 0, priceMult: 1, takings: 0, gifted: 0,
+        dayRev: 0, daySpent: 0, daySold: 0, dayStolen: 0, dayLost: 0, log: [],
     };
 }
 function stockValue(run, prices) { let v = 0; for (const k in run.stock) v += run.stock[k] * (prices[k] || INGREDIENTS[k].base); return v; }
@@ -121,16 +121,17 @@ function cookable(run, rid) {
     for (const k in u) n = Math.min(n, Math.floor((run.stock[k] || 0) / u[k]));
     return Math.max(0, n);
 }
+// לקוחות: נמשכים לפי הפופולריות (שגדלה במכירות) והמחיר. הרבה פחות לקוחות מקודם
 function expectedVisitors(run, mult) {
     const mod = eventMod(run.market, run.day);
     const signB = run.signLevel > 0 ? SIGN_BOOST[run.signLevel - 1] : 0;
     const elasticity = Math.max(0.3, 1 - 0.6 * (mult - 1));
-    return (12 + 0.5 * run.day) * mod.demand * (1 + signB) * elasticity;
+    return (4 + 0.2 * run.day + run.pop * 0.2) * mod.demand * (1 + signB) * elasticity;
 }
 function thiefCount(run) {
     const mod = eventMod(run.market, run.day);
-    const r = run.rand(), base = r < 0.3 ? 1 : r < 0.08 ? 2 : 0;
-    return Math.round(base * mod.thief + (r < 0.04 ? 1 : 0) * mod.thief);
+    const r = run.rand(), base = r < 0.6 ? 1 : r < 0.25 ? 2 : 0;
+    return Math.round(base * mod.thief);
 }
 function fitBudget(buy, prices, cash) {
     let cost = 0; for (const k in buy) cost += buy[k] * prices[k];
@@ -141,24 +142,26 @@ function fitBudget(buy, prices, cash) {
 }
 
 /* ---------- פעולות ---------- */
+const POP_START = 10, POP_MAX = 100;
+const FIRE_CHANCE = 0.2;               // סיכוי ליום לשריפה בשוק (בזמן המכירה)
+// שדרוג יחיד: שלט - מגביר את מספר הלקוחות
 function upgrade(run, what) {
-    if (what === 'grill' && run.grillLevel < GRILL_COST.length && run.cash >= GRILL_COST[run.grillLevel]) {
-        run.cash -= GRILL_COST[run.grillLevel]; run.grillLevel++; run.grillSlots += GRILL_STEP; return true;
-    }
     if (what === 'sign' && run.signLevel < SIGN_COST.length && run.cash >= SIGN_COST[run.signLevel]) {
         run.cash -= SIGN_COST[run.signLevel]; run.signLevel++; return true;
     }
     return false;
 }
+// קנייה של חומרי גלם למחסן
 function buy(run, k, q) {
     const price = dayPrices(run.market, run.day)[k];
     q = Math.min(Math.floor(q), Math.floor(run.cash / price));
     if (q <= 0) return 0;
-    run.cash -= q * price; run.stock[k] = (run.stock[k] || 0) + q;
+    const cost = q * price;
+    run.cash -= cost; run.daySpent += cost; run.stock[k] = (run.stock[k] || 0) + q;
     buyImpact(run.market, k, q);
     return q;
 }
-// הבנק: הפקדה בחינם, משיכה עולה דמי משיכה קבועים (100 ₪)
+// הבנק: הפקדה בחינם, משיכה עולה דמי משיכה קבועים
 function deposit(run, amount) {
     amount = Math.floor(Math.min(amount, run.cash));
     if (amount <= 0) return 0;
@@ -169,61 +172,72 @@ function withdraw(run, amount) {
     if (amount <= WITHDRAW_FEE) return 0;
     run.bank -= amount; run.cash += amount - WITHDRAW_FEE; return amount - WITHDRAW_FEE;
 }
-function cookOne(run, rid) {
-    if (run.cookedToday >= run.grillSlots || cookable(run, rid) < 1) return false;
-    for (const k in RECIPES[rid].uses) run.stock[k] -= RECIPES[rid].uses[k];
-    run.ready[rid] = (run.ready[rid] || 0) + 1; run.cookedToday++;
-    return true;
-}
-// פתיחת היום: אירועים חד-פעמיים, גנבים, ומספר הלקוחות לפי המחיר
+// פתיחת היום: אירועים חד-פעמיים, גנבים, ומספר הלקוחות לפי המחיר והפופולריות
 function startDay(run) {
-    run.cookedToday = 0;
+    run.dayRev = 0; run.daySpent = 0; run.daySold = 0; run.dayStolen = 0; run.dayLost = 0;
     for (const e of run.market.events) if (e.from === run.day && e.gift) { run.cash += e.gift; run.gifted += e.gift; }
     for (const e of run.market.events) if (e.from === run.day && e.loss) run.cash = Math.max(0, run.cash - e.loss);
     run.thieves = thiefCount(run);
     run.visitorsLeft = Math.round(expectedVisitors(run, run.priceMult) * (0.85 + run.rand() * 0.3));
 }
-// גנב הגיע לקופה ולקח כסף (אם לא נתפס)
 function thiefSteal(run) {
     const amt = Math.floor(run.cash * THIEF_STEAL);
-    run.cash -= amt; run.stolen += amt; return amt;
+    run.cash -= amt; run.stolen += amt; run.dayStolen += amt; return amt;
 }
+// שריפה: לקוחות ברחו - נספר כמו לקוח שהלך, והפופולריות יורדת
+function scare(run) {
+    if (run.visitorsLeft <= 0) return false;
+    run.visitorsLeft--; run.lost++; run.dayLost++;
+    run.pop = Math.max(0, run.pop - 2);
+    return true;
+}
+// לקוח מזמין מנה: נעשית מהחומרים במחסן. הפופולריות עולה במכירה ויורדת כשאין מה למכור
 function serveOne(run) {
     if (run.visitorsLeft <= 0) return null;
     run.visitorsLeft--;
     const prefs = Object.keys(RECIPES), w = {}; let total = 0;
     for (const r of prefs) {
-        w[r] = (run.ready[r] || 0) > 0 ? RECIPES[r].pref * Math.max(0.05, 1.6 - 0.8 * run.priceMult) : 0;
+        w[r] = cookable(run, r) > 0 ? RECIPES[r].pref * Math.max(0.05, 1.6 - 0.8 * run.priceMult) : 0;
         total += w[r];
     }
-    if (total <= 0) { run.lost++; return null; }
+    if (total <= 0) { run.lost++; run.dayLost++; run.pop = Math.max(0, run.pop - 1); return null; }
     let x = run.rand() * total, pick = prefs[0];
     for (const r of prefs) { x -= w[r]; if (x <= 0) { pick = r; break; } }
-    run.ready[pick]--;
+    for (const k in RECIPES[pick].uses) run.stock[k] -= RECIPES[pick].uses[k];
     const price = Math.round(RECIPES[pick].price * run.priceMult);
-    run.cash += price; run.takings += price; run.sold++;
+    run.cash += price; run.takings += price; run.dayRev += price; run.sold++; run.daySold++;
+    run.pop = Math.min(POP_MAX, run.pop + 1);
     return { recipe: pick, price };
 }
+// סוף היום: מסכמים את היום, הריבית בבנק, הפופולריות דועכת מעט, והשוק זז
 function endDay(run) {
-    run.lost += run.visitorsLeft; run.visitorsLeft = 0;
-    run.ready = {};
+    run.lost += run.visitorsLeft; run.dayLost += run.visitorsLeft; run.visitorsLeft = 0;
     const mod = eventMod(run.market, run.day);
+    const bankStart = run.bank;
     run.bank = Math.round(run.bank * (1 + BANK_INTEREST * mod.interest));
+    const summary = {
+        day: run.day, sold: run.daySold, revenue: run.dayRev, spent: run.daySpent, stolen: run.dayStolen,
+        lost: run.dayLost, interest: run.bank - bankStart, profit: run.dayRev - run.daySpent - run.dayStolen,
+        pop: Math.round(run.pop), events: eventsOn(run.market, run.day).map(e => e.icon + ' ' + e.name),
+    };
+    run.log.push(summary);
+    run.pop = Math.max(5, run.pop * 0.93);
     stepMarket(run.market);
     run.day++;
+    return summary;
 }
 
+// המלצה לסימולטור: בזבוז מחומרים לא נחשב, והשריפה מדומה כהפסד חלקי
 function playDay(run, plan) {
     if (plan.upgrade) upgrade(run, plan.upgrade);
-    startDay(run);                                             // (לפני הקנייה, כדי שהאירועים יחולו)
+    startDay(run);
     for (const k in plan.buy || {}) buy(run, k, plan.buy[k]);
-    for (const rid in plan.cook || {}) { const n = Math.min(plan.cook[rid], cookable(run, rid)); for (let i = 0; i < n; i++) cookOne(run, rid); }
     if (plan.deposit) deposit(run, plan.deposit);
     run.priceMult = plan.priceMult || 1;
     run.visitorsLeft = Math.round(expectedVisitors(run, run.priceMult) * (0.85 + run.rand() * 0.3));
     for (let i = 0; i < run.thieves; i++) thiefSteal(run);
     while (run.visitorsLeft > 0) serveOne(run);
-    endDay(run);
+    return endDay(run);
 }
 function netWorth(run) {
     return run.cash + run.bank + stockValue(run, dayPrices(run.market, Math.min(run.day, DAYS - 1)));
@@ -233,40 +247,33 @@ function coinsFor(profit, sold) {
 }
 
 /* ---------- אסטרטגיות לסימולטור ---------- */
+// כמה מנות אפשר להכין מחומרים לכל מנה, אחרי הקנייה המתוכננת
+function bestRecipe(run, pr) {
+    const cost = r => Object.keys(RECIPES[r].uses).reduce((a, k) => a + RECIPES[r].uses[k] * pr[k], 0);
+    return Object.keys(RECIPES).map(r => ({ r, m: RECIPES[r].price - cost(r) })).sort((a, b) => b.m - a.m)[0].r;
+}
 function careless(run) {
     const buyP = {}; for (const k in INGREDIENTS) buyP[k] = Math.floor(run.rand() * 6);
-    return { buy: buyP, cook: { shawarma: 99, kebab: 99, falafel: 99, schnitzel: 99 }, priceMult: 1 };
+    return { buy: buyP, priceMult: 1 };
 }
 function reasonable(run) {
-    const pr = dayPrices(run.market, run.day);
-    const margin = r => RECIPES[r].price - Object.keys(RECIPES[r].uses).reduce((a, k) => a + RECIPES[r].uses[k] * pr[k], 0);
-    const best = Object.keys(RECIPES).sort((a, b) => margin(b) - margin(a))[0];
-    const buyP = {}; for (const k in RECIPES[best].uses) buyP[k] = RECIPES[best].uses[k] * Math.min(run.grillSlots, 12);
-    const up = run.grillLevel < 1 && run.cash > 600 ? 'grill' : null;
-    return { buy: fitBudget(buyP, pr, (run.cash - (up ? GRILL_COST[0] : 0)) * 0.93), cook: { [best]: run.grillSlots }, priceMult: 1, upgrade: up };
+    const pr = dayPrices(run.market, run.day), best = bestRecipe(run, pr);
+    const want = Math.round(expectedVisitors(run, 1) * 0.9);
+    const buyP = {}; for (const k in RECIPES[best].uses) buyP[k] = Math.max(0, RECIPES[best].uses[k] * want - (run.stock[k] || 0));
+    return { buy: fitBudget(buyP, pr, run.cash * 0.93), priceMult: 1, upgrade: run.signLevel === 0 && run.cash > 400 ? 'sign' : null };
 }
 function strong(run) {
-    const pr = dayPrices(run.market, run.day);
-    const cost = r => Object.keys(RECIPES[r].uses).reduce((a, k) => a + RECIPES[r].uses[k] * pr[k], 0);
-    const ranked = Object.keys(RECIPES).map(r => ({ r, m: RECIPES[r].price - cost(r) })).filter(x => x.m > 0).sort((a, b) => b.m - a.m);
-    const cook = {}, buyP = {};
-    if (ranked.length) {
-        const r = ranked[0].r; cook[r] = run.grillSlots;
-        for (const k in RECIPES[r].uses) buyP[k] = Math.max(0, RECIPES[r].uses[k] * run.grillSlots - (run.stock[k] || 0));
-    }
-    const upgradeW = run.grillLevel < GRILL_COST.length && run.day >= 2 && run.day < 10 && run.cash >= GRILL_COST[run.grillLevel] + 250 ? 'grill'
-        : run.signLevel < SIGN_COST.length && run.day < 7 && run.cash >= SIGN_COST[run.signLevel] + 500 ? 'sign' : null;
-    const spent = upgradeW === 'grill' ? GRILL_COST[run.grillLevel] : upgradeW === 'sign' ? SIGN_COST[run.signLevel] : 0;
-    const cookedTotal = Object.values(cook).reduce((a, b) => a + b, 0) || 1;
-    // המחיר שממקסם הכנסה צפויה: מחיר × מספר מנות שנמכרות (מוגבל גם בכמות הלקוחות שמגיעים)
+    const pr = dayPrices(run.market, run.day), best = bestRecipe(run, pr);
+    const want = Math.round(expectedVisitors(run, 1.1) * 0.9);
+    const buyP = {}; for (const k in RECIPES[best].uses) buyP[k] = Math.max(0, RECIPES[best].uses[k] * want - (run.stock[k] || 0));
+    const spent = run.signLevel === 0 && run.day >= 2 && run.cash > 300 ? SIGN_COST[0] : 0;
+    // מחיר שממקסם הכנסה: מחיר × מנות שאפשר למכור מהמלאי
+    const Q = want + Math.floor((run.stock[Object.keys(RECIPES[best].uses)[0]] || 0) / RECIPES[best].uses[Object.keys(RECIPES[best].uses)[0]]);
     let priceMult = 1, bestRev = -1;
-    for (let m = 0.8; m <= 1.6001; m += 0.02) {
-        const rev = m * Math.min(expectedVisitors(run, m), cookedTotal);
-        if (rev > bestRev) { bestRev = rev; priceMult = m; }
-    }
-    const keep = 150;                                              // מה שנשאר מעל מזומן לקנייה - לבנק (בטוח, וגם מביא ריבית)
+    for (let m = 0.8; m <= 1.6001; m += 0.02) { const rev = m * Math.min(expectedVisitors(run, m), Q); if (rev > bestRev) { bestRev = rev; priceMult = m; } }
+    const keep = 150;
     const deposit = run.cash > keep + 250 ? Math.floor(run.cash - keep - 250) : 0;
-    return { buy: fitBudget(buyP, pr, (run.cash - spent) * 0.93), cook, priceMult, upgrade: upgradeW, deposit };
+    return { buy: fitBudget(buyP, pr, (run.cash - spent) * 0.93), priceMult, upgrade: spent ? 'sign' : null, deposit };
 }
 const STRATS = { careless, reasonable, strong };
 function playRun(seed, strat) {
@@ -277,9 +284,9 @@ function playRun(seed, strat) {
 }
 
 return {
-    DAYS, START_CASH, WITHDRAW_FEE, INGREDIENTS, RECIPES, GRILL_COST, SIGN_COST, EVENTS,
+    DAYS, START_CASH, WITHDRAW_FEE, INGREDIENTS, RECIPES, SIGN_COST, EVENTS, FIRE_CHANCE, POP_START, POP_MAX,
     rng, newRun, dayPrices, eventsOn, eventMod, expectedVisitors, cookable, fitBudget,
-    upgrade, buy, deposit, withdraw, cookOne, startDay, thiefSteal, serveOne, endDay, playDay,
+    upgrade, buy, deposit, withdraw, startDay, thiefSteal, scare, serveOne, endDay, playDay,
     netWorth, coinsFor, STRATS, playRun,
 };
 })();

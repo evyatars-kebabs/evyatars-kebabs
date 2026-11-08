@@ -327,18 +327,21 @@
         </div>
         <div class="mk-stage">
             <canvas id="mk-canvas" onpointerdown="mkTapScene(event)"></canvas>
+            <div id="mk-banner" class="mk-banner"></div>
             <div id="mk-phase" class="mk-phase"></div>
             <div class="mk-bar"><div id="mk-fill"></div></div>
+            <div id="mk-log" class="mk-log"></div>
         </div>
-        <div id="mk-banner" class="mk-banner"></div>
-        <div class="mk-tabs">
-            <button class="mk-tab on" data-tab="market" onclick="mkSetTab('market')">🛒 שוק</button>
-            <button class="mk-tab" data-tab="cook" onclick="mkSetTab('cook')">🍢 עמדה</button>
-            <button class="mk-tab" data-tab="bank" onclick="mkSetTab('bank')">🏦 בנק</button>
+        <div class="mk-sheet">
+            <div class="mk-tabs">
+                <button class="mk-tab on" data-tab="market" onclick="mkSetTab('market')">🛒 מחסן</button>
+                <button class="mk-tab" data-tab="price" onclick="mkSetTab('price')">🏷️ מחיר</button>
+                <button class="mk-tab" data-tab="bank" onclick="mkSetTab('bank')">🏦 בנק</button>
+            </div>
+            <div id="mk-panel" class="mk-panel"></div>
+            <div class="mk-meta"><span id="mk-best"></span></div>
         </div>
-        <div id="mk-panel" class="mk-panel"></div>
-        <div class="mk-meta"><span id="mk-best"></span></div>
-        <div id="mk-log" class="mk-log"></div>
+        <div id="mk-summary" class="mk-summary"></div>
     </div>
 
     <div id="screen-hop" class="screen">

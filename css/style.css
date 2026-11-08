@@ -1596,27 +1596,33 @@ body.swipe-l .screen.active { animation: swipeInL .28s cubic-bezier(.2, .9, .3, 
 .hp-ctrl.on { border-color: #ffd23d; background: rgba(255, 210, 60, 0.15); }
 .hp-menu-x { padding: 9px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, 0.12); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
 
-/* שוק התבלינים: סצנה צבעונית, פאנל פעולות ולשוניות */
-.mk-screen { gap: 6px; }
+/* שוק התבלינים: מסך מלא - הסצנה ממלאת את המסך, והפאנל צף בתחתיתו */
+.mk-screen { position: relative; padding: 0; gap: 0; overflow: hidden; }
+.mk-screen .hud { position: absolute; top: 0; left: 0; right: 0; z-index: 4; margin: 0; padding: 8px 10px; background: linear-gradient(180deg, rgba(40,20,5,0.75), rgba(40,20,5,0)); }
+.mk-screen .hud-pill { min-width: 0; padding: 4px 9px; white-space: nowrap; gap: 4px; background: rgba(20,10,4,0.6); }
+.mk-screen .hud-pill span { font-size: 0.9rem; }
+.mk-screen .hud-pill small { font-size: 0.6rem; }
 .mk-speedbtn { border: 0; border-radius: 999px; padding: 6px 12px; font: inherit; font-weight: 800; color: #2a1204; cursor: pointer;
     background: linear-gradient(180deg, #ffd24a, #ff8a1a); box-shadow: 0 2px 0 #a8430c; }
-.mk-stage { position: relative; border-radius: 18px; overflow: hidden; border: 3px solid #7a4a1a; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
-#mk-canvas { display: block; width: 100%; touch-action: manipulation; }
-.mk-banner { position: absolute; top: 34px; left: 0; right: 0; text-align: center; font-size: 0.72rem; font-weight: 700; color: #fff;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); padding: 0 6px; pointer-events: none; }
-.mk-phase { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; font-size: 0.78rem; font-weight: 800; color: #fff3d0;
-    background: rgba(40, 20, 5, 0.55); padding: 4px 6px; pointer-events: none; }
-.mk-stage .mk-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; border-radius: 0; background: rgba(0, 0, 0, 0.35); }
+.mk-stage { position: absolute; inset: 0; bottom: 0; overflow: hidden; }
+#mk-canvas { display: block; touch-action: manipulation; }
+.mk-banner { position: absolute; top: 56px; left: 8px; right: 8px; text-align: center; font-size: 0.74rem; font-weight: 800; color: #fff3d0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none; z-index: 3; }
+.mk-phase { position: absolute; top: 80px; left: 0; right: 0; text-align: center; font-size: 0.78rem; font-weight: 800; color: #fff3d0;
+    background: rgba(40, 20, 5, 0.55); padding: 3px 6px; pointer-events: none; z-index: 3; }
+.mk-bar { position: absolute; left: 0; right: 0; top: 0; height: 5px; background: rgba(0, 0, 0, 0.35); z-index: 3; }
 .mk-bar div { height: 100%; width: 0; transition: width 0.1s linear; }
 .mk-bar div.prep { background: linear-gradient(90deg, #7fd0ff, #3a8fe0); }
 .mk-bar div.rush { background: linear-gradient(90deg, #ffd24a, #ff8a1a); }
+.mk-log { position: absolute; top: 112px; right: 8px; width: 40%; font-size: 0.66rem; color: #fff; text-shadow: 0 1px 2px #000; line-height: 1.5; pointer-events: none; z-index: 3; }
+.mk-sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; padding: 8px; background: linear-gradient(180deg, rgba(30,14,6,0.85), rgba(30,14,6,0.97));
+    border-top: 2px solid #ffb020; border-radius: 18px 18px 0 0; display: flex; flex-direction: column; gap: 6px; max-height: 44%; }
 .mk-tabs { display: flex; gap: 6px; }
 .mk-tab { flex: 1; border: 2px solid #7a4a1a; border-radius: 12px; padding: 7px 4px; font: inherit; font-weight: 800; font-size: 0.8rem;
     color: #f0dcc8; background: rgba(0, 0, 0, 0.3); cursor: pointer; }
 .mk-tab.on { background: linear-gradient(180deg, #ffd24a, #ffb020); color: #2a1204; border-color: #ffe27a; }
-.mk-panel { display: flex; flex-direction: column; gap: 4px; max-height: 210px; overflow-y: auto; padding: 4px; background: rgba(0, 0, 0, 0.25);
-    border: 1px solid var(--border-color); border-radius: 14px; }
-.mk-row { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 12px; background: rgba(255, 220, 160, 0.07); }
+.mk-panel { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-height: 0; }
+.mk-row { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 12px; background: rgba(255, 220, 160, 0.08); }
 .mk-name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .mk-name b { font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mk-name small { font-size: 0.66rem; color: #c9b8a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1628,14 +1634,22 @@ body.swipe-l .screen.active { animation: swipeInL .28s cubic-bezier(.2, .9, .3, 
     background: linear-gradient(180deg, #ffe27a, #ffb020); box-shadow: 0 2px 0 #a8430c; }
 .mk-btn:disabled { opacity: 0.35; cursor: default; }
 .mk-btn:active:not(:disabled) { transform: translateY(2px); }
-.mk-cookbtn { background: linear-gradient(180deg, #8fe39a, #3fa35a); box-shadow: 0 2px 0 #1f6a34; }
 .mk-wide { width: 100%; text-align: center; }
 .mk-info { font-size: 0.72rem; color: #d9cbb8; text-align: center; padding: 4px; line-height: 1.4; }
 .mk-meta { display: flex; justify-content: center; font-size: 0.7rem; color: #c9b8a8; }
-.mk-log { font-size: 0.72rem; color: #e6d6bf; text-align: center; min-height: 2.6em; line-height: 1.5; }
-
-.mk-screen .hud { gap: 6px; }
-.mk-screen .hud-pill { min-width: 0; padding: 4px 9px; white-space: nowrap; gap: 4px; }
-.mk-screen .hud-pill span { font-size: 0.9rem; }
-.mk-screen .hud-pill small { font-size: 0.6rem; }
-.mk-banner { position: static !important; text-align: center; font-size: 0.74rem; font-weight: 700; color: #ffe27a; min-height: 1.3em; padding: 2px 4px; text-shadow: none; }
+/* סיכום בין הימים */
+.mk-summary { position: absolute; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px;
+    padding: 14px; background: rgba(20, 10, 4, 0.7); backdrop-filter: blur(3px); overflow-y: auto; }
+.mk-summary.open { display: flex; }
+.mk-sum-card { width: min(340px, 100%); background: linear-gradient(160deg, #5a2c12, #24100a); border: 2px solid #ffb020; border-radius: 18px; padding: 12px; color: #fff; }
+.mk-sum-card h3, .mk-sum-card h4 { margin: 0 0 8px; text-align: center; color: #ffe27a; }
+.mk-sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mk-sum-grid > div { background: rgba(0, 0, 0, 0.25); border-radius: 10px; padding: 6px; display: flex; flex-direction: column; align-items: center; }
+.mk-sum-grid small { font-size: 0.66rem; color: #c9b8a8; }
+.mk-sum-grid b { font-size: 0.95rem; }
+.mk-sum-profit { margin-top: 8px; text-align: center; font-family: 'Secular One', sans-serif; font-size: 1.3rem; }
+.mk-sum-profit.pos { color: #7ee787; } .mk-sum-profit.neg { color: #ff8a80; }
+.mk-sum-ev { font-size: 0.7rem; color: #d9cbb8; text-align: center; margin-top: 4px; line-height: 1.4; }
+.mk-sum-bank { text-align: center; font-size: 0.85rem; }
+.mk-sum-btns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+.mk-next { width: min(340px, 100%); padding: 12px; font-size: 1rem; }
