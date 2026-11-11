@@ -481,6 +481,13 @@ const SK_BG = {
         c.fillStyle = '#3a1a0a'; c.fillRect(0, H * 0.9, W, H * 0.1);
         bgFallers(c, W, H, t, 12, 291, (x, y, i) => { c.fillStyle = i % 3 ? '#e0202e' : '#ff5a6a'; c.beginPath(); c.ellipse(x, y, 5, 3, t * 2 + i, 0, Math.PI * 2); c.fill(); }, 20);
     },
+    olivia(c, W, H, t) {                                        // אוליביה רודריגו: במת הופעה סגולה עם זרקור ונצנוצים
+        bgLinear(c, W, H, ['#1c0a33', '#4a1f7a']);
+        bgSpot(c, W / 2, W, H, '225,200,255', 0.36 + 0.05 * Math.sin(t * 2));
+        bgCurtains(c, W, H, '#7a3ac8', '#3f1a78', t);
+        c.fillStyle = '#1a0d2a'; c.fillRect(0, H * 0.9, W, H * 0.1);
+        bgFallers(c, W, H, t, 12, 311, (x, y, i) => bgSparkle(c, x, y, 2.6, i % 2 ? 'rgba(255,255,255,0.85)' : 'rgba(214,180,255,0.85)'), 14);
+    },
     lebron: (c, W, H, t) => bgCourt(c, W, H, t, '#552583', '#fdb927', '#552583'),    // לברון: אולם בצבעי הקבוצה
     lebron_heat: (c, W, H, t) => bgCourt(c, W, H, t, '#98002e', '#d6243a', '#f9a01b'),
     lebron_cavs: (c, W, H, t) => bgCourt(c, W, H, t, '#6f263d', '#ffb81c', '#041e42'),

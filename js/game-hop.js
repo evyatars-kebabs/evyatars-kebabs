@@ -481,7 +481,8 @@ const hpModels = {};
 // צבעים קבועים לסקינים שהדגימה לא מתאימה להם
 const HP_SKIN_COLORS = {
     dosus:         { body: '#16161c', belly: '#f2f2f2', pants: '#101014' },     // חליפה שחורה וחולצה לבנה
-    dosus_cheddar: { body: '#e8952a', belly: '#ffd27a', pants: '#a8601a' }      // גבינה
+    dosus_cheddar: { body: '#e8952a', belly: '#ffd27a', pants: '#a8601a' },     // גבינה
+    olivia:        { body: '#17171c', belly: '#e2ae86', pants: '#101014' }      // וסט שחור עם מחשוף, מכנסיים שחורים
 };
 // סקין שהציור שלו הוא דמות שלמה (עם ידיים משלה) - כל הציור הוא הגוף, ומוסיפים רק רגליים
 const hpWhole = sk => sk.id === 'shluk' || sk.variantOf === 'shluk';

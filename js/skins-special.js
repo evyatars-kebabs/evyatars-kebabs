@@ -1966,3 +1966,106 @@ function skSpideyBack(c, sk, st) {
     }
 }
 
+
+// אוליביה רודריגו - שיער חום כהה ארוך עם שביל באמצע שמתנופף ברוח, שפתון אדום-יין, איילינר,
+// וסט שחור עם פסים דקים וכפתורים, ושרשרת חוליות כסופה
+function skOliviaHairFill(c, path, col, dim) {
+    dim = dim || 0;
+    const g = c.createLinearGradient(0, -150, 0, 300);
+    g.addColorStop(0, skShade(col, 0.16 - dim)); g.addColorStop(0.35, skShade(col, -dim)); g.addColorStop(1, skShade(col, -0.3 - dim));
+    c.fillStyle = g; c.fill(path);
+    c.strokeStyle = SK_OUT; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(path);
+}
+function skOliviaBack(c, sk, st) {
+    const t = st.t, tone = sk.tone, col = sk.hair.color, hl = skShade(col, 0.3);
+    const w = Math.sin(t * 1.6) * 6, w2 = Math.sin(t * 2.3 + 1) * 5;
+    skAuraBack(c, sk, t);
+    // שיער אחורי: נופל ישר מימין, ומתנופף ברוח שמאלה
+    const hair = new Path2D();
+    hair.moveTo(-92, -96);
+    hair.bezierCurveTo(-150, -60, -146 + w, 50, -192 + w, 142);
+    hair.lineTo(-166 + w, 150); hair.lineTo(-180 + w2, 212); hair.lineTo(-148 + w, 196);
+    hair.lineTo(-154 + w2, 264); hair.lineTo(-122 + w, 236); hair.lineTo(-116, 304); hair.lineTo(-88, 256);
+    hair.lineTo(-60, 300); hair.lineTo(96, 296); hair.lineTo(110, 250); hair.lineTo(126, 290);
+    hair.bezierCurveTo(144, 150, 130, -30, 92, -96);
+    hair.closePath();
+    skOliviaHairFill(c, hair, col, 0.12);
+    c.save(); c.clip(hair);
+    c.strokeStyle = skA(hl, 0.5); c.lineWidth = 2.2; c.lineCap = 'round';
+    for (const [x0, x1, y1] of [[-108, -170, 190], [-104, -146, 240], [-100, -124, 270], [108, 118, 260], [100, 104, 280]]) {
+        c.beginPath(); c.moveTo(x0, -40); c.quadraticCurveTo(x0 + (x1 - x0) * 0.2 + w * 0.5, 80, x1 + w, y1); c.stroke();
+    }
+    c.restore();
+    // גוף: כתפיים חשופות, ומעליהן וסט שחור עם מחשוף V
+    skOutfit(c, sk, t);
+    c.strokeStyle = skA(skShade(tone, -0.3), 0.55); c.lineWidth = 2.4; c.lineCap = 'round';      // עצמות הבריח
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 12, 96); c.quadraticCurveTo(s * 34, 88, s * 58, 92); c.stroke(); }
+    c.save(); skTorsoPath(c); c.clip();
+    const vest = new Path2D();
+    vest.moveTo(-44, 72); vest.lineTo(0, 204); vest.lineTo(44, 72); vest.lineTo(74, 80);
+    vest.bezierCurveTo(70, 130, 96, 168, 112, 196); vest.lineTo(130, 350); vest.lineTo(-130, 350); vest.lineTo(-112, 196);
+    vest.bezierCurveTo(-96, 168, -70, 130, -74, 80);
+    vest.closePath();
+    const vg = c.createLinearGradient(-120, 0, 120, 0);
+    vg.addColorStop(0, '#101014'); vg.addColorStop(0.5, '#23232b'); vg.addColorStop(1, '#101014');
+    c.fillStyle = vg; c.fill(vest);
+    c.save(); c.clip(vest);
+    c.strokeStyle = 'rgba(235,235,245,0.16)'; c.lineWidth = 1.3;                                 // פסים דקים
+    for (let x = -126; x <= 126; x += 9) { c.beginPath(); c.moveTo(x, 60); c.lineTo(x, 350); c.stroke(); }
+    c.restore();
+    c.strokeStyle = SK_OUT; c.lineWidth = 3; c.lineJoin = 'round'; c.stroke(vest);
+    c.strokeStyle = 'rgba(255,255,255,0.22)'; c.lineWidth = 2;                                   // שולי המחשוף
+    c.beginPath(); c.moveTo(-40, 78); c.lineTo(0, 196); c.lineTo(40, 78); c.stroke();
+    c.strokeStyle = 'rgba(0,0,0,0.6)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(0, 204); c.lineTo(0, 350); c.stroke();
+    for (const y of [222, 256, 290, 324]) {                                                      // כפתורים
+        skE(c, 7, y, 5, 5, '#3a3a44', SK_OUT, 1.5);
+        skE(c, 5.6, y - 1.4, 1.6, 1.6, 'rgba(255,255,255,0.6)');
+    }
+    c.restore();
+    // שרשרת חוליות כסופה
+    for (let i = 0; i <= 10; i++) {
+        const u = i / 10, x = -33 + 66 * u, y = 55 + 27 * Math.sin(Math.PI * u);
+        const rot = Math.atan2(27 * Math.PI * Math.cos(Math.PI * u), 66) + (i % 2 ? 0.5 : -0.5);
+        skE(c, x, y, 6.2, 4, null, 'rgba(40,40,50,0.85)', 4.6, rot);
+        skE(c, x, y, 6.2, 4, null, i % 2 ? '#eef0f5' : '#c2c7d2', 2.6, rot);
+    }
+    skHead(c, sk);
+    // צללית חמה מעל העיניים
+    for (const s of [-1, 1]) skE(c, s * 34, -71, 19, 13, 'rgba(140,66,48,0.3)');
+    skFaceMarks(c, sk, t);
+    skEyes(c, sk, st);
+}
+function skOliviaFront(c, sk, st) {
+    const t = st.t, col = sk.hair.color, hl = skShade(col, 0.34), dk = skShade(col, -0.3);
+    const w = Math.sin(t * 1.6) * 6, w2 = Math.sin(t * 2.3 + 1) * 5;
+    // קווצות שמתנופפות שמאלה
+    c.lineCap = 'round';
+    for (const [y0, x1, y1, lw] of [[-36, -168, 96, 9], [-10, -150, 150, 8], [14, -132, 196, 7]]) {
+        for (const [color, width] of [[SK_OUT, lw + 2.4], [skShade(col, -0.08), lw]]) {
+            c.strokeStyle = color; c.lineWidth = width;
+            c.beginPath(); c.moveTo(-94, y0); c.quadraticCurveTo(-120 + w * 0.4, (y0 + y1) / 2 - 14, x1 + (y1 > 120 ? w2 : w), y1); c.stroke();
+        }
+    }
+    // קווצה שיורדת על הכתף הימנית
+    const lock = new Path2D();
+    lock.moveTo(86, -6); lock.bezierCurveTo(112, 40, 100, 110, 110 + w2 * 0.4, 176);
+    lock.lineTo(96 + w2 * 0.4, 150); lock.bezierCurveTo(92, 100, 96, 50, 80, 6); lock.closePath();
+    skOliviaHairFill(c, lock, col);
+    // שביל באמצע: שני צדדים חלקים שמשוכים לאחור
+    for (const sd of [-1, 1]) {
+        const p = new Path2D();
+        p.moveTo(sd * 3, -143);
+        p.bezierCurveTo(sd * 44, -152, sd * 104, -126, sd * 98, -44);
+        p.lineTo(sd * 100, 26); p.quadraticCurveTo(sd * 92, 20, sd * 83, 8);
+        p.bezierCurveTo(sd * 86, -52, sd * 66, -102, sd * 3, -125);
+        p.closePath();
+        skOliviaHairFill(c, p, col);
+        c.strokeStyle = skA(hl, 0.8); c.lineWidth = 2.6;
+        c.beginPath(); c.moveTo(sd * 16, -138); c.quadraticCurveTo(sd * 66, -126, sd * 86, -66); c.stroke();
+        c.strokeStyle = skA(dk, 0.7); c.lineWidth = 2;
+        c.beginPath(); c.moveTo(sd * 30, -128); c.quadraticCurveTo(sd * 74, -106, sd * 91, -30); c.stroke();
+    }
+    c.strokeStyle = skA(dk, 0.9); c.lineWidth = 2.4;                                             // קו השביל
+    c.beginPath(); c.moveTo(0, -144); c.lineTo(0, -124); c.stroke();
+}

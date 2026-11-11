@@ -253,6 +253,7 @@ const REDEEM_CODES = {
     'TUPACONPAPER2':     { skin: 'tupac' },
     'TRUMPBIKINI47':     { skin: 'trump' },
     'MEGATRONKEBAB8':    { skin: 'megatron' },
+    'OLIVIAFOROMER4477': { skin: 'olivia' },
     // סקין רגיל מהחנות (אגדי) - הקוד נותן אותו בחינם, אבל אפשר גם לקנות אותו
     'AVATARBL88':        { skin: 'avatar' },
     'SHLUK7':            { skin: 'shluk' },

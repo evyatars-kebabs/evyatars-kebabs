@@ -292,6 +292,10 @@ const SV_SKINS = [
     { id: 'trump', name: 'טראמפ', rarity: 6, tone: '#f2a764', hair: { style: 'custom', color: '#f4d06a' }, brow: '#e8c060',
       lips: '#d98a72', eyes: { iris: '#5a8ac8' }, look: 'm', blush: false, aura: { color: '#ffd23d', alpha: 0.3 },
       drawBack: skTrumpBack, drawFront: skTrumpFront },
+    { id: 'olivia', name: 'אוליביה רודריגו', rarity: 6, tone: '#e2ae86', hair: { style: 'custom', color: '#2e1a12' }, brow: '#24130c',
+      lips: '#a32a35', eyes: { iris: '#4a2a16' }, look: 'f', lashes: true, outfit: { base: '#e2ae86' },
+      aura: { color: '#b48cff', alpha: 0.4 }, fx: { type: 'sparkles', count: 16, speed: 0.35 },
+      drawBack: skOliviaBack, drawFront: skOliviaFront },
     // אירוע צבי הנינג'ה - נפתחים לחברי הצוות כשהצוות משלים את האתגר (js/event-tmnt.js)
     { id: 'tmnt_leo', name: 'לאונרדו', rarity: 6, event: 'tmnt', tone: '#4f9a3a', hair: { style: 'bald', color: '#3a7a2a' }, brow: '#2a5a1e', lips: '#2f6a22',
       eyes: { iris: '#1a2a3a' }, blush: false, look: 'm', noEars: true, outfit: { base: '#4f9a3a' }, turtle: { mask: '#1f5fd8', letter: 'L', weapon: 'katana' },
