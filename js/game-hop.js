@@ -541,6 +541,57 @@ function hpModel(skinId) {
     try { hpRenderSkin(hc, sk, true, longBeard); } catch (e) { console.error('hpModel', skinId, e); }
     return (hpModels[key] = { head, box, k, oy, cone, whole, tone, body, pants: fix.pants || skShade(body, -0.45), belly: fix.belly || skShade(body, 0.2) });
 }
+// גוף מיוחד לסקין (במקום הגוף הרגיל): פונקציה שמציירת רגליים, גוף וידיים. הראש מצויר אחריה
+const HP_BODIES = { olivia: hpOliviaBody };
+// אוליביה: שיער ארוך שמתנופף מאחור, וסט שחור עם פסים ומחשוף V, שרשרת כסופה, ידיים חשופות ומכנסיים שחורים רחבים
+function hpOliviaBody(c, M, o) {
+    const rising = o.rising, fo = o.fo, hairCol = '#2e1a12';
+    const fall = Math.max(0, -rising), w = Math.sin(hp.t * 5) * 1.2;
+    // שיער מאחורי הגוף: נופל עד המותניים, מתרומם ומתרחב בנפילה ונמשך נגד כיוון התנועה
+    const dx = -o.lean * 5, tipY = hpLerp(-11, -27, fall), sp = fall * 6;
+    c.fillStyle = hairCol;
+    c.beginPath();
+    c.moveTo(-14, -54);
+    c.quadraticCurveTo(-23 - sp + dx * 0.5, (-54 + tipY) / 2, -18 - sp + dx + w, tipY);
+    c.lineTo(-12 - sp * 0.6 + dx, tipY - 4); c.lineTo(-7 + dx + w, tipY + 1.5); c.lineTo(0 + dx, tipY - 3);
+    c.lineTo(7 + dx + w, tipY + 1.5); c.lineTo(12 + sp * 0.6 + dx, tipY - 4); c.lineTo(18 + sp + dx + w, tipY);
+    c.quadraticCurveTo(23 + sp + dx * 0.5, (-54 + tipY) / 2, 14, -54);
+    c.closePath(); fo();
+    // מכנסיים שחורים רחבים (מתקצרים בעלייה) ונעליים
+    const by = rising > 0 ? -5 : -1;
+    for (const s of [-1, 1]) {
+        c.fillStyle = '#0a0a0c'; c.beginPath(); c.ellipse(s * 9, by + 1.2, 5.6, 2.6, 0, 0, 7); c.fill();
+        c.fillStyle = '#15151a';
+        c.beginPath(); c.moveTo(s * 0.4, -14); c.lineTo(s * 10, -14); c.lineTo(s * 14.5, by); c.lineTo(s * 2.6, by); c.closePath(); fo();
+    }
+    // וסט
+    const vest = new Path2D();
+    vest.moveTo(-10.5, -38); vest.lineTo(10.5, -38); vest.quadraticCurveTo(12.5, -25, 10.4, -12.5);
+    vest.lineTo(-10.4, -12.5); vest.quadraticCurveTo(-12.5, -25, -10.5, -38); vest.closePath();
+    c.fillStyle = '#1c1c23'; c.fill(vest);
+    c.save(); c.clip(vest);
+    c.strokeStyle = 'rgba(235,235,245,0.2)'; c.lineWidth = 0.5;
+    for (let x = -12; x <= 12; x += 2.6) { c.beginPath(); c.moveTo(x, -40); c.lineTo(x, -10); c.stroke(); }
+    c.fillStyle = M.tone; c.beginPath(); c.moveTo(-5.5, -39); c.lineTo(5.5, -39); c.lineTo(0, -24.5); c.closePath(); c.fill();   // מחשוף
+    c.strokeStyle = HP_OUT; c.lineWidth = 1.1; c.beginPath(); c.moveTo(-5.5, -39); c.lineTo(0, -24.5); c.lineTo(5.5, -39); c.stroke();
+    c.restore();
+    c.strokeStyle = HP_OUT; c.lineWidth = 2.4; c.stroke(vest);
+    c.fillStyle = '#6a6a78';
+    for (const y of [-22, -18.6, -15.2]) { c.beginPath(); c.arc(1.1, y, 0.95, 0, 7); c.fill(); }
+    c.fillStyle = '#f2f2f5'; c.fillRect(-1.6, -13.4, 3.2, 1.5);                                 // התווית על המכנסיים
+    // שרשרת כסופה
+    for (const [col, lw] of [['rgba(40,40,50,0.9)', 2.6], ['#e3e6ee', 1.5]]) {
+        c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); c.moveTo(-5, -36.6); c.quadraticCurveTo(0, -31.2, 5, -36.6); c.stroke();
+    }
+    // ידיים חשופות
+    for (const side of [-1, 1]) {
+        c.save(); c.translate(side * 11.5, -33); c.rotate(side * (Math.PI / 2 - o.ang) + Math.PI);
+        c.strokeStyle = HP_OUT; c.lineWidth = 9; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 15); c.stroke();
+        c.strokeStyle = M.tone; c.lineWidth = 4.8; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 15); c.stroke();
+        c.fillStyle = M.tone; c.beginPath(); c.arc(0, 16, 3.9, 0, 7); fo();
+        c.restore();
+    }
+}
 function hpDrawPlayer(c) {
     const P = hp.P;
     if (hp.dead && P.y - hp.camY > HP_H + 60) return;
@@ -555,6 +606,10 @@ function hpDrawPlayer(c) {
     c.lineJoin = 'round'; c.lineCap = 'round';
     const fo = () => { c.fill(); c.strokeStyle = HP_OUT; c.lineWidth = 2.4; c.stroke(); };
     const rising = hpClamp(-P.vy / 400, -1, 1);                  // 1 = עולה, -1 = נופל
+    const ang = hpLerp(0.2, -0.95, (rising + 1) / 2);            // ידיים - למעלה בקפיצה, לצדדים בנפילה
+    const custom = HP_BODIES[hp.skin];
+    if (custom) custom(c, M, { rising, ang, fo, lean: hp.dead ? 0 : hpClamp(P.vx / HP_MOVE, -1, 1) });   // גוף מיוחד לסקין
+    else {
     // רגליים (מקופלות בעלייה)
     const tuck = rising > 0 ? 0.7 : 1;
     c.fillStyle = M.pants;
@@ -567,13 +622,14 @@ function hpDrawPlayer(c) {
         c.fillStyle = M.belly; c.beginPath(); c.ellipse(1, -20, 8, 10, 0, 0, 7); c.fill();
     }
     // ידיים - למעלה בקפיצה, לצדדים בנפילה
-    const ang = hpLerp(0.2, -0.95, (rising + 1) / 2), sh = M.cone ? 11 : 12;
+    const sh = M.cone ? 11 : 12;
     if (!M.whole || M.cone) for (const side of [-1, 1]) {              // לדמות שלמה יש ידיים משלה
         c.save(); c.translate(side * sh, -31); c.rotate(side * (Math.PI / 2 - ang) + Math.PI);
         c.strokeStyle = HP_OUT; c.lineWidth = 10.5; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 15); c.stroke();
         c.strokeStyle = M.cone ? '#c46a2a' : M.body; c.lineWidth = 6; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 15); c.stroke();
         c.fillStyle = M.tone; c.beginPath(); c.arc(0, 16, 4.4, 0, 7); fo();
         c.restore();
+    }
     }
     // הראש של הסקין
     const hw = M.head.width / (hpPx * HP_MS), hh = M.head.height / (hpPx * HP_MS);
