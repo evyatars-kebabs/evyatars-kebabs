@@ -493,11 +493,13 @@ const APP_TUT_KEY = 'kebab_app_tut';
 const APP_TUT = [
     { t: '👋 ברוכים הבאים לקבביה של אביתר!', b: 'משחקים, שוברים שיאים, אוספים קבב קוינס ופותחים סקינים. הנה סיור קצר.' },
     { t: '🏠 המשחקים', b: 'במסך הבית מחכים כל המשחקים והאתגר היומי. כל משחק מזכה בקבב קוינס 🪙.', target: 'btn-home' },
-    { t: '🛍️ חנות הסקינים', b: 'בקבב קוינס קונים סקינים חדשים לדמות. יש לכם קוד? מפעילים אותו בחנות.', target: 'btn-shop' },
+    { t: '🛍️ חנות הסקינים', b: 'בקבב קוינס קונים סקינים חדשים ומחליפים את הדמות. יש לכם קוד? מפעילים אותו בחנות.', target: 'btn-shop' },
     { t: '🏆 שיאים וחברים', b: 'בטבלת השיאים רואים מי הכי טוב בכל משחק, ובחברי קבב מוסיפים חברים ומשווים שיאים.', target: 'btn-leaderboard', target2: 'btn-friends' },
-    { t: '👤 הפרופיל שלכם', b: 'כאן בוחרים שם ומחליפים סקין. בחרו שם - ואז לחצו על הבית כדי להתחיל לשחק!', target: 'btn-profile' }
+    { t: '👤 הפרופיל שלכם', b: 'כאן בוחרים שם ורואים את הרמה שלכם. בחרו שם - ואז לחצו על הבית כדי להתחיל לשחק!', target: 'btn-profile' }
 ];
+let appTutStep = -1;
 function appTutShow(i) {
+    appTutStep = i;
     const host = document.querySelector('.app-container');
     if (!host) return;
     let box = document.getElementById('app-tut');
@@ -527,7 +529,12 @@ function appTutShow(i) {
 }
 function appTutEnd() {
     store.set(APP_TUT_KEY, '1');
+    appTutStep = -1;
     const box = document.getElementById('app-tut'); if (box) box.remove();
 }
+// המסך משנה גודל (סיבוב, מקלדת, התאמת גובה אחרי הטעינה) - מזיזים את הזרקור למקום הנכון
+function appTutRefit() { if (appTutStep >= 0 && document.getElementById('app-tut')) appTutShow(appTutStep); }
+window.addEventListener('resize', appTutRefit);
+if (window.visualViewport) visualViewport.addEventListener('resize', appTutRefit);
 if (window.__firstVisit && !store.get(APP_TUT_KEY)) store.set(APP_TUT_KEY, 'pending');
-if (store.get(APP_TUT_KEY) === 'pending') setTimeout(() => appTutShow(0), 500);
+if (store.get(APP_TUT_KEY) === 'pending') { setTimeout(() => appTutShow(0), 500); [1200, 2200, 3800].forEach(ms => setTimeout(appTutRefit, ms)); }
