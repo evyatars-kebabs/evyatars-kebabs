@@ -485,3 +485,49 @@ if (!window.__firstVisit) switchTab('home');      // שחקן חוזר מתחי�
 setTimeout(() => { if (typeof collNotify === 'function') collNotify(getOwnedSkins()); }, 2500);
 syncLeaderboardSkin(4000);
 setTimeout(retryPendingScores, 5000);              // שיאים שלא נשמרו בפעם הקודמת (אין חיבור / מכסה)
+
+/* ---------- מדריך קצר בכניסה הראשונה למשחק ----------
+   כמה צעדים קצרים, וזרקור על הכפתור שמדברים עליו בסרגל הניווט. מוצג פעם אחת (אפשר לדלג);
+   אם סוגרים את המשחק באמצע - ממשיך בכניסה הבאה. */
+const APP_TUT_KEY = 'kebab_app_tut';
+const APP_TUT = [
+    { t: '👋 ברוכים הבאים לקבביה של אביתר!', b: 'משחקים, שוברים שיאים, אוספים קבב קוינס ופותחים סקינים. הנה סיור קצר.' },
+    { t: '🏠 המשחקים', b: 'במסך הבית מחכים כל המשחקים והאתגר היומי. כל משחק מזכה בקבב קוינס 🪙.', target: 'btn-home' },
+    { t: '🛍️ חנות הסקינים', b: 'בקבב קוינס קונים סקינים חדשים לדמות. יש לכם קוד? מפעילים אותו בחנות.', target: 'btn-shop' },
+    { t: '🏆 שיאים וחברים', b: 'בטבלת השיאים רואים מי הכי טוב בכל משחק, ובחברי קבב מוסיפים חברים ומשווים שיאים.', target: 'btn-leaderboard', target2: 'btn-friends' },
+    { t: '👤 הפרופיל שלכם', b: 'כאן בוחרים שם ומחליפים סקין. בחרו שם - ואז לחצו על הבית כדי להתחיל לשחק!', target: 'btn-profile' }
+];
+function appTutShow(i) {
+    const host = document.querySelector('.app-container');
+    if (!host) return;
+    let box = document.getElementById('app-tut');
+    if (!box) {
+        box = document.createElement('div'); box.id = 'app-tut'; box.className = 'app-tut';
+        box.innerHTML = '<div class="app-tut-hole"></div><div class="app-tut-hole two"></div><div class="app-tut-card"><h3></h3><p></p><div class="app-tut-count" dir="ltr"></div><div class="app-tut-row"><button class="btn secondary app-tut-skip">דלג</button><button class="btn app-tut-next"></button></div></div>';
+        host.appendChild(box);
+        box.querySelector('.app-tut-skip').onclick = appTutEnd;
+    }
+    const s = APP_TUT[i], last = i === APP_TUT.length - 1;
+    box.querySelector('h3').textContent = s.t;
+    box.querySelector('p').textContent = s.b;
+    box.querySelector('.app-tut-count').textContent = (i + 1) + ' / ' + APP_TUT.length;
+    const next = box.querySelector('.app-tut-next');
+    next.textContent = last ? 'יאללה!' : 'הבא';
+    next.onclick = () => { if (typeof sfx !== 'undefined' && sfx.tap) sfx.tap(); last ? appTutEnd() : appTutShow(i + 1); };
+    // זרקור: עיגול מעל הכפתור, וכל השאר מוחשך (בלי יעד - הכול מוחשך)
+    const br = box.getBoundingClientRect(), k = br.width / (box.offsetWidth || 1) || 1;
+    const holes = box.querySelectorAll('.app-tut-hole');
+    [s.target, s.target2].forEach((id, n) => {
+        const el = id && document.getElementById(id), h = holes[n];
+        if (!el) { h.style.cssText = n ? 'display:none' : 'left:50%;top:0;width:0;height:0'; return; }
+        const r = el.getBoundingClientRect(), pad = 5;
+        h.style.cssText = 'left:' + ((r.left - br.left) / k - pad) + 'px;top:' + ((r.top - br.top) / k - pad) + 'px;width:' + (r.width / k + pad * 2) + 'px;height:' + (r.height / k + pad * 2) + 'px';
+    });
+    box.classList.toggle('two-holes', !!s.target2);
+}
+function appTutEnd() {
+    store.set(APP_TUT_KEY, '1');
+    const box = document.getElementById('app-tut'); if (box) box.remove();
+}
+if (window.__firstVisit && !store.get(APP_TUT_KEY)) store.set(APP_TUT_KEY, 'pending');
+if (store.get(APP_TUT_KEY) === 'pending') setTimeout(() => appTutShow(0), 500);

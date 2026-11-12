@@ -1664,3 +1664,21 @@ body.swipe-l .screen.active { animation: swipeInL .28s cubic-bezier(.2, .9, .3, 
 
 /* כרטיס משחק מוסתר (hidden) - display:flex של הכרטיס לא יבטל את ההסתרה */
 .game-card[hidden] { display: none; }
+
+/* מדריך הכניסה הראשונה: זרקור על כפתור בסרגל הניווט וכרטיס הסבר */
+.app-container > .app-tut { position: absolute; inset: 0; z-index: 95; overflow: hidden; animation: screenIn .2s ease-out; }
+.app-tut-hole { position: absolute; border-radius: 50%; pointer-events: none; transition: all .3s ease;
+    box-shadow: 0 0 0 9999px rgba(8, 4, 2, 0.8), 0 0 0 3px var(--accent-gold), 0 0 18px 6px rgba(255, 180, 60, 0.7); }
+/* שני זרקורים: רק הראשון מחשיך את המסך, כדי שלא יכסה את השני */
+.app-tut-hole.two { box-shadow: 0 0 0 3px var(--accent-gold), 0 0 18px 6px rgba(255, 180, 60, 0.7); }
+.app-tut.two-holes .app-tut-hole:not(.two) { box-shadow: 0 0 0 3px var(--accent-gold), 0 0 18px 6px rgba(255, 180, 60, 0.7); }
+.app-tut.two-holes { background: rgba(8, 4, 2, 0.62); }
+.app-tut-card { position: absolute; left: 20px; right: 20px; top: 50%; transform: translateY(-50%); max-width: 340px; margin: 0 auto;
+    background: linear-gradient(180deg, #2b1a11, #1b100b); border: 1px solid #5a3a2a; border-radius: 24px; padding: 20px 18px; text-align: center;
+    box-shadow: 0 0 40px rgba(255, 106, 26, 0.25), 0 20px 50px rgba(0, 0, 0, 0.6); }
+.app-tut-card h3 { margin: 0 0 8px; font-size: 1.15rem; color: var(--accent-gold); }
+.app-tut-card p { margin: 0 0 10px; line-height: 1.55; font-size: 0.95rem; }
+.app-tut-count { font-size: 0.75rem; opacity: 0.6; margin-bottom: 10px; }
+.app-tut-row { display: flex; gap: 8px; }
+.app-tut-row .btn { margin: 0; flex: 2; }
+.app-tut-row .app-tut-skip { flex: 1; }
